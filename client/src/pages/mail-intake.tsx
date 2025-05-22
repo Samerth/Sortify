@@ -256,7 +256,7 @@ export default function MailIntake() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {recipients.map((recipient) => (
+                              {recipients.filter(recipient => recipient.id && recipient.id.trim() !== '').map((recipient) => (
                                 <SelectItem key={recipient.id} value={recipient.id}>
                                   {recipient.firstName} {recipient.lastName} {recipient.unit && `(${recipient.unit})`}
                                 </SelectItem>

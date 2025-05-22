@@ -81,6 +81,21 @@ export default function MailIntake() {
     },
   });
 
+  const { data: locations = [] } = useQuery({
+    queryKey: ["/api/mailroom-locations"],
+    enabled: !!currentOrganization,
+    queryFn: async () => {
+      const response = await fetch("/api/mailroom-locations", {
+        headers: {
+          "x-organization-id": currentOrganization?.id || "",
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch locations");
+      return response.json();
+    },
+  });
+
   const createMailItemMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await fetch("/api/mail-items", {
@@ -106,6 +121,7 @@ export default function MailIntake() {
       setFormData({
         type: "package",
         recipientId: "",
+        locationId: "",
         sender: "",
         trackingNumber: "",
         description: "",
@@ -236,6 +252,26 @@ export default function MailIntake() {
                       {recipient.unit && ` - Unit ${recipient.unit}`}
                       {recipient.department && ` - ${recipient.department}`}
                       {recipient.email && ` • ${recipient.email}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="locationId">Storage Location</Label>
+                <p className="text-sm text-gray-500 mb-2">Assign package to a specific bin, shelf, or storage area</p>
+                <select
+                  id="locationId"
+                  value={formData.locationId}
+                  onChange={(e) => setFormData({ ...formData, locationId: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Select storage location (optional)</option>
+                  {(locations as any[]).map((location: any) => (
+                    <option key={location.id} value={location.id}>
+                      {location.name} ({location.type})
+                      {location.currentCount !== undefined && location.capacity && 
+                        ` - ${location.currentCount}/${location.capacity} items`}
                     </option>
                   ))}
                 </select>

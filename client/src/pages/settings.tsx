@@ -73,6 +73,7 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState("organization");
   const [showLocationForm, setShowLocationForm] = useState(false);
   const [showMailroomForm, setShowMailroomForm] = useState(false);
+  const [selectedMailroomId, setSelectedMailroomId] = useState<string | null>(null);
 
   const form = useForm<OrganizationFormData>({
     resolver: zodResolver(organizationFormSchema),
@@ -128,6 +129,13 @@ export default function Settings() {
       return response.json();
     },
   });
+
+  // Auto-select mailroom when Add Storage is clicked
+  React.useEffect(() => {
+    if (selectedMailroomId && showLocationForm) {
+      locationForm.setValue('mailroomId', selectedMailroomId);
+    }
+  }, [selectedMailroomId, showLocationForm, locationForm]);
 
   // Update form when organization data is loaded
   React.useEffect(() => {
@@ -516,23 +524,14 @@ export default function Settings() {
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
                         <h4 className="font-medium text-gray-900">Mailroom Hierarchy</h4>
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setShowMailroomForm(!showMailroomForm)}
-                          >
-                            <Building className="w-4 h-4 mr-2" />
-                            {showMailroomForm ? "Cancel" : "Add Mailroom"}
-                          </Button>
-                          <Button 
-                            size="sm"
-                            onClick={() => setShowLocationForm(!showLocationForm)}
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            {showLocationForm ? "Cancel" : "Add Storage Location"}
-                          </Button>
-                        </div>
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowMailroomForm(!showMailroomForm)}
+                        >
+                          <Building className="w-4 h-4 mr-2" />
+                          {showMailroomForm ? "Cancel" : "Add Mailroom"}
+                        </Button>
                       </div>
 
                       {showMailroomForm && (
@@ -612,7 +611,14 @@ export default function Settings() {
                                       <p className="text-sm text-gray-600 mt-1">{mailroom.description}</p>
                                     )}
                                   </div>
-                                  <Button size="sm" variant="outline">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedMailroomId(mailroom.id);
+                                      setShowLocationForm(true);
+                                    }}
+                                  >
                                     <Plus className="w-4 h-4 mr-2" />
                                     Add Storage
                                   </Button>
@@ -672,8 +678,12 @@ export default function Settings() {
                                     <FormLabel>Parent Mailroom</FormLabel>
                                     <FormControl>
                                       <select {...field} className="w-full px-3 py-2 border rounded-lg">
-                                        <option value="">Select mailroom first...</option>
-                                        <option value="temp-mailroom">Main Mailroom (create one first)</option>
+                                        <option value="">Select mailroom...</option>
+                                        {mailrooms.map((mailroom: any) => (
+                                          <option key={mailroom.id} value={mailroom.id}>
+                                            {mailroom.name}
+                                          </option>
+                                        ))}
                                       </select>
                                     </FormControl>
                                     <FormMessage />

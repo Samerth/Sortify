@@ -128,9 +128,11 @@ export default function MailIntake() {
   const createMailItemMutation = useMutation({
     mutationFn: async (data: any) => {
       // Clean up data - convert empty strings to null for optional UUID fields
+      // Separate locationId into either locationId or mailroomId based on selection
       const cleanedData = {
         ...data,
-        locationId: data.locationId || null,
+        locationId: (data.locationId && (locations as any[]).some(loc => loc.id === data.locationId)) ? data.locationId : null,
+        mailroomId: (data.locationId && (mailrooms as any[]).some(room => room.id === data.locationId)) ? data.locationId : null,
         recipientId: data.recipientId || null,
         trackingNumber: data.trackingNumber || null,
         sender: data.sender || null,

@@ -106,6 +106,7 @@ export const mailItems = pgTable("mail_items", {
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
   recipientId: uuid("recipient_id").references(() => recipients.id),
   locationId: uuid("location_id").references(() => mailroomLocations.id),
+  mailroomId: uuid("mailroom_id").references(() => mailrooms.id),
   trackingNumber: varchar("tracking_number", { length: 255 }),
   type: varchar("type", { length: 50 }).notNull(), // package, letter, certified_mail
   sender: varchar("sender", { length: 255 }),
@@ -182,6 +183,7 @@ export const mailroomsRelations = relations(mailrooms, ({ one, many }) => ({
     references: [organizations.id],
   }),
   locations: many(mailroomLocations),
+  mailItems: many(mailItems),
 }));
 
 export const mailroomLocationsRelations = relations(mailroomLocations, ({ one, many }) => ({
@@ -212,6 +214,14 @@ export const mailItemsRelations = relations(mailItems, ({ one, many }) => ({
   recipient: one(recipients, {
     fields: [mailItems.recipientId],
     references: [recipients.id],
+  }),
+  location: one(mailroomLocations, {
+    fields: [mailItems.locationId],
+    references: [mailroomLocations.id],
+  }),
+  mailroom: one(mailrooms, {
+    fields: [mailItems.mailroomId],
+    references: [mailrooms.id],
   }),
   createdByUser: one(users, {
     fields: [mailItems.createdBy],

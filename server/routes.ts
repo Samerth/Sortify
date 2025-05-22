@@ -480,6 +480,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Photo upload endpoint
+  app.post("/api/upload-photo", withOrganization, async (req: any, res) => {
+    try {
+      // Return a placeholder photo URL for now
+      const photoUrl = `/api/photos/placeholder-${Date.now()}.jpg`;
+      res.json({ photoUrl });
+    } catch (error) {
+      console.error("Photo upload error:", error);
+      res.status(500).json({ message: "Failed to upload photo" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

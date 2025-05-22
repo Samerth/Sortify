@@ -912,12 +912,12 @@ export default function MailIntake() {
                         </div>
                         <div className="pl-6 text-sm text-gray-600">
                           {(() => {
-                            console.log('🔍 Debug location data:', {
-                              item: item,
-                              locationId: item.locationId,
+                            // Debug: Check what location data we have
+                            console.log('Location debug:', { 
+                              locationId: item.locationId, 
                               mailroomId: item.mailroomId,
-                              locations: locations,
-                              mailrooms: mailrooms
+                              hasLocations: (locations as any[])?.length > 0,
+                              hasMailrooms: (mailrooms as any[])?.length > 0
                             });
                             
                             // Find the location name from the locations array

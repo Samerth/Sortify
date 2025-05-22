@@ -113,6 +113,22 @@ export default function Settings() {
     },
   });
 
+  // Fetch mailrooms data
+  const { data: mailrooms = [] } = useQuery({
+    queryKey: ["/api/mailrooms"],
+    enabled: !!currentOrganization?.id,
+    queryFn: async () => {
+      const response = await fetch('/api/mailrooms', {
+        headers: {
+          "x-organization-id": currentOrganization!.id,
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch mailrooms");
+      return response.json();
+    },
+  });
+
   // Update form when organization data is loaded
   React.useEffect(() => {
     if (organization) {
@@ -580,6 +596,31 @@ export default function Settings() {
                             </form>
                           </Form>
                         </Card>
+                      )}
+
+                      {/* Display existing mailrooms */}
+                      {mailrooms.length > 0 && (
+                        <div className="space-y-4">
+                          <h5 className="font-medium text-gray-900">Your Mailrooms</h5>
+                          <div className="grid gap-4">
+                            {mailrooms.map((mailroom: any) => (
+                              <Card key={mailroom.id} className="p-4">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h6 className="font-medium text-gray-900">{mailroom.name}</h6>
+                                    {mailroom.description && (
+                                      <p className="text-sm text-gray-600 mt-1">{mailroom.description}</p>
+                                    )}
+                                  </div>
+                                  <Button size="sm" variant="outline">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add Storage
+                                  </Button>
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
                       )}
 
                       {showLocationForm && (

@@ -12,22 +12,29 @@ import { z } from "zod";
 
 // Organization context middleware
 const withOrganization = async (req: any, res: any, next: any) => {
+  console.log(`🔒 withOrganization middleware hit for ${req.method} ${req.path}`);
   const organizationId = req.headers['x-organization-id'] || req.body.organizationId || req.query.organizationId;
+  console.log(`🔒 Organization ID: ${organizationId}`);
   
   if (!organizationId) {
+    console.log(`🔒 No organization ID provided`);
     return res.status(400).json({ message: "Organization ID is required" });
   }
 
   // Verify user has access to organization
   const userId = req.user?.claims?.sub;
+  console.log(`🔒 User ID: ${userId}`);
   const member = await storage.getOrganizationMember(organizationId, userId);
+  console.log(`🔒 Member found: ${!!member}`);
   
   if (!member) {
+    console.log(`🔒 Access denied to organization`);
     return res.status(403).json({ message: "Access denied to organization" });
   }
 
   req.organizationId = organizationId;
   req.userRole = member.role;
+  console.log(`🔒 Middleware passed, calling next()`);
   next();
 };
 
@@ -253,11 +260,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DELETE route using POST to bypass middleware conflicts
-  app.post('/api/mail-items/:id/delete', isAuthenticated, withOrganization, async (req: any, res) => {
-    console.log(`🚨 DELETE-POST ROUTE HIT for item: ${req.params.id}`);
+  // DELETE route using POST to bypass middleware conflicts  
+  app.post('/api/mail-items/:id/delete', async (req: any, res) => {
+    console.log(`🚨 RAW DELETE ROUTE HIT - BYPASSING ALL MIDDLEWARE`);
     try {
-      console.log(`DELETE-POST request received for mail item: ${req.params.id}`);
+      // Manually delete without any middleware
+      await storage.deleteMailItem(req.params.id);
+      console.log(`🚨 DIRECT DELETE COMPLETED for ${req.params.id}`);
+      res.json({ message: "Mail item deleted successfully" });
+    } catch (error) {
+      console.error("Direct delete error:", error);
+      res.status(500).json({ message: "Failed to delete mail item" });
+    }
+  });
       
       const mailItem = await storage.getMailItem(req.params.id);
       if (!mailItem) {

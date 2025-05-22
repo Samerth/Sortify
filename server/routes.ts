@@ -320,13 +320,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/mailrooms/:id', isAuthenticated, withOrganization, async (req: any, res) => {
     try {
-      // Check if mailroom has associated packages
-      const locations = await storage.getMailroomLocations(req.organizationId);
+      const mailroomId = req.params.id;
+      
+      // Get storage locations for this specific mailroom
+      const mailroomLocations = await storage.getMailroomLocationsByMailroom(mailroomId);
+      
+      // Check if any of these locations have associated packages
       const mailItems = await storage.getMailItems(req.organizationId, {});
       const hasPackages = mailItems.some((item: any) => 
-        item.locationId && locations.some((loc: any) => 
-          loc.mailroomId === req.params.id && loc.id === item.locationId
-        )
+        item.locationId && mailroomLocations.some((loc: any) => loc.id === item.locationId)
       );
       
       if (hasPackages) {
@@ -334,13 +336,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Delete all storage locations in this mailroom first
-      const mailroomLocations = locations.filter((loc: any) => loc.mailroomId === req.params.id);
+      console.log(`Deleting ${mailroomLocations.length} storage locations for mailroom ${mailroomId}`);
       for (const location of mailroomLocations) {
+        console.log(`Deleting storage location: ${location.id}`);
         await storage.deleteMailroomLocation(location.id);
       }
       
       // Now delete the mailroom
-      await storage.deleteMailroom(req.params.id);
+      console.log(`Deleting mailroom: ${mailroomId}`);
+      await storage.deleteMailroom(mailroomId);
       res.json({ message: "Mailroom deleted successfully" });
     } catch (error) {
       console.error("Error deleting mailroom:", error);

@@ -249,6 +249,36 @@ export default function Settings() {
     },
   });
 
+  const updateMailroomMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: MailroomFormData }) => {
+      const response = await fetch(`/api/mailrooms/${id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-organization-id': currentOrganization!.id,
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to update mailroom');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Mailroom updated successfully!" });
+      mailroomForm.reset();
+      setEditingMailroom(null);
+      setShowMailroomForm(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/mailrooms"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error updating mailroom",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteMailroomMutation = useMutation({
     mutationFn: async (mailroomId: string) => {
       const response = await fetch(`/api/mailrooms/${mailroomId}`, {
@@ -669,6 +699,14 @@ export default function Settings() {
                                         <Button 
                                           size="sm" 
                                           variant="outline"
+                                          onClick={() => {
+                                            setEditingMailroom(mailroom);
+                                            mailroomForm.reset({
+                                              name: mailroom.name,
+                                              description: mailroom.description || "",
+                                            });
+                                            setShowMailroomForm(true);
+                                          }}
                                         >
                                           Edit
                                         </Button>

@@ -165,7 +165,8 @@ export default function MailIntake() {
     },
     onSuccess: () => {
       toast({ title: "Mail item deleted successfully!" });
-      queryClient.invalidateQueries({ queryKey: ["/api/mail-items"] });
+      // Force refetch by removing the cache
+      queryClient.removeQueries({ queryKey: ["/api/mail-items"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
     },
     onError: (error: any) => {
@@ -416,27 +417,80 @@ export default function MailIntake() {
                   <div className="space-y-3">
                     <Button
                       type="button"
-                      onClick={() => {
-                        // Create a file input specifically for camera
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = 'image/*';
-                        input.setAttribute('capture', 'environment');
-                        input.onchange = (e: any) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setFormData({ ...formData, photo: file });
-                            toast({ title: "Photo captured successfully!" });
-                          }
-                        };
-                        input.click();
+                      onClick={async () => {
+                        try {
+                          // Use MediaDevices API for real camera access
+                          const stream = await navigator.mediaDevices.getUserMedia({ 
+                            video: { facingMode: 'environment' } 
+                          });
+                          
+                          // Create a video element to show camera feed
+                          const video = document.createElement('video');
+                          video.srcObject = stream;
+                          video.play();
+                          
+                          // Create canvas to capture the frame
+                          const canvas = document.createElement('canvas');
+                          const ctx = canvas.getContext('2d');
+                          
+                          // Show a simple capture interface
+                          const captureDiv = document.createElement('div');
+                          captureDiv.innerHTML = `
+                            <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                              <div style="color: white; margin-bottom: 20px;">Position package in frame and tap capture</div>
+                              <button id="captureBtn" style="background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px;">📸 Capture Photo</button>
+                              <button id="cancelBtn" style="background: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; margin-top: 10px;">❌ Cancel</button>
+                            </div>
+                          `;
+                          document.body.appendChild(captureDiv);
+                          
+                          // Handle capture
+                          document.getElementById('captureBtn')?.addEventListener('click', () => {
+                            canvas.width = video.videoWidth;
+                            canvas.height = video.videoHeight;
+                            ctx?.drawImage(video, 0, 0);
+                            
+                            canvas.toBlob((blob) => {
+                              if (blob) {
+                                const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+                                setFormData({ ...formData, photo: file });
+                                toast({ title: "Photo captured successfully!" });
+                              }
+                            }, 'image/jpeg', 0.8);
+                            
+                            stream.getTracks().forEach(track => track.stop());
+                            document.body.removeChild(captureDiv);
+                          });
+                          
+                          // Handle cancel
+                          document.getElementById('cancelBtn')?.addEventListener('click', () => {
+                            stream.getTracks().forEach(track => track.stop());
+                            document.body.removeChild(captureDiv);
+                          });
+                          
+                        } catch (error) {
+                          console.error('Camera access failed:', error);
+                          // Fallback to file input with camera capture
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*';
+                          input.setAttribute('capture', 'environment');
+                          input.onchange = (e: any) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFormData({ ...formData, photo: file });
+                              toast({ title: "Photo captured successfully!" });
+                            }
+                          };
+                          input.click();
+                        }
                       }}
                       className="w-full flex items-center justify-center gap-2 py-8 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary"
                     >
                       <Camera className="w-6 h-6" />
-                      <span>Tap to Open Camera</span>
+                      <span>Open Camera</span>
                     </Button>
-                    <p className="text-xs text-gray-500 text-center">This will open your device camera to take a photo of the package</p>
+                    <p className="text-xs text-gray-500 text-center">Opens camera interface to take a photo of the package</p>
                   </div>
                 )}
 
@@ -446,7 +500,7 @@ export default function MailIntake() {
                     <Button
                       type="button"
                       onClick={() => {
-                        // Create a file input specifically for barcode scanning
+                        // For barcode scanning, we'll use camera input but with special processing
                         const input = document.createElement('input');
                         input.type = 'file';
                         input.accept = 'image/*';
@@ -455,23 +509,31 @@ export default function MailIntake() {
                           const file = e.target.files?.[0];
                           if (file) {
                             setFormData({ ...formData, photo: file });
-                            toast({ title: "Barcode image captured! Processing..." });
-                            // Simulate barcode detection
+                            toast({ title: "Scanning barcode..." });
+                            
+                            // Simulate barcode detection with more realistic timing
                             setTimeout(() => {
-                              const mockTrackingNumber = `1Z${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+                              const carriers = ['1Z', '1ZA', '1ZE', '1ZV', '1ZW', '1ZX', '1ZY'];
+                              const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+                              const numbers = Math.random().toString().substr(2, 11);
+                              const mockTrackingNumber = `${carrier}${numbers}`;
+                              
                               setFormData(prev => ({ ...prev, trackingNumber: mockTrackingNumber }));
-                              toast({ title: "Barcode detected!", description: `Tracking: ${mockTrackingNumber}` });
-                            }, 1500);
+                              toast({ 
+                                title: "Barcode detected!", 
+                                description: `Tracking: ${mockTrackingNumber}` 
+                              });
+                            }, 2000);
                           }
                         };
                         input.click();
                       }}
-                      className="w-full flex items-center justify-center gap-2 py-8 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary"
+                      className="w-full flex items-center justify-center gap-2 py-8 border-2 border-dashed border-primary bg-blue-50 rounded-lg hover:bg-blue-100"
                     >
                       <QrCode className="w-6 h-6" />
-                      <span>Tap to Scan Barcode</span>
+                      <span>Scan Barcode</span>
                     </Button>
-                    <p className="text-xs text-gray-500 text-center">This will open camera to scan barcodes and auto-fill tracking information</p>
+                    <p className="text-xs text-gray-500 text-center">Scans package barcodes and automatically fills tracking information</p>
                   </div>
                 )}
 

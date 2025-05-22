@@ -156,6 +156,16 @@ export default function Settings() {
   const { data: locations = [], refetch: refetchLocations } = useQuery<MailroomLocation[]>({
     queryKey: ["/api/mailroom-locations"],
     enabled: !!currentOrganization?.id,
+    queryFn: async () => {
+      const response = await fetch("/api/mailroom-locations", {
+        headers: {
+          "x-organization-id": currentOrganization!.id,
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch locations");
+      return response.json();
+    },
   });
 
   // Mailroom mutations

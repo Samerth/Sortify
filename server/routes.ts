@@ -333,6 +333,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Cannot delete mailroom with associated packages" });
       }
       
+      // Delete all storage locations in this mailroom first
+      const mailroomLocations = locations.filter((loc: any) => loc.mailroomId === req.params.id);
+      for (const location of mailroomLocations) {
+        await storage.deleteMailroomLocation(location.id);
+      }
+      
+      // Now delete the mailroom
       await storage.deleteMailroom(req.params.id);
       res.json({ message: "Mailroom deleted successfully" });
     } catch (error) {

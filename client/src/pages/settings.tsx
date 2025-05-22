@@ -934,12 +934,12 @@ export default function Settings() {
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 onClick={() => {
                                   if (confirm(`Delete "${location.name}"?`)) {
-                                    // Add delete functionality later
-                                    toast({ title: "Delete functionality coming soon!" });
+                                    deleteLocationMutation.mutate(location.id);
                                   }
                                 }}
+                                disabled={deleteLocationMutation.isPending}
                               >
-                                Delete
+                                {deleteLocationMutation.isPending ? "Deleting..." : "Delete"}
                               </Button>
                             </div>
                           ))

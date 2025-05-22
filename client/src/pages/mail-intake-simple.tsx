@@ -117,7 +117,17 @@ export default function MailIntake() {
 
   const updateMailItemMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest("PUT", `/api/mail-items/${id}`, data);
+      const response = await fetch(`/api/mail-items/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-organization-id": currentOrganization?.id || "",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to update mail item");
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mail-items"] });
@@ -201,7 +211,8 @@ export default function MailIntake() {
               </div>
 
               <div>
-                <Label htmlFor="recipientId">Recipient</Label>
+                <Label htmlFor="recipientId">Who is this package for?</Label>
+                <p className="text-sm text-gray-500 mb-2">Select the guest, employee, or resident this mail belongs to</p>
                 <select
                   id="recipientId"
                   value={formData.recipientId}
@@ -212,8 +223,9 @@ export default function MailIntake() {
                   {(recipients as any[]).map((recipient: any) => (
                     <option key={recipient.id} value={recipient.id}>
                       {recipient.firstName} {recipient.lastName} 
+                      {recipient.recipientType && ` (${recipient.recipientType.charAt(0).toUpperCase() + recipient.recipientType.slice(1)})`}
                       {recipient.unit && ` - Unit ${recipient.unit}`}
-                      {recipient.department && ` (${recipient.department})`}
+                      {recipient.department && ` - ${recipient.department}`}
                       {recipient.email && ` • ${recipient.email}`}
                     </option>
                   ))}

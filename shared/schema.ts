@@ -58,7 +58,7 @@ export const organizationMembers = pgTable("organization_members", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Recipients within organizations
+// Recipients within organizations (guests/employees/residents)
 export const recipients = pgTable("recipients", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
@@ -68,6 +68,7 @@ export const recipients = pgTable("recipients", {
   phone: varchar("phone", { length: 50 }),
   unit: varchar("unit", { length: 100 }),
   department: varchar("department", { length: 255 }),
+  recipientType: varchar("recipient_type", { length: 50 }).notNull().default("guest"), // guest, employee, resident
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

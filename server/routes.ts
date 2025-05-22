@@ -483,9 +483,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Photo upload endpoint
   app.post("/api/upload-photo", withOrganization, async (req: any, res) => {
     try {
-      // For now, return a working demo image URL
-      const photoUrl = "https://images.unsplash.com/photo-1566479179817-0d5ad74d7ef9?w=400&h=300&fit=crop&crop=center&auto=format&q=80";
-      res.json({ photoUrl });
+      // Create a simple demo image as a data URL - this will always work
+      const demoImageDataUrl = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzQ0NzVBNCIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTMwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QYWNrYWdlIFBob3RvPC90ZXh0PgogIDx0ZXh0IHg9IjIwMCIgeT0iMTcwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNFNUU3RUIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNsaWNrIHRvIGVubGFyZ2U8L3RleHQ+Cjwvc3ZnPgo=";
+      res.json({ photoUrl: demoImageDataUrl });
     } catch (error) {
       console.error("Photo upload error:", error);
       res.status(500).json({ message: "Failed to upload photo" });

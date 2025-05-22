@@ -235,6 +235,7 @@ export default function MailIntake() {
                               <SelectItem value="package">Package</SelectItem>
                               <SelectItem value="letter">Letter</SelectItem>
                               <SelectItem value="certified_mail">Certified Mail</SelectItem>
+                              <SelectItem value="express">Express Mail</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

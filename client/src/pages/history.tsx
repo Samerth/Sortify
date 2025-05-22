@@ -58,8 +58,8 @@ export default function History() {
     enabled: !!currentOrganization?.id,
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.type) params.append("type", filters.type);
-      if (filters.status) params.append("status", filters.status);
+      if (filters.type && filters.type !== "all") params.append("type", filters.type);
+      if (filters.status && filters.status !== "all") params.append("status", filters.status);
       
       const dateRange = getDateRange();
       if (dateRange.dateFrom) {
@@ -69,10 +69,11 @@ export default function History() {
         params.append("dateTo", dateRange.dateTo.toISOString());
       }
       
-      const response = await fetch(`/api/mail-items?${params}`, {
+      const response = await fetch(`/api/mail-items?${params.toString()}`, {
         headers: {
-          "X-Organization-Id": currentOrganization!.id,
+          "x-organization-id": currentOrganization!.id,
         },
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to fetch history");
       return response.json();

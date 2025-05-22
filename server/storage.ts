@@ -353,6 +353,13 @@ export class DatabaseStorage implements IStorage {
   async deleteMailItem(id: string): Promise<void> {
     try {
       console.log(`Attempting to delete mail item with ID: ${id}`);
+      
+      // First delete all related history records
+      console.log(`Deleting history records for mail item ${id}`);
+      await db.delete(mailItemHistory).where(eq(mailItemHistory.mailItemId, id));
+      
+      // Then delete the mail item itself
+      console.log(`Deleting mail item ${id}`);
       const result = await db.delete(mailItems).where(eq(mailItems.id, id));
       console.log(`Delete result:`, result);
       
@@ -363,6 +370,8 @@ export class DatabaseStorage implements IStorage {
       if (remaining.length > 0) {
         throw new Error(`Failed to delete mail item ${id} - item still exists in database`);
       }
+      
+      console.log(`Successfully deleted mail item ${id} and its history`);
     } catch (error) {
       console.error(`Error deleting mail item ${id}:`, error);
       throw error;

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Package, Mail, Bell, Check, Eye, Camera, QrCode, Upload, Trash2 } from "lucide-react";
+import { Plus, Package, Mail, Bell, Check, Eye, Camera, QrCode, Upload, Trash2, ChevronDown, ChevronUp, MapPin, User, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -53,6 +53,7 @@ export default function MailIntake() {
 
   const [photoMethod, setPhotoMethod] = useState<'camera' | 'barcode' | 'upload'>('upload');
   const [isCapturing, setIsCapturing] = useState(false);
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
   const { data: mailItems = [] } = useQuery({
     queryKey: ["/api/mail-items"],
@@ -208,17 +209,7 @@ export default function MailIntake() {
 
   const updateMailItemMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await fetch(`/api/mail-items/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-organization-id": currentOrganization?.id || "",
-        },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to update mail item");
-      return await response.json();
+      return apiRequest("PUT", `/api/mail-items/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mail-items"] });
@@ -252,8 +243,12 @@ export default function MailIntake() {
   const handleMarkDelivered = (id: string) => {
     updateMailItemMutation.mutate({
       id,
-      data: { status: "delivered", deliveredAt: new Date() },
+      data: { status: "delivered", deliveredAt: new Date().toISOString() },
     });
+  };
+
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItem(expandedItem === itemId ? null : itemId);
   };
 
   const getStatusBadge = (status: string) => {
@@ -722,69 +717,139 @@ export default function MailIntake() {
           ) : (
             <div className="space-y-4">
               {mailItems.map((item: MailItem) => (
-                <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                      {item.type === "package" ? (
-                        <Package className="w-5 h-5 text-gray-600" />
-                      ) : (
-                        <Mail className="w-5 h-5 text-gray-600" />
+                <div key={item.id} className="border rounded-lg bg-white">
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        {item.type === "package" ? (
+                          <Package className="w-5 h-5 text-gray-600" />
+                        ) : (
+                          <Mail className="w-5 h-5 text-gray-600" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-medium">
+                          {item.recipient ? 
+                            `${item.recipient.firstName} ${item.recipient.lastName}` : 
+                            "Unknown Recipient"
+                          }
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {item.sender && `From: ${item.sender}`}
+                          {item.trackingNumber && ` • ${item.trackingNumber}`}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {formatDistanceToNow(new Date(item.arrivedAt), { addSuffix: true })}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {getStatusBadge(item.status)}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => toggleExpanded(item.id)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        {expandedItem === item.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Expandable Details */}
+                  {expandedItem === item.id && (
+                    <div className="border-t border-gray-100 p-4 bg-gray-50">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center text-sm font-medium text-gray-700">
+                            <User className="w-4 h-4 mr-2 text-gray-500" />
+                            Recipient Details
+                          </div>
+                          {item.recipient && (
+                            <div className="pl-6 text-sm text-gray-600 space-y-1">
+                              <div className="font-medium">{item.recipient.firstName} {item.recipient.lastName}</div>
+                              {item.recipient.email && <div>📧 {item.recipient.email}</div>}
+                              {item.recipient.phone && <div>📞 {item.recipient.phone}</div>}
+                              {item.recipient.unit && <div>🏠 Unit {item.recipient.unit}</div>}
+                              {item.recipient.department && <div>🏢 {item.recipient.department}</div>}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center text-sm font-medium text-gray-700">
+                            <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                            Timeline
+                          </div>
+                          <div className="pl-6 text-sm text-gray-600 space-y-1">
+                            <div>📦 Arrived: {new Date(item.arrivedAt).toLocaleDateString()} at {new Date(item.arrivedAt).toLocaleTimeString()}</div>
+                            {item.notifiedAt && <div>🔔 Notified: {new Date(item.notifiedAt).toLocaleDateString()} at {new Date(item.notifiedAt).toLocaleTimeString()}</div>}
+                            {item.deliveredAt && <div>✅ Delivered: {new Date(item.deliveredAt).toLocaleDateString()} at {new Date(item.deliveredAt).toLocaleTimeString()}</div>}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {item.description && (
+                        <div className="mb-4">
+                          <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            <Package className="w-4 h-4 mr-2 text-gray-500" />
+                            Description
+                          </div>
+                          <div className="pl-6 text-sm text-gray-600 bg-white p-2 rounded border">{item.description}</div>
+                        </div>
                       )}
+                      
+                      {item.notes && (
+                        <div className="mb-4">
+                          <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            📝 Notes
+                          </div>
+                          <div className="pl-6 text-sm text-gray-600 bg-white p-2 rounded border">{item.notes}</div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center space-x-2 pt-2 border-t border-gray-200">
+                        {item.status === "pending" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleNotifyRecipient(item.id)}
+                            disabled={updateMailItemMutation.isPending}
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                          >
+                            <Bell className="w-3 h-3 mr-1" />
+                            Notify Recipient
+                          </Button>
+                        )}
+                        {item.status === "notified" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleMarkDelivered(item.id)}
+                            disabled={updateMailItemMutation.isPending}
+                            className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                          >
+                            <Check className="w-3 h-3 mr-1" />
+                            Mark as Delivered
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (confirm("Are you sure you want to delete this mail item?")) {
+                              deleteMailItemMutation.mutate(item.id);
+                            }
+                          }}
+                          disabled={deleteMailItemMutation.isPending}
+                          className="text-red-600 hover:text-red-700 hover:border-red-300 ml-auto"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium">
-                        {item.recipient ? 
-                          `${item.recipient.firstName} ${item.recipient.lastName}` : 
-                          "Unknown Recipient"
-                        }
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {item.sender && `From: ${item.sender}`}
-                        {item.trackingNumber && ` • ${item.trackingNumber}`}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {formatDistanceToNow(new Date(item.arrivedAt), { addSuffix: true })}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {getStatusBadge(item.status)}
-                    {item.status === "pending" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleNotifyRecipient(item.id)}
-                        disabled={updateMailItemMutation.isPending}
-                      >
-                        <Bell className="w-3 h-3 mr-1" />
-                        Notify
-                      </Button>
-                    )}
-                    {item.status === "notified" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleMarkDelivered(item.id)}
-                        disabled={updateMailItemMutation.isPending}
-                      >
-                        <Check className="w-3 h-3 mr-1" />
-                        Delivered
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        if (confirm("Are you sure you want to delete this mail item?")) {
-                          deleteMailItemMutation.mutate(item.id);
-                        }
-                      }}
-                      disabled={deleteMailItemMutation.isPending}
-                      className="text-red-600 hover:text-red-700 hover:border-red-300"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>

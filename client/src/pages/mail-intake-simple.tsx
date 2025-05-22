@@ -912,6 +912,14 @@ export default function MailIntake() {
                         </div>
                         <div className="pl-6 text-sm text-gray-600">
                           {(() => {
+                            console.log('🔍 Debug location data:', {
+                              item: item,
+                              locationId: item.locationId,
+                              mailroomId: item.mailroomId,
+                              locations: locations,
+                              mailrooms: mailrooms
+                            });
+                            
                             // Find the location name from the locations array
                             const location = (locations as any[])?.find(loc => loc.id === item.locationId);
                             if (location) {
@@ -924,7 +932,7 @@ export default function MailIntake() {
                               return `🏢 ${mailroom.name} (Mailroom)`;
                             }
                             
-                            return '📍 Location not specified';
+                            return `📍 Location not specified (locationId: ${item.locationId}, mailroomId: ${item.mailroomId})`;
                           })()}
                         </div>
                       </div>

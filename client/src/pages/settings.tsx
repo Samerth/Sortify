@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +40,7 @@ interface Organization {
 
 export default function Settings() {
   const { currentOrganization } = useOrganization();
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("organization");
@@ -53,8 +55,9 @@ export default function Settings() {
     queryFn: async () => {
       const response = await fetch(`/api/organizations/${currentOrganization!.id}`, {
         headers: {
-          "X-Organization-Id": currentOrganization!.id,
+          "x-organization-id": currentOrganization!.id,
         },
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to fetch organization");
       return response.json();
@@ -62,7 +65,7 @@ export default function Settings() {
   });
 
   // Update form when organization data is loaded
-  useState(() => {
+  React.useEffect(() => {
     if (organization) {
       form.reset({
         name: organization.name,
@@ -73,7 +76,7 @@ export default function Settings() {
         logoUrl: organization.logoUrl || "",
       });
     }
-  });
+  }, [organization, form]);
 
   const updateOrganizationMutation = useMutation({
     mutationFn: async (data: OrganizationFormData) => {

@@ -101,13 +101,25 @@ export default function MailIntake() {
 
   const createMailItemMutation = useMutation({
     mutationFn: async (data: any) => {
+      // Clean up data - convert empty strings to null for optional UUID fields
+      const cleanedData = {
+        ...data,
+        locationId: data.locationId || null,
+        recipientId: data.recipientId || null,
+        trackingNumber: data.trackingNumber || null,
+        sender: data.sender || null,
+        description: data.description || null,
+        courierCompany: data.courierCompany || null,
+        collectorName: data.collectorName || null,
+      };
+
       const response = await fetch("/api/mail-items", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-organization-id": currentOrganization?.id || "",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(cleanedData),
         credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to create mail item");

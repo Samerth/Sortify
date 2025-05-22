@@ -13,6 +13,8 @@ import {
   type InsertMailItemHistory,
   type Integration,
   type InsertIntegration,
+  type Mailroom,
+  type InsertMailroom,
   type MailroomLocation,
   type InsertMailroomLocation,
 } from "@shared/schema";
@@ -26,6 +28,7 @@ import {
   mailItems,
   mailItemHistory,
   integrations,
+  mailrooms,
   mailroomLocations,
 } from "@shared/schema";
 

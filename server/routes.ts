@@ -310,9 +310,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/mailrooms/:id', isAuthenticated, withOrganization, async (req: any, res) => {
     try {
       const mailroom = await storage.updateMailroom(req.params.id, req.body);
+      res.setHeader('Content-Type', 'application/json');
       res.json(mailroom);
     } catch (error) {
       console.error("Error updating mailroom:", error);
+      res.setHeader('Content-Type', 'application/json');
       res.status(500).json({ message: "Failed to update mailroom" });
     }
   });
@@ -376,9 +378,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/mailroom-locations/:id', isAuthenticated, withOrganization, async (req: any, res) => {
     try {
       await storage.deleteMailroomLocation(req.params.id);
+      res.setHeader('Content-Type', 'application/json');
       res.json({ message: "Storage location deleted successfully" });
     } catch (error) {
       console.error("Error deleting storage location:", error);
+      res.setHeader('Content-Type', 'application/json');
       res.status(500).json({ message: "Failed to delete storage location" });
     }
   });

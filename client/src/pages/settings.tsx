@@ -260,8 +260,17 @@ export default function Settings() {
         body: JSON.stringify(data),
         credentials: 'include',
       });
-      if (!response.ok) throw new Error('Failed to update mailroom');
-      return response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update mailroom: ${errorText}`);
+      }
+      
+      try {
+        return await response.json();
+      } catch (parseError) {
+        // If JSON parsing fails but request was successful, return success
+        return { message: "Mailroom updated successfully" };
+      }
     },
     onSuccess: () => {
       toast({ title: "Mailroom updated successfully!" });
@@ -317,8 +326,17 @@ export default function Settings() {
         },
         credentials: 'include',
       });
-      if (!response.ok) throw new Error('Failed to delete storage location');
-      return response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete storage location: ${errorText}`);
+      }
+      
+      try {
+        return await response.json();
+      } catch (parseError) {
+        // If JSON parsing fails but request was successful, return success
+        return { message: "Storage location deleted successfully" };
+      }
     },
     onSuccess: () => {
       toast({ title: "Storage location deleted successfully!" });

@@ -875,6 +875,31 @@ export default function MailIntake() {
                         </div>
                       )}
                       
+                      {/* Storage Location */}
+                      <div className="mb-4">
+                        <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                          <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+                          Storage Location
+                        </div>
+                        <div className="pl-6 text-sm text-gray-600">
+                          {(() => {
+                            // Find the location name from the locations array
+                            const location = (locations as any[])?.find(loc => loc.id === item.locationId);
+                            if (location) {
+                              return `📦 ${location.name} (${location.mailroomName || 'Storage Location'})`;
+                            }
+                            
+                            // Find the mailroom name from the mailrooms array
+                            const mailroom = (mailrooms as any[])?.find(room => room.id === (item as any).mailroomId);
+                            if (mailroom) {
+                              return `🏢 ${mailroom.name} (Mailroom)`;
+                            }
+                            
+                            return '📍 Location not specified';
+                          })()}
+                        </div>
+                      </div>
+                      
                       {/* Photo Display */}
                       {item.photoUrl && (
                         <div className="mb-4">

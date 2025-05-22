@@ -285,6 +285,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mailroom location routes
+  app.get('/api/mailroom-locations', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const locations = await storage.getMailroomLocations(req.organizationId);
+      res.json(locations);
+    } catch (error) {
+      console.error("Error fetching mailroom locations:", error);
+      res.status(500).json({ message: "Failed to fetch mailroom locations" });
+    }
+  });
+
+  app.post('/api/mailroom-locations', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const data = { ...req.body, organizationId: req.organizationId };
+      const location = await storage.createMailroomLocation(data);
+      res.json(location);
+    } catch (error) {
+      console.error("Error creating mailroom location:", error);
+      res.status(500).json({ message: "Failed to create mailroom location" });
+    }
+  });
+
   // Integration routes
   app.get('/api/integrations', isAuthenticated, withOrganization, async (req: any, res) => {
     try {

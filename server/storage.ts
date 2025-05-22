@@ -1,11 +1,4 @@
 import {
-  users,
-  organizations,
-  organizationMembers,
-  recipients,
-  mailItems,
-  mailItemHistory,
-  integrations,
   type User,
   type UpsertUser,
   type Organization,
@@ -20,9 +13,21 @@ import {
   type InsertMailItemHistory,
   type Integration,
   type InsertIntegration,
+  type MailroomLocation,
+  type InsertMailroomLocation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, count, sql } from "drizzle-orm";
+import {
+  users,
+  organizations,
+  organizationMembers,
+  recipients,
+  mailItems,
+  mailItemHistory,
+  integrations,
+  mailroomLocations,
+} from "@shared/schema";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -510,6 +515,35 @@ export class DatabaseStorage implements IStorage {
 
   async deleteIntegration(id: string): Promise<void> {
     await db.delete(integrations).where(eq(integrations.id, id));
+  }
+
+  // Mailroom location operations
+  async getMailroomLocations(organizationId: string): Promise<MailroomLocation[]> {
+    return await db
+      .select()
+      .from(mailroomLocations)
+      .where(eq(mailroomLocations.organizationId, organizationId));
+  }
+
+  async createMailroomLocation(data: InsertMailroomLocation): Promise<MailroomLocation> {
+    const [location] = await db
+      .insert(mailroomLocations)
+      .values(data)
+      .returning();
+    return location;
+  }
+
+  async updateMailroomLocation(id: string, data: Partial<InsertMailroomLocation>): Promise<MailroomLocation> {
+    const [location] = await db
+      .update(mailroomLocations)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(mailroomLocations.id, id))
+      .returning();
+    return location;
+  }
+
+  async deleteMailroomLocation(id: string): Promise<void> {
+    await db.delete(mailroomLocations).where(eq(mailroomLocations.id, id));
   }
 }
 

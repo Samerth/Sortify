@@ -89,7 +89,7 @@ export const mailrooms = pgTable("mailrooms", {
 export const mailroomLocations = pgTable("mailroom_locations", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
-  mailroomId: uuid("mailroom_id").references(() => mailrooms.id).notNull(),
+  mailroomId: uuid("mailroom_id").references(() => mailrooms.id),
   name: varchar("name", { length: 255 }).notNull(), // "Bin A1", "Shelf 2-B", "Locker 15"
   type: varchar("type", { length: 50 }).notNull().default("bin"), // bin, shelf, locker, cold_storage
   capacity: integer("capacity").default(20),

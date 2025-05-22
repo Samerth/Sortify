@@ -29,11 +29,18 @@ import { apiRequest } from "@/lib/queryClient";
 const organizationFormSchema = insertOrganizationSchema.partial();
 type OrganizationFormData = z.infer<typeof organizationFormSchema>;
 
+const mailroomFormSchema = z.object({
+  name: z.string().min(1, "Mailroom name is required"),
+  description: z.string().optional(),
+});
+type MailroomFormData = z.infer<typeof mailroomFormSchema>;
+
 const locationFormSchema = z.object({
   name: z.string().min(1, "Location name is required"),
   type: z.string().min(1, "Type is required"),
   capacity: z.number().min(1, "Capacity must be at least 1"),
   notes: z.string().optional(),
+  mailroomId: z.string().min(1, "Mailroom is required"),
 });
 type LocationFormData = z.infer<typeof locationFormSchema>;
 
@@ -65,6 +72,7 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("organization");
   const [showLocationForm, setShowLocationForm] = useState(false);
+  const [showMailroomForm, setShowMailroomForm] = useState(false);
 
   const form = useForm<OrganizationFormData>({
     resolver: zodResolver(organizationFormSchema),
@@ -77,6 +85,15 @@ export default function Settings() {
       type: "bin",
       capacity: 20,
       notes: "",
+      mailroomId: "",
+    },
+  });
+
+  const mailroomForm = useForm<MailroomFormData>({
+    resolver: zodResolver(mailroomFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
     },
   });
 
@@ -452,14 +469,24 @@ export default function Settings() {
 
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-gray-900">Storage Locations</h4>
-                        <Button 
-                          size="sm"
-                          onClick={() => setShowLocationForm(!showLocationForm)}
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          {showLocationForm ? "Cancel" : "Add Location"}
-                        </Button>
+                        <h4 className="font-medium text-gray-900">Mailroom Hierarchy</h4>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setShowMailroomForm(!showMailroomForm)}
+                          >
+                            <Building className="w-4 h-4 mr-2" />
+                            {showMailroomForm ? "Cancel" : "Add Mailroom"}
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => setShowLocationForm(!showLocationForm)}
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            {showLocationForm ? "Cancel" : "Add Storage Location"}
+                          </Button>
+                        </div>
                       </div>
 
                       {showLocationForm && (
@@ -488,13 +515,13 @@ export default function Settings() {
                                   name="type"
                                   render={({ field }) => (
                                     <FormItem>
-                                      <FormLabel>Type</FormLabel>
+                                      <FormLabel>Storage Type</FormLabel>
                                       <FormControl>
                                         <select {...field} className="w-full px-3 py-2 border rounded-lg">
                                           <option value="bin">Bin</option>
                                           <option value="shelf">Shelf</option>
                                           <option value="locker">Locker</option>
-                                          <option value="room">Room</option>
+                                          <option value="cabinet">Cabinet</option>
                                         </select>
                                       </FormControl>
                                       <FormMessage />
@@ -502,6 +529,23 @@ export default function Settings() {
                                   )}
                                 />
                               </div>
+
+                              <FormField
+                                control={locationForm.control}
+                                name="mailroomId"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Parent Mailroom</FormLabel>
+                                    <FormControl>
+                                      <select {...field} className="w-full px-3 py-2 border rounded-lg">
+                                        <option value="">Select mailroom first...</option>
+                                        <option value="temp-mailroom">Main Mailroom (create one first)</option>
+                                      </select>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
                               
                               <div className="grid grid-cols-2 gap-4">
                                 <FormField

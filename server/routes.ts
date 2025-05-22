@@ -307,6 +307,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/mailrooms/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const mailroom = await storage.updateMailroom(req.params.id, req.body);
+      res.json(mailroom);
+    } catch (error) {
+      console.error("Error updating mailroom:", error);
+      res.status(500).json({ message: "Failed to update mailroom" });
+    }
+  });
+
   // Mailroom location routes
   app.get('/api/mailroom-locations', isAuthenticated, withOrganization, async (req: any, res) => {
     try {

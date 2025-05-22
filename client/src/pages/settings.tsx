@@ -607,10 +607,16 @@ export default function Settings() {
                       {showMailroomForm && (
                         <Card className="p-4 bg-gray-50">
                           <Form {...mailroomForm}>
-                            <form onSubmit={mailroomForm.handleSubmit((data) => createMailroomMutation.mutate(data))}>
+                            <form onSubmit={mailroomForm.handleSubmit((data) => {
+                              if (editingMailroom) {
+                                updateMailroomMutation.mutate({ id: editingMailroom.id, data });
+                              } else {
+                                createMailroomMutation.mutate(data);
+                              }
+                            })}>
                               <div className="space-y-4">
                                 <div>
-                                  <h5 className="font-medium mb-3">Add New Mailroom</h5>
+                                  <h5 className="font-medium mb-3">{editingMailroom ? "Edit Mailroom" : "Add New Mailroom"}</h5>
                                   <p className="text-sm text-gray-600 mb-4">
                                     Create a parent mailroom where you can add bins, shelves, and lockers
                                   </p>
@@ -654,11 +660,18 @@ export default function Settings() {
                                 />
 
                                 <div className="flex gap-2">
-                                  <Button type="button" variant="outline" onClick={() => setShowMailroomForm(false)}>
+                                  <Button type="button" variant="outline" onClick={() => {
+                                    setShowMailroomForm(false);
+                                    setEditingMailroom(null);
+                                    mailroomForm.reset();
+                                  }}>
                                     Cancel
                                   </Button>
-                                  <Button type="submit" disabled={createMailroomMutation.isPending}>
-                                    {createMailroomMutation.isPending ? "Creating..." : "Create Mailroom"}
+                                  <Button type="submit" disabled={createMailroomMutation.isPending || updateMailroomMutation.isPending}>
+                                    {editingMailroom 
+                                      ? (updateMailroomMutation.isPending ? "Updating..." : "Update Mailroom")
+                                      : (createMailroomMutation.isPending ? "Creating..." : "Create Mailroom")
+                                    }
                                   </Button>
                                 </div>
                               </div>

@@ -163,14 +163,17 @@ export default function MailIntake() {
         return { message: "Mail item deleted successfully" };
       }
     },
-    onSuccess: () => {
+    onSuccess: (data, deletedItemId) => {
       toast({ title: "Mail item deleted successfully!" });
-      // Force complete cache refresh and refetch
-      queryClient.removeQueries({ queryKey: ["/api/mail-items"] });
-      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
-      queryClient.removeQueries({ queryKey: ["/api/dashboard/recent-activity"] });
-      // Force immediate refetch with fresh data
-      window.location.reload();
+      // Use setQueryData to immediately update the cache
+      queryClient.setQueryData(["/api/mail-items"], (oldData: any) => {
+        if (!oldData) return oldData;
+        return oldData.filter((item: any) => item.id !== deletedItemId);
+      });
+      // Also invalidate to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/mail-items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/recent-activity"] });
     },
     onError: (error: any) => {
       toast({

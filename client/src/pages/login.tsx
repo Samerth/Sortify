@@ -26,7 +26,7 @@ export default function LoginPage() {
             <div className="text-center">
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome to MailManager</h2>
               <p className="text-gray-600 text-sm mb-6">
-                Secure authentication powered by Replit. Sign in or create an account to get started.
+                Sign in to access your mailroom management dashboard.
               </p>
             </div>
             
@@ -37,12 +37,12 @@ export default function LoginPage() {
                 disabled={isLoading}
               >
                 <LogIn className="w-5 h-5 mr-2" />
-                {isLoading ? "Redirecting..." : "Continue with Replit"}
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
               
               <div className="text-center">
                 <p className="text-gray-500 text-xs">
-                  New to MailManager? Don't worry - we'll create your account automatically when you sign in.
+                  New to MailManager? Your account will be created automatically on first sign in.
                 </p>
               </div>
             </div>
@@ -51,7 +51,7 @@ export default function LoginPage() {
               <div className="text-center">
                 <h3 className="text-sm font-medium text-gray-900 mb-3">What happens next?</h3>
                 <div className="space-y-2 text-xs text-gray-600">
-                  <p>• Secure authentication through Replit</p>
+                  <p>• Quick and secure authentication</p>
                   <p>• Automatic account creation if needed</p>
                   <p>• Access to your personalized dashboard</p>
                   <p>• Start managing your mailroom operations</p>

@@ -133,6 +133,36 @@ export default function Settings() {
     enabled: !!currentOrganization?.id,
   });
 
+  // Mailroom mutations
+  const createMailroomMutation = useMutation({
+    mutationFn: async (data: MailroomFormData) => {
+      const response = await fetch('/api/mailrooms', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-organization-id': currentOrganization!.id,
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to create mailroom');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Mailroom created successfully!" });
+      mailroomForm.reset();
+      setShowMailroomForm(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/mailrooms"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error creating mailroom",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Location mutations
   const createLocationMutation = useMutation({
     mutationFn: async (data: LocationFormData) => {
@@ -492,7 +522,7 @@ export default function Settings() {
                       {showMailroomForm && (
                         <Card className="p-4 bg-gray-50">
                           <Form {...mailroomForm}>
-                            <form onSubmit={mailroomForm.handleSubmit(() => {})}>
+                            <form onSubmit={mailroomForm.handleSubmit((data) => createMailroomMutation.mutate(data))}>
                               <div className="space-y-4">
                                 <div>
                                   <h5 className="font-medium mb-3">Add New Mailroom</h5>
@@ -542,8 +572,8 @@ export default function Settings() {
                                   <Button type="button" variant="outline" onClick={() => setShowMailroomForm(false)}>
                                     Cancel
                                   </Button>
-                                  <Button type="submit">
-                                    Create Mailroom
+                                  <Button type="submit" disabled={createMailroomMutation.isPending}>
+                                    {createMailroomMutation.isPending ? "Creating..." : "Create Mailroom"}
                                   </Button>
                                 </div>
                               </div>

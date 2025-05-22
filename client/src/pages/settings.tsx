@@ -910,45 +910,14 @@ export default function Settings() {
                         </Card>
                       )}
                       
-                      <div className="space-y-3">
-                        {locations.length > 0 ? (
-                          locations.map((location) => (
-                            <div key={location.id} className="flex items-center justify-between p-4 border rounded-lg bg-white">
-                              <div>
-                                <h4 className="font-medium text-gray-900">{location.name}</h4>
-                                <p className="text-sm text-gray-600">
-                                  {location.type.charAt(0).toUpperCase() + location.type.slice(1)} • 
-                                  Capacity: {location.capacity || 'No limit'} • 
-                                  Current: {location.currentCount || 0} items
-                                </p>
-                                {location.notes && (
-                                  <p className="text-sm text-gray-500 mt-1">{location.notes}</p>
-                                )}
-                              </div>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => {
-                                  if (confirm(`Delete "${location.name}"?`)) {
-                                    deleteLocationMutation.mutate(location.id);
-                                  }
-                                }}
-                                disabled={deleteLocationMutation.isPending}
-                              >
-                                {deleteLocationMutation.isPending ? "Deleting..." : "Delete"}
-                              </Button>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-center py-8">
-                            <Building className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">Create Your Mailroom Hierarchy</h3>
-                            <p className="text-gray-600 mb-2">Start by creating a mailroom, then add storage locations inside it</p>
-                            <p className="text-sm text-gray-500">Example: Main Mailroom → Bin A1, Shelf B2, Locker C3</p>
-                          </div>
-                        )}
-                      </div>
+                      {!mailrooms.length && (
+                        <div className="text-center py-8">
+                          <Building className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">Create Your Mailroom Hierarchy</h3>
+                          <p className="text-gray-600 mb-2">Start by creating a mailroom, then add storage locations inside it</p>
+                          <p className="text-sm text-gray-500">Example: Main Mailroom → Bin A1, Shelf B2, Locker C3</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

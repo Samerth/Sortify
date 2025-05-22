@@ -282,7 +282,7 @@ export class DatabaseStorage implements IStorage {
     
     return result.map(row => ({
       ...row,
-      recipient: row.recipient.id ? row.recipient : undefined,
+      recipient: row.recipient?.id ? row.recipient : undefined,
     }));
   }
 
@@ -523,7 +523,7 @@ export class DatabaseStorage implements IStorage {
     
     return result.map(row => ({
       ...row,
-      recipient: row.recipient.id ? row.recipient : undefined,
+      recipient: row.recipient?.id ? row.recipient : undefined,
     }));
   }
 

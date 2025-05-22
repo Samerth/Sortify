@@ -314,14 +314,23 @@ export default function Settings() {
         method: 'DELETE',
         headers: { 
           'x-organization-id': currentOrganization!.id,
+          'Content-Type': 'application/json',
         },
         credentials: 'include',
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to delete storage location');
+        const text = await response.text();
+        let errorMessage = 'Failed to delete storage location';
+        try {
+          const error = JSON.parse(text);
+          errorMessage = error.message || errorMessage;
+        } catch {
+          errorMessage = text || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
-      return response.json();
+      const text = await response.text();
+      return text ? JSON.parse(text) : {};
     },
     onSuccess: () => {
       toast({ title: "Storage location deleted successfully!" });

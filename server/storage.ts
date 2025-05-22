@@ -77,8 +77,15 @@ export interface IStorage {
   // Recent activity
   getRecentActivity(organizationId: string, limit?: number): Promise<(MailItem & { recipient?: Recipient })[]>;
   
-  // Mailroom location operations
-  getMailroomLocations(organizationId: string): Promise<MailroomLocation[]>;
+  // Mailroom operations (parent containers)
+  getMailrooms(organizationId: string): Promise<Mailroom[]>;
+  createMailroom(data: InsertMailroom): Promise<Mailroom>;
+  updateMailroom(id: string, data: Partial<InsertMailroom>): Promise<Mailroom>;
+  deleteMailroom(id: string): Promise<void>;
+  
+  // Storage location operations (bins, shelves within mailrooms)
+  getMailroomLocations(organizationId: string): Promise<(MailroomLocation & { mailroomName?: string })[]>;
+  getMailroomLocationsByMailroom(mailroomId: string): Promise<MailroomLocation[]>;
   createMailroomLocation(data: InsertMailroomLocation): Promise<MailroomLocation>;
   updateMailroomLocation(id: string, data: Partial<InsertMailroomLocation>): Promise<MailroomLocation>;
   deleteMailroomLocation(id: string): Promise<void>;

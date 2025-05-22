@@ -74,11 +74,23 @@ export const recipients = pgTable("recipients", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Mailroom storage locations (bins, shelves, lockers)
+// Mailrooms (parent containers)
+export const mailrooms = pgTable("mailrooms", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
+  name: varchar("name", { length: 255 }).notNull(), // "Main Mailroom", "Secondary Office", "Loading Dock"
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Storage locations within mailrooms (bins, shelves, etc.)
 export const mailroomLocations = pgTable("mailroom_locations", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
-  name: varchar("name", { length: 255 }).notNull(), // "Bin A1", "Shelf 2", "Cold Storage"
+  mailroomId: uuid("mailroom_id").references(() => mailrooms.id).notNull(),
+  name: varchar("name", { length: 255 }).notNull(), // "Bin A1", "Shelf 2-B", "Locker 15"
   type: varchar("type", { length: 50 }).notNull().default("bin"), // bin, shelf, locker, cold_storage
   capacity: integer("capacity").default(20),
   currentCount: integer("current_count").default(0),
@@ -164,6 +176,26 @@ export const organizationMembersRelations = relations(organizationMembers, ({ on
   }),
 }));
 
+export const mailroomsRelations = relations(mailrooms, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [mailrooms.organizationId],
+    references: [organizations.id],
+  }),
+  locations: many(mailroomLocations),
+}));
+
+export const mailroomLocationsRelations = relations(mailroomLocations, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [mailroomLocations.organizationId],
+    references: [organizations.id],
+  }),
+  mailroom: one(mailrooms, {
+    fields: [mailroomLocations.mailroomId],
+    references: [mailrooms.id],
+  }),
+  mailItems: many(mailItems),
+}));
+
 export const recipientsRelations = relations(recipients, ({ one, many }) => ({
   organization: one(organizations, {
     fields: [recipients.organizationId],
@@ -236,6 +268,14 @@ export const insertMailItemSchema = createInsertSchema(mailItems).omit({
 
 export type MailItemHistory = typeof mailItemHistory.$inferSelect;
 export type InsertMailItemHistory = typeof mailItemHistory.$inferInsert;
+
+export type Mailroom = typeof mailrooms.$inferSelect;
+export type InsertMailroom = typeof mailrooms.$inferInsert;
+export const insertMailroomSchema = createInsertSchema(mailrooms).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 export type MailroomLocation = typeof mailroomLocations.$inferSelect;
 export type InsertMailroomLocation = typeof mailroomLocations.$inferInsert;

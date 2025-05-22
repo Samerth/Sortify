@@ -74,14 +74,31 @@ export const recipients = pgTable("recipients", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Mailroom storage locations (bins, shelves, lockers)
+export const mailroomLocations = pgTable("mailroom_locations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
+  name: varchar("name", { length: 255 }).notNull(), // "Bin A1", "Shelf 2", "Cold Storage"
+  type: varchar("type", { length: 50 }).notNull().default("bin"), // bin, shelf, locker, cold_storage
+  capacity: integer("capacity").default(20),
+  currentCount: integer("current_count").default(0),
+  isActive: boolean("is_active").default(true),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Mail items
 export const mailItems = pgTable("mail_items", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
   recipientId: uuid("recipient_id").references(() => recipients.id),
+  locationId: uuid("location_id").references(() => mailroomLocations.id),
   trackingNumber: varchar("tracking_number", { length: 255 }),
   type: varchar("type", { length: 50 }).notNull(), // package, letter, certified_mail
   sender: varchar("sender", { length: 255 }),
+  courierCompany: varchar("courier_company", { length: 100 }),
+  collectorName: varchar("collector_name", { length: 255 }),
   senderAddress: text("sender_address"),
   description: text("description"),
   size: varchar("size", { length: 50 }), // small, medium, large
@@ -91,6 +108,7 @@ export const mailItems = pgTable("mail_items", {
   notifiedAt: timestamp("notified_at"),
   deliveredAt: timestamp("delivered_at"),
   notes: text("notes"),
+  photoUrl: varchar("photo_url", { length: 500 }),
   createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -126,6 +144,7 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
   recipients: many(recipients),
   mailItems: many(mailItems),
   integrations: many(integrations),
+  mailroomLocations: many(mailroomLocations),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -217,6 +236,14 @@ export const insertMailItemSchema = createInsertSchema(mailItems).omit({
 
 export type MailItemHistory = typeof mailItemHistory.$inferSelect;
 export type InsertMailItemHistory = typeof mailItemHistory.$inferInsert;
+
+export type MailroomLocation = typeof mailroomLocations.$inferSelect;
+export type InsertMailroomLocation = typeof mailroomLocations.$inferInsert;
+export const insertMailroomLocationSchema = createInsertSchema(mailroomLocations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 export type Integration = typeof integrations.$inferSelect;
 export type InsertIntegration = typeof integrations.$inferInsert;

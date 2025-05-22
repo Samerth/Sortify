@@ -41,6 +41,7 @@ export default function MailIntake() {
   const [formData, setFormData] = useState({
     type: "package",
     recipientId: "",
+    locationId: "",
     sender: "",
     trackingNumber: "",
     description: "",

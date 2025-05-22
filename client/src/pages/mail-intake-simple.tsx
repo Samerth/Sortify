@@ -47,6 +47,7 @@ export default function MailIntake() {
     courierCompany: "",
     collectedByStaff: "",
     collectorName: "",
+    photo: null as File | null,
   });
 
   const { data: mailItems = [] } = useQuery({
@@ -110,6 +111,7 @@ export default function MailIntake() {
         courierCompany: "",
         collectedByStaff: "",
         collectorName: "",
+        photo: null,
       });
     },
     onError: (error: any) => {
@@ -295,6 +297,22 @@ export default function MailIntake() {
                   onChange={(e) => setFormData({ ...formData, collectorName: e.target.value })}
                   placeholder="Staff member name"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="photo">Package Photo</Label>
+                <p className="text-sm text-gray-500 mb-2">Take a photo for verification</p>
+                <input
+                  id="photo"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(e) => setFormData({ ...formData, photo: e.target.files?.[0] || null })}
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                {formData.photo && (
+                  <p className="text-sm text-green-600 mt-1">Photo selected: {formData.photo.name}</p>
+                )}
               </div>
 
               <div className="flex gap-3 pt-4">

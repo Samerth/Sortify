@@ -489,6 +489,69 @@ export default function Settings() {
                         </div>
                       </div>
 
+                      {showMailroomForm && (
+                        <Card className="p-4 bg-gray-50">
+                          <Form {...mailroomForm}>
+                            <form onSubmit={mailroomForm.handleSubmit(() => {})}>
+                              <div className="space-y-4">
+                                <div>
+                                  <h5 className="font-medium mb-3">Add New Mailroom</h5>
+                                  <p className="text-sm text-gray-600 mb-4">
+                                    Create a parent mailroom where you can add bins, shelves, and lockers
+                                  </p>
+                                </div>
+                                
+                                <FormField
+                                  control={mailroomForm.control}
+                                  name="name"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Mailroom Name</FormLabel>
+                                      <FormControl>
+                                        <input
+                                          {...field}
+                                          placeholder="e.g., Main Mailroom, Reception Area"
+                                          className="w-full px-3 py-2 border rounded-lg"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={mailroomForm.control}
+                                  name="description"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Description (Optional)</FormLabel>
+                                      <FormControl>
+                                        <textarea
+                                          {...field}
+                                          placeholder="Brief description of this mailroom location..."
+                                          className="w-full px-3 py-2 border rounded-lg"
+                                          rows={2}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <div className="flex gap-2">
+                                  <Button type="button" variant="outline" onClick={() => setShowMailroomForm(false)}>
+                                    Cancel
+                                  </Button>
+                                  <Button type="submit">
+                                    Create Mailroom
+                                  </Button>
+                                </div>
+                              </div>
+                            </form>
+                          </Form>
+                        </Card>
+                      )}
+
                       {showLocationForm && (
                         <Card className="p-4 bg-gray-50">
                           <Form {...locationForm}>
@@ -627,11 +690,10 @@ export default function Settings() {
                           ))
                         ) : (
                           <div className="text-center py-8">
-                            <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-gray-500 mb-2">No storage locations yet</p>
-                            <p className="text-sm text-gray-400">
-                              Create bins, shelves, and storage areas to organize packages efficiently.
-                            </p>
+                            <Building className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">Create Your Mailroom Hierarchy</h3>
+                            <p className="text-gray-600 mb-2">Start by creating a mailroom, then add storage locations inside it</p>
+                            <p className="text-sm text-gray-500">Example: Main Mailroom → Bin A1, Shelf B2, Locker C3</p>
                           </div>
                         )}
                       </div>

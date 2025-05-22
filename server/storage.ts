@@ -351,7 +351,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteMailItem(id: string): Promise<void> {
-    await db.delete(mailItems).where(eq(mailItems.id, id));
+    try {
+      console.log(`Attempting to delete mail item with ID: ${id}`);
+      const result = await db.delete(mailItems).where(eq(mailItems.id, id));
+      console.log(`Delete result:`, result);
+      
+      // Verify deletion by checking if item still exists
+      const remaining = await db.select().from(mailItems).where(eq(mailItems.id, id));
+      console.log(`Items remaining after delete:`, remaining.length);
+      
+      if (remaining.length > 0) {
+        throw new Error(`Failed to delete mail item ${id} - item still exists in database`);
+      }
+    } catch (error) {
+      console.error(`Error deleting mail item ${id}:`, error);
+      throw error;
+    }
   }
 
   // Mail item history operations

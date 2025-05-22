@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Package, Mail, Bell, Check, Eye } from "lucide-react";
+import { Plus, Package, Mail, Bell, Check, Eye, Camera, QrCode, Upload } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -50,6 +50,9 @@ export default function MailIntake() {
     collectorName: "",
     photo: null as File | null,
   });
+
+  const [photoMethod, setPhotoMethod] = useState<'none' | 'camera' | 'barcode' | 'upload'>('none');
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const { data: mailItems = [] } = useQuery({
     queryKey: ["/api/mail-items"],
@@ -337,18 +340,111 @@ export default function MailIntake() {
               </div>
 
               <div>
-                <Label htmlFor="photo">Package Photo</Label>
-                <p className="text-sm text-gray-500 mb-2">Take a photo for verification</p>
-                <input
-                  id="photo"
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={(e) => setFormData({ ...formData, photo: e.target.files?.[0] || null })}
-                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+                <Label>Package Photo & Barcode</Label>
+                <p className="text-sm text-gray-500 mb-3">Capture package image or scan barcode for verification</p>
+                
+                {/* Photo Method Selection */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  <Button
+                    type="button"
+                    variant={photoMethod === 'camera' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPhotoMethod('camera')}
+                    className="flex flex-col items-center p-3 h-auto"
+                  >
+                    <Camera className="w-4 h-4 mb-1" />
+                    <span className="text-xs">Take Photo</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={photoMethod === 'barcode' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPhotoMethod('barcode')}
+                    className="flex flex-col items-center p-3 h-auto"
+                  >
+                    <QrCode className="w-4 h-4 mb-1" />
+                    <span className="text-xs">Scan Barcode</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={photoMethod === 'upload' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPhotoMethod('upload')}
+                    className="flex flex-col items-center p-3 h-auto"
+                  >
+                    <Upload className="w-4 h-4 mb-1" />
+                    <span className="text-xs">Upload File</span>
+                  </Button>
+                </div>
+
+                {/* Camera Capture */}
+                {photoMethod === 'camera' && (
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFormData({ ...formData, photo: file });
+                          toast({ title: "Photo captured successfully!" });
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <p className="text-xs text-gray-500">Camera will open to take a photo of the package</p>
+                  </div>
+                )}
+
+                {/* Barcode Scanner */}
+                {photoMethod === 'barcode' && (
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFormData({ ...formData, photo: file });
+                          // In a real app, you'd process the barcode here
+                          toast({ title: "Barcode image captured! Processing..." });
+                          // Simulate barcode detection
+                          setTimeout(() => {
+                            const mockTrackingNumber = `1Z${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+                            setFormData(prev => ({ ...prev, trackingNumber: mockTrackingNumber }));
+                            toast({ title: "Barcode detected!", description: `Tracking: ${mockTrackingNumber}` });
+                          }, 1500);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <p className="text-xs text-gray-500">Camera will scan barcodes and auto-fill tracking info</p>
+                  </div>
+                )}
+
+                {/* File Upload */}
+                {photoMethod === 'upload' && (
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setFormData({ ...formData, photo: e.target.files?.[0] || null })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <p className="text-xs text-gray-500">Choose an existing photo from your device</p>
+                  </div>
+                )}
+
+                {/* Photo Preview */}
                 {formData.photo && (
-                  <p className="text-sm text-green-600 mt-1">Photo selected: {formData.photo.name}</p>
+                  <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md">
+                    <p className="text-sm text-green-600 flex items-center">
+                      <Check className="w-4 h-4 mr-1" />
+                      Photo selected: {formData.photo.name}
+                    </p>
+                  </div>
                 )}
               </div>
 

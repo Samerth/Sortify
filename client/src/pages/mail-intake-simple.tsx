@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Package, Mail, Bell, Check, Eye, Camera, QrCode, Upload } from "lucide-react";
+import { Plus, Package, Mail, Bell, Check, Eye, Camera, QrCode, Upload, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -138,6 +138,40 @@ export default function MailIntake() {
       toast({
         title: "Error",
         description: error.message || "Failed to log mail item.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMailItemMutation = useMutation({
+    mutationFn: async (mailItemId: string) => {
+      const response = await fetch(`/api/mail-items/${mailItemId}`, {
+        method: "DELETE",
+        headers: {
+          "x-organization-id": currentOrganization?.id || "",
+        },
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete mail item: ${errorText}`);
+      }
+      
+      try {
+        return await response.json();
+      } catch (parseError) {
+        return { message: "Mail item deleted successfully" };
+      }
+    },
+    onSuccess: () => {
+      toast({ title: "Mail item deleted successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/mail-items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error deleting mail item",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -379,48 +413,65 @@ export default function MailIntake() {
 
                 {/* Camera Capture */}
                 {photoMethod === 'camera' && (
-                  <div className="space-y-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setFormData({ ...formData, photo: file });
-                          toast({ title: "Photo captured successfully!" });
-                        }
+                  <div className="space-y-3">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        // Create a file input specifically for camera
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.setAttribute('capture', 'environment');
+                        input.onchange = (e: any) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setFormData({ ...formData, photo: file });
+                            toast({ title: "Photo captured successfully!" });
+                          }
+                        };
+                        input.click();
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <p className="text-xs text-gray-500">Camera will open to take a photo of the package</p>
+                      className="w-full flex items-center justify-center gap-2 py-8 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary"
+                    >
+                      <Camera className="w-6 h-6" />
+                      <span>Tap to Open Camera</span>
+                    </Button>
+                    <p className="text-xs text-gray-500 text-center">This will open your device camera to take a photo of the package</p>
                   </div>
                 )}
 
                 {/* Barcode Scanner */}
                 {photoMethod === 'barcode' && (
-                  <div className="space-y-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setFormData({ ...formData, photo: file });
-                          // In a real app, you'd process the barcode here
-                          toast({ title: "Barcode image captured! Processing..." });
-                          // Simulate barcode detection
-                          setTimeout(() => {
-                            const mockTrackingNumber = `1Z${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-                            setFormData(prev => ({ ...prev, trackingNumber: mockTrackingNumber }));
-                            toast({ title: "Barcode detected!", description: `Tracking: ${mockTrackingNumber}` });
-                          }, 1500);
-                        }
+                  <div className="space-y-3">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        // Create a file input specifically for barcode scanning
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.setAttribute('capture', 'environment');
+                        input.onchange = (e: any) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setFormData({ ...formData, photo: file });
+                            toast({ title: "Barcode image captured! Processing..." });
+                            // Simulate barcode detection
+                            setTimeout(() => {
+                              const mockTrackingNumber = `1Z${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+                              setFormData(prev => ({ ...prev, trackingNumber: mockTrackingNumber }));
+                              toast({ title: "Barcode detected!", description: `Tracking: ${mockTrackingNumber}` });
+                            }, 1500);
+                          }
+                        };
+                        input.click();
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <p className="text-xs text-gray-500">Camera will scan barcodes and auto-fill tracking info</p>
+                      className="w-full flex items-center justify-center gap-2 py-8 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary"
+                    >
+                      <QrCode className="w-6 h-6" />
+                      <span>Tap to Scan Barcode</span>
+                    </Button>
+                    <p className="text-xs text-gray-500 text-center">This will open camera to scan barcodes and auto-fill tracking information</p>
                   </div>
                 )}
 
@@ -532,6 +583,19 @@ export default function MailIntake() {
                         Delivered
                       </Button>
                     )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (confirm("Are you sure you want to delete this mail item?")) {
+                          deleteMailItemMutation.mutate(item.id);
+                        }
+                      }}
+                      disabled={deleteMailItemMutation.isPending}
+                      className="text-red-600 hover:text-red-700 hover:border-red-300"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
               ))}

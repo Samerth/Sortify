@@ -666,8 +666,14 @@ export default function Settings() {
                                           size="sm" 
                                           variant="outline"
                                           className="text-red-600 hover:text-red-700"
+                                          onClick={() => {
+                                            if (confirm(`Are you sure you want to delete "${mailroom.name}"? This action cannot be undone.`)) {
+                                              deleteMailroomMutation.mutate(mailroom.id);
+                                            }
+                                          }}
+                                          disabled={deleteMailroomMutation.isPending}
                                         >
-                                          Delete
+                                          {deleteMailroomMutation.isPending ? "Deleting..." : "Delete"}
                                         </Button>
                                       </div>
                                     </div>

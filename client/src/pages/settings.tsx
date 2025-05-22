@@ -29,6 +29,14 @@ import { apiRequest } from "@/lib/queryClient";
 const organizationFormSchema = insertOrganizationSchema.partial();
 type OrganizationFormData = z.infer<typeof organizationFormSchema>;
 
+const locationFormSchema = z.object({
+  name: z.string().min(1, "Location name is required"),
+  type: z.string().min(1, "Type is required"),
+  capacity: z.number().min(1, "Capacity must be at least 1"),
+  notes: z.string().optional(),
+});
+type LocationFormData = z.infer<typeof locationFormSchema>;
+
 interface Organization {
   id: string;
   name: string;
@@ -39,17 +47,40 @@ interface Organization {
   logoUrl?: string;
 }
 
+interface MailroomLocation {
+  id: string;
+  name: string;
+  type: string;
+  capacity?: number;
+  currentCount?: number;
+  notes?: string;
+  organizationId: string;
+  isActive: boolean;
+}
+
 export default function Settings() {
   const { currentOrganization } = useOrganization();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("organization");
+  const [showLocationForm, setShowLocationForm] = useState(false);
 
   const form = useForm<OrganizationFormData>({
     resolver: zodResolver(organizationFormSchema),
   });
 
+  const locationForm = useForm<LocationFormData>({
+    resolver: zodResolver(locationFormSchema),
+    defaultValues: {
+      name: "",
+      type: "bin",
+      capacity: 20,
+      notes: "",
+    },
+  });
+
+  // Fetch organization data
   const { data: organization, isLoading } = useQuery<Organization>({
     queryKey: ["/api/organizations", currentOrganization?.id],
     enabled: !!currentOrganization?.id,
@@ -78,6 +109,36 @@ export default function Settings() {
       });
     }
   }, [organization, form]);
+
+  // Fetch storage locations
+  const { data: locations = [], refetch: refetchLocations } = useQuery<MailroomLocation[]>({
+    queryKey: ["/api/mailroom-locations"],
+    enabled: !!currentOrganization?.id,
+  });
+
+  // Location mutations
+  const createLocationMutation = useMutation({
+    mutationFn: async (data: LocationFormData) => {
+      return await apiRequest("/api/mailroom-locations", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      toast({ title: "Storage location created successfully!" });
+      locationForm.reset();
+      setShowLocationForm(false);
+      refetchLocations();
+      queryClient.invalidateQueries({ queryKey: ["/api/mailroom-locations"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error creating location",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const updateOrganizationMutation = useMutation({
     mutationFn: async (data: OrganizationFormData) => {

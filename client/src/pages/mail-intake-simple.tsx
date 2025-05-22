@@ -347,14 +347,20 @@ export default function MailIntake() {
                   onChange={(e) => setFormData({ ...formData, locationId: e.target.value })}
                   className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="">Select storage location (optional)</option>
-                  {(locations as any[]).map((location: any) => (
-                    <option key={location.id} value={location.id}>
-                      {location.name} ({location.type})
-                      {location.currentCount !== undefined && location.capacity && 
-                        ` - ${location.currentCount}/${location.capacity} items`}
-                    </option>
-                  ))}
+                  {locations && locations.length > 0 ? (
+                    <>
+                      <option value="">Select storage location (optional)</option>
+                      {(locations as any[]).map((location: any) => (
+                        <option key={location.id} value={location.id}>
+                          {location.name} ({location.type})
+                          {location.currentCount !== undefined && location.capacity && 
+                            ` - ${location.currentCount}/${location.capacity} items`}
+                        </option>
+                      ))}
+                    </>
+                  ) : (
+                    <option value="">No storage locations available - Create one in Settings</option>
+                  )}
                 </select>
               </div>
 

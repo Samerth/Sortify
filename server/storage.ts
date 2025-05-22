@@ -524,6 +524,44 @@ export class DatabaseStorage implements IStorage {
     await db.delete(integrations).where(eq(integrations.id, id));
   }
 
+  // Mailroom operations
+  async getMailrooms(organizationId: string): Promise<Mailroom[]> {
+    return await db
+      .select()
+      .from(mailrooms)
+      .where(eq(mailrooms.organizationId, organizationId))
+      .orderBy(mailrooms.name);
+  }
+
+  async createMailroom(data: InsertMailroom): Promise<Mailroom> {
+    const [mailroom] = await db
+      .insert(mailrooms)
+      .values(data)
+      .returning();
+    return mailroom;
+  }
+
+  async updateMailroom(id: string, data: Partial<InsertMailroom>): Promise<Mailroom> {
+    const [mailroom] = await db
+      .update(mailrooms)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(mailrooms.id, id))
+      .returning();
+    return mailroom;
+  }
+
+  async deleteMailroom(id: string): Promise<void> {
+    await db.delete(mailrooms).where(eq(mailrooms.id, id));
+  }
+
+  async getMailroomLocationsByMailroom(mailroomId: string): Promise<MailroomLocation[]> {
+    return await db
+      .select()
+      .from(mailroomLocations)
+      .where(eq(mailroomLocations.mailroomId, mailroomId))
+      .orderBy(mailroomLocations.name);
+  }
+
   // Mailroom location operations
   async getMailroomLocations(organizationId: string): Promise<MailroomLocation[]> {
     return await db

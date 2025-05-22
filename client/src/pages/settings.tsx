@@ -119,10 +119,17 @@ export default function Settings() {
   // Location mutations
   const createLocationMutation = useMutation({
     mutationFn: async (data: LocationFormData) => {
-      return await apiRequest("/api/mailroom-locations", {
-        method: "POST",
+      const response = await fetch('/api/mailroom-locations', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-organization-id': currentOrganization!.id,
+        },
         body: JSON.stringify(data),
+        credentials: 'include',
       });
+      if (!response.ok) throw new Error('Failed to create location');
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: "Storage location created successfully!" });
@@ -448,50 +455,141 @@ export default function Settings() {
                         <h4 className="font-medium text-gray-900">Storage Locations</h4>
                         <Button 
                           size="sm"
-                          onClick={() => {
-                            // Quick add functionality
-                            const name = prompt("Enter location name (e.g., 'Bin A1', 'Shelf 2-B'):");
-                            if (name && name.trim()) {
-                              const typeInput = prompt("Enter type (bin, shelf, locker, room):", "bin");
-                              const capacityInput = prompt("Enter capacity (number of packages):", "20");
-                              
-                              const newLocation = {
-                                name: name.trim(),
-                                type: typeInput?.toLowerCase() || "bin",
-                                capacity: parseInt(capacityInput || "20") || 20,
-                                notes: ""
-                              };
-                              
-                              fetch('/api/mailroom-locations', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(newLocation)
-                              }).then(() => {
-                                alert(`Storage location "${name}" created successfully!`);
-                                window.location.reload();
-                              }).catch(() => {
-                                alert('Error creating location. Please try again.');
-                              });
-                            }
-                          }}
+                          onClick={() => setShowLocationForm(!showLocationForm)}
                         >
                           <Plus className="w-4 h-4 mr-2" />
-                          Add Location
+                          {showLocationForm ? "Cancel" : "Add Location"}
                         </Button>
                       </div>
+
+                      {showLocationForm && (
+                        <Card className="p-4 bg-gray-50">
+                          <Form {...locationForm}>
+                            <form 
+                              onSubmit={locationForm.handleSubmit((data) => createLocationMutation.mutate(data))}
+                              className="space-y-4"
+                            >
+                              <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                  control={locationForm.control}
+                                  name="name"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Location Name</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="e.g., Bin A1, Shelf 2-B" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={locationForm.control}
+                                  name="type"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Type</FormLabel>
+                                      <FormControl>
+                                        <select {...field} className="w-full px-3 py-2 border rounded-lg">
+                                          <option value="bin">Bin</option>
+                                          <option value="shelf">Shelf</option>
+                                          <option value="locker">Locker</option>
+                                          <option value="room">Room</option>
+                                        </select>
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                  control={locationForm.control}
+                                  name="capacity"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Capacity</FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          type="number" 
+                                          placeholder="20" 
+                                          {...field}
+                                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={locationForm.control}
+                                  name="notes"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Notes (Optional)</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="Additional notes..." {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                <Button 
+                                  type="submit" 
+                                  disabled={createLocationMutation.isPending}
+                                  className="flex-1"
+                                >
+                                  {createLocationMutation.isPending ? "Creating..." : "Create Location"}
+                                </Button>
+                              </div>
+                            </form>
+                          </Form>
+                        </Card>
+                      )}
                       
-                      <div className="text-center py-8">
-                        <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 mb-2">Storage Location Management</p>
-                        <p className="text-sm text-gray-400">
-                          Create bins, shelves, and storage areas to organize packages efficiently.
-                          Click "Add Location" above to quickly create your first storage area!
-                        </p>
-                        <div className="mt-4">
-                          <p className="text-sm text-gray-600">
-                            ✨ Quick setup ready - start organizing your mailroom now!
-                          </p>
-                        </div>
+                      <div className="space-y-3">
+                        {locations.length > 0 ? (
+                          locations.map((location) => (
+                            <div key={location.id} className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                              <div>
+                                <h4 className="font-medium text-gray-900">{location.name}</h4>
+                                <p className="text-sm text-gray-600">
+                                  {location.type.charAt(0).toUpperCase() + location.type.slice(1)} • 
+                                  Capacity: {location.capacity || 'No limit'} • 
+                                  Current: {location.currentCount || 0} items
+                                </p>
+                                {location.notes && (
+                                  <p className="text-sm text-gray-500 mt-1">{location.notes}</p>
+                                )}
+                              </div>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => {
+                                  if (confirm(`Delete "${location.name}"?`)) {
+                                    // Add delete functionality later
+                                    toast({ title: "Delete functionality coming soon!" });
+                                  }
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-500 mb-2">No storage locations yet</p>
+                            <p className="text-sm text-gray-400">
+                              Create bins, shelves, and storage areas to organize packages efficiently.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>

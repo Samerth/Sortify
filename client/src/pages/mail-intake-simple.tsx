@@ -932,7 +932,7 @@ export default function MailIntake() {
                               return `🏢 ${mailroom.name} (Mailroom)`;
                             }
                             
-                            return `📍 Location not specified (locationId: ${item.locationId}, mailroomId: ${item.mailroomId})`;
+                            return `📍 Location not specified`;
                           })()}
                         </div>
                       </div>

@@ -1,0 +1,340 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import {
+  insertOrganizationSchema,
+  insertRecipientSchema,
+  insertMailItemSchema,
+  insertIntegrationSchema,
+} from "@shared/schema";
+import { z } from "zod";
+
+// Organization context middleware
+const withOrganization = async (req: any, res: any, next: any) => {
+  const organizationId = req.headers['x-organization-id'] || req.body.organizationId || req.query.organizationId;
+  
+  if (!organizationId) {
+    return res.status(400).json({ message: "Organization ID is required" });
+  }
+
+  // Verify user has access to organization
+  const userId = req.user?.claims?.sub;
+  const member = await storage.getOrganizationMember(organizationId, userId);
+  
+  if (!member) {
+    return res.status(403).json({ message: "Access denied to organization" });
+  }
+
+  req.organizationId = organizationId;
+  req.userRole = member.role;
+  next();
+};
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Organization routes
+  app.get('/api/organizations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const organizations = await storage.getUserOrganizations(userId);
+      res.json(organizations);
+    } catch (error) {
+      console.error("Error fetching organizations:", error);
+      res.status(500).json({ message: "Failed to fetch organizations" });
+    }
+  });
+
+  app.post('/api/organizations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validData = insertOrganizationSchema.parse(req.body);
+      
+      // Create organization
+      const organization = await storage.createOrganization(validData);
+      
+      // Add user as admin
+      await storage.addOrganizationMember({
+        organizationId: organization.id,
+        userId,
+        role: 'admin',
+      });
+      
+      res.json(organization);
+    } catch (error) {
+      console.error("Error creating organization:", error);
+      res.status(500).json({ message: "Failed to create organization" });
+    }
+  });
+
+  app.get('/api/organizations/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const organization = await storage.getOrganization(req.params.id);
+      if (!organization) {
+        return res.status(404).json({ message: "Organization not found" });
+      }
+      res.json(organization);
+    } catch (error) {
+      console.error("Error fetching organization:", error);
+      res.status(500).json({ message: "Failed to fetch organization" });
+    }
+  });
+
+  app.put('/api/organizations/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const validData = insertOrganizationSchema.partial().parse(req.body);
+      const organization = await storage.updateOrganization(req.params.id, validData);
+      res.json(organization);
+    } catch (error) {
+      console.error("Error updating organization:", error);
+      res.status(500).json({ message: "Failed to update organization" });
+    }
+  });
+
+  // Recipients routes
+  app.get('/api/recipients', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const recipients = await storage.getRecipients(req.organizationId);
+      res.json(recipients);
+    } catch (error) {
+      console.error("Error fetching recipients:", error);
+      res.status(500).json({ message: "Failed to fetch recipients" });
+    }
+  });
+
+  app.post('/api/recipients', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const validData = insertRecipientSchema.parse({
+        ...req.body,
+        organizationId: req.organizationId,
+      });
+      
+      const recipient = await storage.createRecipient(validData);
+      res.json(recipient);
+    } catch (error) {
+      console.error("Error creating recipient:", error);
+      res.status(500).json({ message: "Failed to create recipient" });
+    }
+  });
+
+  app.put('/api/recipients/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const validData = insertRecipientSchema.partial().parse(req.body);
+      const recipient = await storage.updateRecipient(req.params.id, validData);
+      res.json(recipient);
+    } catch (error) {
+      console.error("Error updating recipient:", error);
+      res.status(500).json({ message: "Failed to update recipient" });
+    }
+  });
+
+  app.delete('/api/recipients/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      await storage.deleteRecipient(req.params.id);
+      res.json({ message: "Recipient deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting recipient:", error);
+      res.status(500).json({ message: "Failed to delete recipient" });
+    }
+  });
+
+  // Mail items routes
+  app.get('/api/mail-items', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const filters = {
+        type: req.query.type,
+        status: req.query.status,
+        recipientId: req.query.recipientId,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo) : undefined,
+      };
+      
+      const mailItems = await storage.getMailItems(req.organizationId, filters);
+      res.json(mailItems);
+    } catch (error) {
+      console.error("Error fetching mail items:", error);
+      res.status(500).json({ message: "Failed to fetch mail items" });
+    }
+  });
+
+  app.post('/api/mail-items', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validData = insertMailItemSchema.parse({
+        ...req.body,
+        organizationId: req.organizationId,
+        createdBy: userId,
+      });
+      
+      const mailItem = await storage.createMailItem(validData);
+      
+      // Create history entry
+      await storage.createMailItemHistory({
+        mailItemId: mailItem.id,
+        action: 'created',
+        newStatus: mailItem.status,
+        performedBy: userId,
+      });
+      
+      res.json(mailItem);
+    } catch (error) {
+      console.error("Error creating mail item:", error);
+      res.status(500).json({ message: "Failed to create mail item" });
+    }
+  });
+
+  app.put('/api/mail-items/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const currentItem = await storage.getMailItem(req.params.id);
+      
+      if (!currentItem) {
+        return res.status(404).json({ message: "Mail item not found" });
+      }
+      
+      const validData = insertMailItemSchema.partial().parse(req.body);
+      const updatedItem = await storage.updateMailItem(req.params.id, validData);
+      
+      // Create history entry if status changed
+      if (validData.status && validData.status !== currentItem.status) {
+        await storage.createMailItemHistory({
+          mailItemId: updatedItem.id,
+          action: 'status_changed',
+          previousStatus: currentItem.status,
+          newStatus: validData.status,
+          performedBy: userId,
+        });
+      }
+      
+      res.json(updatedItem);
+    } catch (error) {
+      console.error("Error updating mail item:", error);
+      res.status(500).json({ message: "Failed to update mail item" });
+    }
+  });
+
+  app.get('/api/mail-items/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const mailItem = await storage.getMailItem(req.params.id);
+      if (!mailItem) {
+        return res.status(404).json({ message: "Mail item not found" });
+      }
+      res.json(mailItem);
+    } catch (error) {
+      console.error("Error fetching mail item:", error);
+      res.status(500).json({ message: "Failed to fetch mail item" });
+    }
+  });
+
+  app.get('/api/mail-items/:id/history', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const history = await storage.getMailItemHistory(req.params.id);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching mail item history:", error);
+      res.status(500).json({ message: "Failed to fetch mail item history" });
+    }
+  });
+
+  // Dashboard routes
+  app.get('/api/dashboard/stats', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const stats = await storage.getDashboardStats(req.organizationId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  app.get('/api/dashboard/recent-activity', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const activities = await storage.getRecentActivity(req.organizationId, limit);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching recent activity:", error);
+      res.status(500).json({ message: "Failed to fetch recent activity" });
+    }
+  });
+
+  // Integration routes
+  app.get('/api/integrations', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const integrations = await storage.getIntegrations(req.organizationId);
+      res.json(integrations);
+    } catch (error) {
+      console.error("Error fetching integrations:", error);
+      res.status(500).json({ message: "Failed to fetch integrations" });
+    }
+  });
+
+  app.post('/api/integrations', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const validData = insertIntegrationSchema.parse({
+        ...req.body,
+        organizationId: req.organizationId,
+      });
+      
+      const integration = await storage.createIntegration(validData);
+      res.json(integration);
+    } catch (error) {
+      console.error("Error creating integration:", error);
+      res.status(500).json({ message: "Failed to create integration" });
+    }
+  });
+
+  app.put('/api/integrations/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const validData = insertIntegrationSchema.partial().parse(req.body);
+      const integration = await storage.updateIntegration(req.params.id, validData);
+      res.json(integration);
+    } catch (error) {
+      console.error("Error updating integration:", error);
+      res.status(500).json({ message: "Failed to update integration" });
+    }
+  });
+
+  app.delete('/api/integrations/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      await storage.deleteIntegration(req.params.id);
+      res.json({ message: "Integration deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting integration:", error);
+      res.status(500).json({ message: "Failed to delete integration" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}

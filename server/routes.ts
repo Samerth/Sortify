@@ -318,6 +318,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/mailrooms/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      // Check if mailroom has associated packages
+      const locations = await storage.getMailroomLocations(req.organizationId);
+      const mailItems = await storage.getMailItems(req.organizationId, {});
+      const hasPackages = mailItems.some((item: any) => 
+        item.locationId && locations.some((loc: any) => 
+          loc.mailroomId === req.params.id && loc.id === item.locationId
+        )
+      );
+      
+      if (hasPackages) {
+        return res.status(400).json({ message: "Cannot delete mailroom with associated packages" });
+      }
+      
+      await storage.deleteMailroom(req.params.id);
+      res.json({ message: "Mailroom deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting mailroom:", error);
+      res.status(500).json({ message: "Failed to delete mailroom" });
+    }
+  });
+
   app.post('/api/mailroom-locations', isAuthenticated, withOrganization, async (req: any, res) => {
     try {
       const data = { ...req.body, organizationId: req.organizationId };

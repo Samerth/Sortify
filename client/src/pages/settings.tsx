@@ -74,6 +74,7 @@ export default function Settings() {
   const [showLocationForm, setShowLocationForm] = useState(false);
   const [showMailroomForm, setShowMailroomForm] = useState(false);
   const [selectedMailroomId, setSelectedMailroomId] = useState<string | null>(null);
+  const [editingMailroom, setEditingMailroom] = useState<any>(null);
 
   const form = useForm<OrganizationFormData>({
     resolver: zodResolver(organizationFormSchema),
@@ -234,6 +235,35 @@ export default function Settings() {
         title: "Error",
         description: error.message || "Failed to update organization settings.",
         variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMailroomMutation = useMutation({
+    mutationFn: async (mailroomId: string) => {
+      const response = await fetch(`/api/mailrooms/${mailroomId}`, {
+        method: 'DELETE',
+        headers: { 
+          'x-organization-id': currentOrganization!.id,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete mailroom');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Mailroom deleted successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/mailrooms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/mailroom-locations"] });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error deleting mailroom", 
+        description: error.message,
+        variant: "destructive" 
       });
     },
   });
@@ -602,29 +632,68 @@ export default function Settings() {
                         <div className="space-y-4">
                           <h5 className="font-medium text-gray-900">Your Mailrooms</h5>
                           <div className="grid gap-4">
-                            {mailrooms.map((mailroom: any) => (
-                              <Card key={mailroom.id} className="p-4">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <h6 className="font-medium text-gray-900">{mailroom.name}</h6>
-                                    {mailroom.description && (
-                                      <p className="text-sm text-gray-600 mt-1">{mailroom.description}</p>
+                            {mailrooms.map((mailroom: any) => {
+                              const mailroomLocations = locations.filter((loc: any) => loc.mailroomId === mailroom.id);
+                              return (
+                                <Card key={mailroom.id} className="p-4">
+                                  <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <h6 className="font-medium text-gray-900">{mailroom.name}</h6>
+                                        {mailroom.description && (
+                                          <p className="text-sm text-gray-600 mt-1">{mailroom.description}</p>
+                                        )}
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={() => {
+                                            setSelectedMailroomId(mailroom.id);
+                                            setShowLocationForm(true);
+                                          }}
+                                        >
+                                          <Plus className="w-4 h-4 mr-2" />
+                                          Add Storage
+                                        </Button>
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                        >
+                                          Edit
+                                        </Button>
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          className="text-red-600 hover:text-red-700"
+                                        >
+                                          Delete
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Show storage locations */}
+                                    {mailroomLocations.length > 0 && (
+                                      <div className="border-t pt-3">
+                                        <p className="text-sm font-medium text-gray-700 mb-2">Storage Locations:</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                          {mailroomLocations.map((location: any) => (
+                                            <div key={location.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                                              <span className="text-sm text-gray-600">
+                                                {location.name} ({location.locationType})
+                                              </span>
+                                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-600">
+                                                ×
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
                                     )}
                                   </div>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => {
-                                      setSelectedMailroomId(mailroom.id);
-                                      setShowLocationForm(true);
-                                    }}
-                                  >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Add Storage
-                                  </Button>
-                                </div>
-                              </Card>
-                            ))}
+                                </Card>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

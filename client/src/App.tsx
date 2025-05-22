@@ -4,7 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
-import { OrganizationProvider } from "@/components/OrganizationProvider";
+import { OrganizationProvider, useOrganization } from "@/components/OrganizationProvider";
+import OrganizationSetup from "@/components/OrganizationSetup";
 import LoginPage from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import MailIntake from "@/pages/mail-intake";
@@ -16,21 +17,41 @@ import Settings from "@/pages/settings";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
 
+function ProtectedContent() {
+  const { organizations, isLoading } = useOrganization();
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  if (organizations.length === 0) {
+    return <OrganizationSetup />;
+  }
+  
+  return (
+    <Switch>
+      <Route path="/" component={Dashboard} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/mail-intake" component={MailIntake} />
+      <Route path="/pending-pickups" component={PendingPickups} />
+      <Route path="/recipients" component={Recipients} />
+      <Route path="/history" component={History} />
+      <Route path="/integrations" component={Integrations} />
+      <Route path="/settings" component={Settings} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
 function AuthenticatedRoutes() {
   return (
     <OrganizationProvider>
       <Layout>
-        <Switch>
-          <Route path="/" component={Dashboard} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/mail-intake" component={MailIntake} />
-          <Route path="/pending-pickups" component={PendingPickups} />
-          <Route path="/recipients" component={Recipients} />
-          <Route path="/history" component={History} />
-          <Route path="/integrations" component={Integrations} />
-          <Route path="/settings" component={Settings} />
-          <Route component={NotFound} />
-        </Switch>
+        <ProtectedContent />
       </Layout>
     </OrganizationProvider>
   );

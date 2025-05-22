@@ -373,6 +373,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/mailroom-locations/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      await storage.deleteMailroomLocation(req.params.id);
+      res.json({ message: "Storage location deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting storage location:", error);
+      res.status(500).json({ message: "Failed to delete storage location" });
+    }
+  });
+
   // Integration routes
   app.get('/api/integrations', isAuthenticated, withOrganization, async (req: any, res) => {
     try {

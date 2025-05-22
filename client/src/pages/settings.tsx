@@ -308,6 +308,34 @@ export default function Settings() {
     },
   });
 
+  const deleteLocationMutation = useMutation({
+    mutationFn: async (locationId: string) => {
+      const response = await fetch(`/api/mailroom-locations/${locationId}`, {
+        method: 'DELETE',
+        headers: { 
+          'x-organization-id': currentOrganization!.id,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete storage location');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Storage location deleted successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/mailroom-locations"] });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error deleting storage location", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
   const onSubmit = (data: OrganizationFormData) => {
     updateOrganizationMutation.mutate(data);
   };
@@ -749,7 +777,17 @@ export default function Settings() {
                                               <span className="text-sm text-gray-600">
                                                 {location.name} ({location.locationType})
                                               </span>
-                                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-600">
+                                              <Button 
+                                                size="sm" 
+                                                variant="ghost" 
+                                                className="h-6 w-6 p-0 text-red-600"
+                                                onClick={() => {
+                                                  if (confirm(`Delete "${location.name}"?`)) {
+                                                    deleteLocationMutation.mutate(location.id);
+                                                  }
+                                                }}
+                                                disabled={deleteLocationMutation.isPending}
+                                              >
                                                 ×
                                               </Button>
                                             </div>

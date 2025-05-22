@@ -253,6 +253,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/mail-items/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const mailItem = await storage.getMailItem(req.params.id);
+      if (!mailItem) {
+        return res.status(404).json({ message: "Mail item not found" });
+      }
+      
+      await storage.deleteMailItem(req.params.id);
+      res.json({ message: "Mail item deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting mail item:", error);
+      res.status(500).json({ message: "Failed to delete mail item" });
+    }
+  });
+
   app.get('/api/mail-items/:id/history', isAuthenticated, withOrganization, async (req: any, res) => {
     try {
       const history = await storage.getMailItemHistory(req.params.id);

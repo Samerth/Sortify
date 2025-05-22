@@ -51,7 +51,7 @@ export default function MailIntake() {
     photo: null as File | null,
   });
 
-  const [photoMethod, setPhotoMethod] = useState<'none' | 'camera' | 'barcode' | 'upload'>('none');
+  const [photoMethod, setPhotoMethod] = useState<'camera' | 'barcode' | 'upload'>('upload');
   const [isCapturing, setIsCapturing] = useState(false);
 
   const { data: mailItems = [] } = useQuery({

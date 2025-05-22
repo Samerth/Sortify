@@ -64,6 +64,7 @@ export interface IStorage {
   createMailItem(data: InsertMailItem): Promise<MailItem>;
   updateMailItem(id: string, data: Partial<InsertMailItem>): Promise<MailItem>;
   getMailItem(id: string): Promise<(MailItem & { recipient?: Recipient }) | undefined>;
+  deleteMailItem(id: string): Promise<void>;
   
   // Mail item history operations
   createMailItemHistory(data: InsertMailItemHistory): Promise<MailItemHistory>;
@@ -347,6 +348,10 @@ export class DatabaseStorage implements IStorage {
       ...result,
       recipient: result.recipient.id ? result.recipient : undefined,
     };
+  }
+
+  async deleteMailItem(id: string): Promise<void> {
+    await db.delete(mailItems).where(eq(mailItems.id, id));
   }
 
   // Mail item history operations

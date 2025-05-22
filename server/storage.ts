@@ -351,12 +351,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteMailItem(id: string): Promise<void> {
-    await db.transaction(async (tx) => {
-      // Delete history first to avoid foreign key issues
-      await tx.delete(mailItemHistory).where(eq(mailItemHistory.mailItemId, id));
+    try {
+      // Delete history first
+      await db.delete(mailItemHistory).where(eq(mailItemHistory.mailItemId, id));
       // Delete the mail item
-      await tx.delete(mailItems).where(eq(mailItems.id, id));
-    });
+      const result = await db.delete(mailItems).where(eq(mailItems.id, id));
+      console.log(`Delete operation completed for ${id}, affected rows:`, result);
+    } catch (error) {
+      console.error(`Error in deleteMailItem for ${id}:`, error);
+      throw error;
+    }
   }
 
   // Mail item history operations

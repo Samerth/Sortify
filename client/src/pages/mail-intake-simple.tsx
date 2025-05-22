@@ -159,10 +159,11 @@ export default function MailIntake() {
     mutationFn: async (mailItemId: string) => {
       console.log(`🗑️ Frontend: Starting delete for item ${mailItemId}`);
       
-      const response = await fetch(`/api/mail-items/${mailItemId}`, {
-        method: "DELETE",
+      const response = await fetch(`/api/mail-items/${mailItemId}/delete`, {
+        method: "POST",
         headers: {
           "x-organization-id": currentOrganization?.id || "",
+          "Content-Type": "application/json",
         },
         credentials: "include",
       });

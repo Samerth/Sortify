@@ -253,10 +253,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/mail-items/:id', isAuthenticated, withOrganization, async (req: any, res) => {
-    console.log(`🚨 DELETE ROUTE HIT for item: ${req.params.id}`);
+  // DELETE route using POST to bypass middleware conflicts
+  app.post('/api/mail-items/:id/delete', isAuthenticated, withOrganization, async (req: any, res) => {
+    console.log(`🚨 DELETE-POST ROUTE HIT for item: ${req.params.id}`);
     try {
-      console.log(`DELETE request received for mail item: ${req.params.id}`);
+      console.log(`DELETE-POST request received for mail item: ${req.params.id}`);
       
       const mailItem = await storage.getMailItem(req.params.id);
       if (!mailItem) {

@@ -421,63 +421,65 @@ export default function MailIntake() {
                 {/* Camera Capture */}
                 {photoMethod === 'camera' && (
                   <div className="space-y-3">
-                    <div className="w-full flex items-center justify-center gap-2 py-8 border-2 border-dashed border-green-300 bg-green-50 rounded-lg">
-                      <Camera className="w-6 h-6 text-green-600" />
+                    <div className="w-full flex flex-col items-center justify-center gap-3 py-8 border-2 border-dashed border-green-300 bg-green-50 rounded-lg">
+                      <Camera className="w-8 h-8 text-green-600" />
                       <div className="text-center">
-                        <div className="font-medium text-green-700">Camera Mode Active</div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          capture="environment"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setFormData({ ...formData, photo: file });
-                              toast({ title: "Photo captured from camera!" });
-                            }
+                        <div className="font-medium text-green-700 mb-2">Camera Mode Active</div>
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.capture = 'environment';
+                            input.onchange = (e) => {
+                              const file = (e.target as HTMLInputElement).files?.[0];
+                              if (file) {
+                                setFormData({ ...formData, photo: file });
+                                toast({ title: "Photo captured from camera!" });
+                              }
+                            };
+                            input.click();
                           }}
-                          className="mt-2 text-sm text-green-700 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:bg-green-200 file:text-green-700 hover:file:bg-green-300"
-                        />
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Camera className="w-4 h-4 mr-2" />
+                          Open Camera
+                        </Button>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 text-center">Camera will open to take a photo of the package</p>
+                    <p className="text-xs text-gray-500 text-center">Tap "Open Camera" to take a photo of the package</p>
                   </div>
                 )}
 
                 {/* Barcode Scanner */}
                 {photoMethod === 'barcode' && (
                   <div className="space-y-3">
-                    <div className="w-full flex items-center justify-center gap-2 py-8 border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg">
-                      <QrCode className="w-6 h-6 text-blue-600" />
+                    <div className="w-full flex flex-col items-center justify-center gap-3 py-8 border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg">
+                      <QrCode className="w-8 h-8 text-blue-600" />
                       <div className="text-center">
-                        <div className="font-medium text-blue-700">Barcode Scanner Mode</div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          capture="environment"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setFormData({ ...formData, photo: file });
-                              toast({ title: "Scanning barcode..." });
-                              
-                              // Simulate barcode detection
-                              setTimeout(() => {
-                                const carriers = ['1Z', '1ZA', '1ZE', '1ZV', '1ZW', '1ZX', '1ZY'];
-                                const carrier = carriers[Math.floor(Math.random() * carriers.length)];
-                                const numbers = Math.random().toString().substr(2, 11);
-                                const mockTrackingNumber = `${carrier}${numbers}`;
-                                
-                                setFormData(prev => ({ ...prev, trackingNumber: mockTrackingNumber }));
-                                toast({ 
-                                  title: "Barcode detected!", 
-                                  description: `Tracking: ${mockTrackingNumber}` 
-                                });
-                              }, 2000);
-                            }
+                        <div className="font-medium text-blue-700 mb-2">Barcode Scanner Mode</div>
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.capture = 'environment';
+                            input.onchange = (e) => {
+                              const file = (e.target as HTMLInputElement).files?.[0];
+                              if (file) {
+                                setFormData({ ...formData, photo: file });
+                                toast({ title: "Barcode image captured!" });
+                              }
+                            };
+                            input.click();
                           }}
-                          className="mt-2 text-sm text-blue-700 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:bg-blue-200 file:text-blue-700 hover:file:bg-blue-300"
-                        />
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <QrCode className="w-4 h-4 mr-2" />
+                          Scan Barcode
+                        </Button>
                       </div>
                     </div>
                     <p className="text-xs text-gray-500 text-center">Scans barcodes and auto-fills tracking information</p>

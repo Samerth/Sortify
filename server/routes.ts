@@ -254,6 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete('/api/mail-items/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+    console.log(`🚨 DELETE ROUTE HIT for item: ${req.params.id}`);
     try {
       console.log(`DELETE request received for mail item: ${req.params.id}`);
       

@@ -451,6 +451,11 @@ export default function MailIntake() {
                           type="button"
                           onClick={async () => {
                             setIsCapturing(true);
+                            
+                            // Temporarily close dialog
+                            const wasDialogOpen = isDialogOpen;
+                            if (wasDialogOpen) setIsDialogOpen(false);
+                            
                             try {
                               const stream = await navigator.mediaDevices.getUserMedia({ 
                                 video: { facingMode: 'environment' } 
@@ -470,11 +475,11 @@ export default function MailIntake() {
                               video.style.cssText = 'width: 90%; max-width: 400px; height: auto; border-radius: 8px;';
                               
                               const buttonContainer = document.createElement('div');
-                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px; z-index: 999999;';
+                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px;';
                               
                               const captureBtn = document.createElement('button');
                               captureBtn.textContent = '📸 Capture';
-                              captureBtn.style.cssText = 'padding: 12px 24px; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; z-index: 999999;';
+                              captureBtn.style.cssText = 'padding: 12px 24px; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
                               
                               const cancelBtn = document.createElement('button');
                               cancelBtn.textContent = '❌ Cancel';
@@ -484,6 +489,8 @@ export default function MailIntake() {
                                 stream.getTracks().forEach(track => track.stop());
                                 document.body.removeChild(overlay);
                                 setIsCapturing(false);
+                                // Reopen dialog if it was open
+                                if (wasDialogOpen) setTimeout(() => setIsDialogOpen(true), 100);
                               };
                               
                               captureBtn.onclick = () => {
@@ -526,6 +533,8 @@ export default function MailIntake() {
                               };
                               input.click();
                               setIsCapturing(false);
+                              // Reopen dialog if it was open
+                              if (wasDialogOpen) setTimeout(() => setIsDialogOpen(true), 100);
                             }
                           }}
                           disabled={isCapturing}
@@ -551,6 +560,11 @@ export default function MailIntake() {
                           type="button"
                           onClick={async () => {
                             setIsCapturing(true);
+                            
+                            // Temporarily close dialog
+                            const wasDialogOpen = isDialogOpen;
+                            if (wasDialogOpen) setIsDialogOpen(false);
+                            
                             try {
                               const stream = await navigator.mediaDevices.getUserMedia({ 
                                 video: { facingMode: 'environment' } 
@@ -571,14 +585,14 @@ export default function MailIntake() {
                               
                               const instructions = document.createElement('div');
                               instructions.textContent = '📱 Point camera at barcode or QR code';
-                              instructions.style.cssText = 'color: white; font-size: 18px; margin-bottom: 15px; text-align: center; z-index: 999999;';
+                              instructions.style.cssText = 'color: white; font-size: 18px; margin-bottom: 15px; text-align: center;';
                               
                               const buttonContainer = document.createElement('div');
-                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px; z-index: 999999;';
+                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px;';
                               
                               const captureBtn = document.createElement('button');
                               captureBtn.textContent = '📷 Scan Barcode';
-                              captureBtn.style.cssText = 'padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; z-index: 999999;';
+                              captureBtn.style.cssText = 'padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
                               
                               const cancelBtn = document.createElement('button');
                               cancelBtn.textContent = '❌ Cancel';
@@ -588,6 +602,8 @@ export default function MailIntake() {
                                 stream.getTracks().forEach(track => track.stop());
                                 document.body.removeChild(overlay);
                                 setIsCapturing(false);
+                                // Reopen dialog if it was open
+                                if (wasDialogOpen) setTimeout(() => setIsDialogOpen(true), 100);
                               };
                               
                               captureBtn.onclick = () => {
@@ -631,6 +647,8 @@ export default function MailIntake() {
                               };
                               input.click();
                               setIsCapturing(false);
+                              // Reopen dialog if it was open
+                              if (wasDialogOpen) setTimeout(() => setIsDialogOpen(true), 100);
                             }
                           }}
                           disabled={isCapturing}

@@ -64,7 +64,17 @@ export default function PendingPickups() {
 
   const updateMailItemMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest("PUT", `/api/mail-items/${id}`, data);
+      const response = await fetch(`/api/mail-items/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-organization-id": currentOrganization?.id || "",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to update mail item");
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mail-items"] });
@@ -130,10 +140,7 @@ export default function PendingPickups() {
             <p className="text-gray-600">Manage packages awaiting recipient pickup</p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button className="bg-primary hover:bg-primary-dark">
-              <Check className="w-4 h-4 mr-2" />
-              Mark Delivered
-            </Button>
+            {/* Removed global Mark Delivered button - use individual item buttons instead */}
           </div>
         </div>
       </header>

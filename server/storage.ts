@@ -351,16 +351,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteMailItem(id: string): Promise<void> {
-    try {
-      // Delete history first
-      await db.delete(mailItemHistory).where(eq(mailItemHistory.mailItemId, id));
-      // Delete the mail item
-      const result = await db.delete(mailItems).where(eq(mailItems.id, id));
-      console.log(`Delete operation completed for ${id}, affected rows:`, result);
-    } catch (error) {
-      console.error(`Error in deleteMailItem for ${id}:`, error);
-      throw error;
-    }
+    // Use raw SQL queries since ORM delete isn't working reliably
+    await db.execute(sql`DELETE FROM mail_item_history WHERE mail_item_id = ${id}`);
+    await db.execute(sql`DELETE FROM mail_items WHERE id = ${id}`);
   }
 
   // Mail item history operations

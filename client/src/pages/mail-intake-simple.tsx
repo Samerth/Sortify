@@ -449,20 +449,86 @@ export default function MailIntake() {
                         <div className="font-medium text-green-700 mb-2">Camera Mode Active</div>
                         <Button
                           type="button"
-                          onClick={() => {
-                            const input = document.createElement('input');
-                            input.type = 'file';
-                            input.accept = 'image/*';
-                            input.capture = 'environment';
-                            input.onchange = (e) => {
-                              const file = (e.target as HTMLInputElement).files?.[0];
-                              if (file) {
-                                setFormData({ ...formData, photo: file });
-                                toast({ title: "Photo captured from camera!" });
-                              }
-                            };
-                            input.click();
+                          onClick={async () => {
+                            setIsCapturing(true);
+                            try {
+                              const stream = await navigator.mediaDevices.getUserMedia({ 
+                                video: { facingMode: 'environment' } 
+                              });
+                              
+                              const overlay = document.createElement('div');
+                              overlay.style.cssText = `
+                                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                                background: rgba(0,0,0,0.9); z-index: 9999; display: flex; 
+                                flex-direction: column; align-items: center; justify-content: center;
+                              `;
+                              
+                              const video = document.createElement('video');
+                              video.srcObject = stream;
+                              video.autoplay = true;
+                              video.playsInline = true;
+                              video.style.cssText = 'width: 90%; max-width: 400px; height: auto; border-radius: 8px;';
+                              
+                              const buttonContainer = document.createElement('div');
+                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px;';
+                              
+                              const captureBtn = document.createElement('button');
+                              captureBtn.textContent = '📸 Capture';
+                              captureBtn.style.cssText = 'padding: 12px 24px; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
+                              
+                              const cancelBtn = document.createElement('button');
+                              cancelBtn.textContent = '❌ Cancel';
+                              cancelBtn.style.cssText = 'padding: 12px 24px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
+                              
+                              const cleanup = () => {
+                                stream.getTracks().forEach(track => track.stop());
+                                document.body.removeChild(overlay);
+                                setIsCapturing(false);
+                              };
+                              
+                              captureBtn.onclick = () => {
+                                const canvas = document.createElement('canvas');
+                                const context = canvas.getContext('2d');
+                                canvas.width = video.videoWidth;
+                                canvas.height = video.videoHeight;
+                                context?.drawImage(video, 0, 0);
+                                
+                                canvas.toBlob((blob) => {
+                                  if (blob) {
+                                    const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+                                    setFormData({ ...formData, photo: file });
+                                    toast({ title: "Photo captured from camera!" });
+                                  }
+                                  cleanup();
+                                }, 'image/jpeg', 0.8);
+                              };
+                              
+                              cancelBtn.onclick = cleanup;
+                              
+                              buttonContainer.appendChild(captureBtn);
+                              buttonContainer.appendChild(cancelBtn);
+                              overlay.appendChild(video);
+                              overlay.appendChild(buttonContainer);
+                              document.body.appendChild(overlay);
+                              
+                            } catch (error) {
+                              console.log('Camera not available, using file input');
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.capture = 'environment';
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0];
+                                if (file) {
+                                  setFormData({ ...formData, photo: file });
+                                  toast({ title: "Photo selected!" });
+                                }
+                              };
+                              input.click();
+                              setIsCapturing(false);
+                            }
                           }}
+                          disabled={isCapturing}
                           className="bg-green-600 hover:bg-green-700 text-white"
                         >
                           <Camera className="w-4 h-4 mr-2" />
@@ -483,20 +549,91 @@ export default function MailIntake() {
                         <div className="font-medium text-blue-700 mb-2">Barcode Scanner Mode</div>
                         <Button
                           type="button"
-                          onClick={() => {
-                            const input = document.createElement('input');
-                            input.type = 'file';
-                            input.accept = 'image/*';
-                            input.capture = 'environment';
-                            input.onchange = (e) => {
-                              const file = (e.target as HTMLInputElement).files?.[0];
-                              if (file) {
-                                setFormData({ ...formData, photo: file });
-                                toast({ title: "Barcode image captured!" });
-                              }
-                            };
-                            input.click();
+                          onClick={async () => {
+                            setIsCapturing(true);
+                            try {
+                              const stream = await navigator.mediaDevices.getUserMedia({ 
+                                video: { facingMode: 'environment' } 
+                              });
+                              
+                              const overlay = document.createElement('div');
+                              overlay.style.cssText = `
+                                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                                background: rgba(0,0,0,0.9); z-index: 9999; display: flex; 
+                                flex-direction: column; align-items: center; justify-content: center;
+                              `;
+                              
+                              const video = document.createElement('video');
+                              video.srcObject = stream;
+                              video.autoplay = true;
+                              video.playsInline = true;
+                              video.style.cssText = 'width: 90%; max-width: 400px; height: auto; border-radius: 8px;';
+                              
+                              const instructions = document.createElement('div');
+                              instructions.textContent = '📱 Point camera at barcode or QR code';
+                              instructions.style.cssText = 'color: white; font-size: 18px; margin-bottom: 15px; text-align: center;';
+                              
+                              const buttonContainer = document.createElement('div');
+                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px;';
+                              
+                              const captureBtn = document.createElement('button');
+                              captureBtn.textContent = '📷 Scan Barcode';
+                              captureBtn.style.cssText = 'padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
+                              
+                              const cancelBtn = document.createElement('button');
+                              cancelBtn.textContent = '❌ Cancel';
+                              cancelBtn.style.cssText = 'padding: 12px 24px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
+                              
+                              const cleanup = () => {
+                                stream.getTracks().forEach(track => track.stop());
+                                document.body.removeChild(overlay);
+                                setIsCapturing(false);
+                              };
+                              
+                              captureBtn.onclick = () => {
+                                const canvas = document.createElement('canvas');
+                                const context = canvas.getContext('2d');
+                                canvas.width = video.videoWidth;
+                                canvas.height = video.videoHeight;
+                                context?.drawImage(video, 0, 0);
+                                
+                                canvas.toBlob((blob) => {
+                                  if (blob) {
+                                    const file = new File([blob], 'barcode-scan.jpg', { type: 'image/jpeg' });
+                                    setFormData({ ...formData, photo: file });
+                                    toast({ title: "Barcode image captured!" });
+                                  }
+                                  cleanup();
+                                }, 'image/jpeg', 0.8);
+                              };
+                              
+                              cancelBtn.onclick = cleanup;
+                              
+                              buttonContainer.appendChild(captureBtn);
+                              buttonContainer.appendChild(cancelBtn);
+                              overlay.appendChild(instructions);
+                              overlay.appendChild(video);
+                              overlay.appendChild(buttonContainer);
+                              document.body.appendChild(overlay);
+                              
+                            } catch (error) {
+                              console.log('Camera not available, using file input');
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.capture = 'environment';
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0];
+                                if (file) {
+                                  setFormData({ ...formData, photo: file });
+                                  toast({ title: "Barcode image selected!" });
+                                }
+                              };
+                              input.click();
+                              setIsCapturing(false);
+                            }
                           }}
+                          disabled={isCapturing}
                           className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           <QrCode className="w-4 h-4 mr-2" />

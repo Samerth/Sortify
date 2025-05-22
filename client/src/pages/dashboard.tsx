@@ -85,18 +85,7 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600">Welcome back! Here's what's happening with your mailroom.</p>
           </div>
-          <div className="flex items-center space-x-4">
-            <Button className="bg-primary hover:bg-primary-dark">
-              <Plus className="w-4 h-4 mr-2" />
-              Log New Mail
-            </Button>
-            <Button variant="outline" size="icon" className="relative">
-              <Bell className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                3
-              </span>
-            </Button>
-          </div>
+
         </div>
       </header>
 
@@ -185,10 +174,10 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Recent Activity & Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Activity */}
+        <div className="grid grid-cols-1 gap-6">
           {/* Recent Mail Activity */}
-          <Card className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle>Recent Mail Activity</CardTitle>
             </CardHeader>
@@ -249,30 +238,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button variant="outline" className="w-full justify-start">
-                <Plus className="w-4 h-4 mr-3" />
-                Log New Mail
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <QrCode className="w-4 h-4 mr-3" />
-                Scan Barcode
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <UserPlus className="w-4 h-4 mr-3" />
-                Add Recipient
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Eye className="w-4 h-4 mr-3" />
-                View Reports
-              </Button>
-            </CardContent>
-          </Card>
+
         </div>
       </main>
     </>

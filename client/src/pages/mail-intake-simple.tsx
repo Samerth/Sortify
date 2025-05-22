@@ -23,6 +23,9 @@ interface MailItem {
   deliveredAt?: string;
   description?: string;
   notes?: string;
+  photoUrl?: string;
+  courierCompany?: string;
+  collectorName?: string;
   recipient?: {
     firstName: string;
     lastName: string;
@@ -822,6 +825,38 @@ export default function MailIntake() {
                             📝 Notes
                           </div>
                           <div className="pl-6 text-sm text-gray-600 bg-white p-2 rounded border">{item.notes}</div>
+                        </div>
+                      )}
+                      
+                      {/* Package Info */}
+                      {(item.courierCompany || item.collectorName || item.trackingNumber) && (
+                        <div className="mb-4">
+                          <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            <Package className="w-4 h-4 mr-2 text-gray-500" />
+                            Package Info
+                          </div>
+                          <div className="pl-6 text-sm text-gray-600 space-y-1">
+                            {item.trackingNumber && <div>📋 Tracking: {item.trackingNumber}</div>}
+                            {item.courierCompany && <div>🚚 Courier: {item.courierCompany}</div>}
+                            {item.collectorName && <div>👤 Collected by: {item.collectorName}</div>}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Photo Display */}
+                      {item.photoUrl && (
+                        <div className="mb-4">
+                          <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            <Camera className="w-4 h-4 mr-2 text-gray-500" />
+                            Package Photo
+                          </div>
+                          <div className="pl-6">
+                            <img 
+                              src={item.photoUrl} 
+                              alt="Package photo"
+                              className="max-w-xs max-h-48 rounded-lg border shadow-sm object-cover"
+                            />
+                          </div>
                         </div>
                       )}
                       

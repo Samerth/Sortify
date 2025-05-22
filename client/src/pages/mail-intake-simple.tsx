@@ -49,16 +49,45 @@ export default function MailIntake() {
   const { data: mailItems = [] } = useQuery({
     queryKey: ["/api/mail-items"],
     enabled: !!currentOrganization,
+    queryFn: async () => {
+      const response = await fetch("/api/mail-items", {
+        headers: {
+          "x-organization-id": currentOrganization?.id || "",
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch mail items");
+      return response.json();
+    },
   });
 
   const { data: recipients = [] } = useQuery({
     queryKey: ["/api/recipients"],
     enabled: !!currentOrganization,
+    queryFn: async () => {
+      const response = await fetch("/api/recipients", {
+        headers: {
+          "x-organization-id": currentOrganization?.id || "",
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch recipients");
+      return response.json();
+    },
   });
 
   const createMailItemMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/mail-items", data);
+      const response = await fetch("/api/mail-items", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-organization-id": currentOrganization?.id || "",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to create mail item");
       return await response.json();
     },
     onSuccess: () => {
@@ -180,9 +209,12 @@ export default function MailIntake() {
                   className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Select recipient</option>
-                  {recipients.map((recipient) => (
+                  {(recipients as any[]).map((recipient: any) => (
                     <option key={recipient.id} value={recipient.id}>
-                      {recipient.firstName} {recipient.lastName} {recipient.unit && `(${recipient.unit})`}
+                      {recipient.firstName} {recipient.lastName} 
+                      {recipient.unit && ` - Unit ${recipient.unit}`}
+                      {recipient.department && ` (${recipient.department})`}
+                      {recipient.email && ` • ${recipient.email}`}
                     </option>
                   ))}
                 </select>

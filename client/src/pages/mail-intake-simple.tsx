@@ -19,10 +19,17 @@ interface MailItem {
   trackingNumber?: string;
   sender?: string;
   arrivedAt: string;
+  notifiedAt?: string;
+  deliveredAt?: string;
+  description?: string;
+  notes?: string;
   recipient?: {
     firstName: string;
     lastName: string;
+    email?: string;
+    phone?: string;
     unit?: string;
+    department?: string;
   };
 }
 
@@ -209,7 +216,17 @@ export default function MailIntake() {
 
   const updateMailItemMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest("PUT", `/api/mail-items/${id}`, data);
+      const response = await fetch(`/api/mail-items/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-organization-id": currentOrganization?.id || "",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to update mail item");
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mail-items"] });
@@ -236,7 +253,7 @@ export default function MailIntake() {
   const handleNotifyRecipient = (id: string) => {
     updateMailItemMutation.mutate({
       id,
-      data: { status: "notified", notifiedAt: new Date() },
+      data: { status: "notified", notifiedAt: new Date().toISOString() },
     });
   };
 

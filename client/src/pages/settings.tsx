@@ -373,14 +373,16 @@ export default function Settings() {
             <p className="text-gray-600">Manage your organization's settings and preferences</p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button 
-              onClick={form.handleSubmit(onSubmit)}
-              disabled={updateOrganizationMutation.isPending}
-              className="bg-primary hover:bg-primary-dark"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {updateOrganizationMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
+            {activeTab === "organization" && (
+              <Button 
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={updateOrganizationMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {updateOrganizationMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            )}
           </div>
         </div>
       </header>

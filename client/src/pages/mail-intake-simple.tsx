@@ -44,6 +44,9 @@ export default function MailIntake() {
     sender: "",
     trackingNumber: "",
     description: "",
+    courierCompany: "",
+    collectedByStaff: "",
+    collectorName: "",
   });
 
   const { data: mailItems = [] } = useQuery({
@@ -104,6 +107,9 @@ export default function MailIntake() {
         sender: "",
         trackingNumber: "",
         description: "",
+        courierCompany: "",
+        collectedByStaff: "",
+        collectorName: "",
       });
     },
     onError: (error: any) => {
@@ -154,14 +160,14 @@ export default function MailIntake() {
   const handleNotifyRecipient = (id: string) => {
     updateMailItemMutation.mutate({
       id,
-      data: { status: "notified", notifiedAt: new Date().toISOString() },
+      data: { status: "notified", notifiedAt: new Date() },
     });
   };
 
   const handleMarkDelivered = (id: string) => {
     updateMailItemMutation.mutate({
       id,
-      data: { status: "delivered", deliveredAt: new Date().toISOString() },
+      data: { status: "delivered", deliveredAt: new Date() },
     });
   };
 
@@ -259,6 +265,35 @@ export default function MailIntake() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Brief description"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="courierCompany">Courier Company</Label>
+                <select
+                  id="courierCompany"
+                  value={formData.courierCompany}
+                  onChange={(e) => setFormData({ ...formData, courierCompany: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Select courier</option>
+                  <option value="fedex">FedEx</option>
+                  <option value="ups">UPS</option>
+                  <option value="dhl">DHL</option>
+                  <option value="usps">USPS</option>
+                  <option value="amazon">Amazon Delivery</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="collectorName">Who Collected This Package?</Label>
+                <p className="text-sm text-gray-500 mb-2">Staff member who signed for the package</p>
+                <Input
+                  id="collectorName"
+                  value={formData.collectorName}
+                  onChange={(e) => setFormData({ ...formData, collectorName: e.target.value })}
+                  placeholder="Staff member name"
                 />
               </div>
 

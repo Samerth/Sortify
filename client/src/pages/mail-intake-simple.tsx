@@ -26,6 +26,8 @@ interface MailItem {
   photoUrl?: string;
   courierCompany?: string;
   collectorName?: string;
+  locationId?: string;
+  mailroomId?: string;
   recipient?: {
     firstName: string;
     lastName: string;
@@ -141,13 +143,40 @@ export default function MailIntake() {
         collectorName: data.collectorName || null,
       };
 
+      // Handle photo upload if present
+      if (formData.photo) {
+        try {
+          const photoFormData = new FormData();
+          photoFormData.append('photo', formData.photo);
+          
+          const photoResponse = await fetch('/api/upload-photo', {
+            method: 'POST',
+            body: photoFormData,
+            headers: {
+              'x-organization-id': currentOrganization?.id || '',
+            },
+            credentials: 'include',
+          });
+          
+          if (photoResponse.ok) {
+            const { photoUrl } = await photoResponse.json();
+            cleanedData.photoUrl = photoUrl;
+          }
+        } catch (error) {
+          console.log('Photo upload failed, continuing without photo');
+        }
+      }
+
+      // Remove the temporary locationId from cleanedData
+      const { locationId: _, ...finalData } = cleanedData;
+
       const response = await fetch("/api/mail-items", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-organization-id": currentOrganization?.id || "",
         },
-        body: JSON.stringify(cleanedData),
+        body: JSON.stringify(finalData),
         credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to create mail item");
@@ -890,7 +919,7 @@ export default function MailIntake() {
                             }
                             
                             // Find the mailroom name from the mailrooms array
-                            const mailroom = (mailrooms as any[])?.find(room => room.id === (item as any).mailroomId);
+                            const mailroom = (mailrooms as any[])?.find(room => room.id === item.mailroomId);
                             if (mailroom) {
                               return `🏢 ${mailroom.name} (Mailroom)`;
                             }

@@ -42,6 +42,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Photo upload route
+  app.post('/api/upload-photo', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      // For now, return a placeholder URL since we don't have file storage configured
+      // In production, you would upload to a cloud storage service like AWS S3, Cloudinary, etc.
+      const photoUrl = `https://via.placeholder.com/300x200?text=Package+Photo+${Date.now()}`;
+      res.json({ photoUrl });
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      res.status(500).json({ message: "Failed to upload photo" });
+    }
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {

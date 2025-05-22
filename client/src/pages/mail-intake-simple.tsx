@@ -165,11 +165,12 @@ export default function MailIntake() {
     },
     onSuccess: () => {
       toast({ title: "Mail item deleted successfully!" });
-      // Force complete cache refresh
-      queryClient.clear();
-      // Then refetch the data
-      queryClient.refetchQueries({ queryKey: ["/api/mail-items"] });
-      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Force complete cache refresh and refetch
+      queryClient.removeQueries({ queryKey: ["/api/mail-items"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/recent-activity"] });
+      // Force immediate refetch with fresh data
+      window.location.reload();
     },
     onError: (error: any) => {
       toast({

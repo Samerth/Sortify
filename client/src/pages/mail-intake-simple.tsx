@@ -110,6 +110,21 @@ export default function MailIntake() {
     },
   });
 
+  const { data: mailrooms = [] } = useQuery({
+    queryKey: ["/api/mailrooms"],
+    enabled: !!currentOrganization,
+    queryFn: async () => {
+      const response = await fetch("/api/mailrooms", {
+        headers: {
+          "x-organization-id": currentOrganization?.id || "",
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch mailrooms");
+      return response.json();
+    },
+  });
+
   const createMailItemMutation = useMutation({
     mutationFn: async (data: any) => {
       // Clean up data - convert empty strings to null for optional UUID fields
@@ -355,6 +370,15 @@ export default function MailIntake() {
                           {location.name} ({location.type})
                           {location.currentCount !== undefined && location.capacity && 
                             ` - ${location.currentCount}/${location.capacity} items`}
+                        </option>
+                      ))}
+                    </>
+                  ) : mailrooms && mailrooms.length > 0 ? (
+                    <>
+                      <option value="">Select mailroom (optional)</option>
+                      {(mailrooms as any[]).map((mailroom: any) => (
+                        <option key={mailroom.id} value={mailroom.id}>
+                          {mailroom.name}
                         </option>
                       ))}
                     </>

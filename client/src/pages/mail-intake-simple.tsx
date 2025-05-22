@@ -459,7 +459,7 @@ export default function MailIntake() {
                               const overlay = document.createElement('div');
                               overlay.style.cssText = `
                                 position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-                                background: rgba(0,0,0,0.9); z-index: 9999; display: flex; 
+                                background: rgba(0,0,0,0.95); z-index: 999999; display: flex; 
                                 flex-direction: column; align-items: center; justify-content: center;
                               `;
                               
@@ -470,11 +470,11 @@ export default function MailIntake() {
                               video.style.cssText = 'width: 90%; max-width: 400px; height: auto; border-radius: 8px;';
                               
                               const buttonContainer = document.createElement('div');
-                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px;';
+                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px; z-index: 999999;';
                               
                               const captureBtn = document.createElement('button');
                               captureBtn.textContent = '📸 Capture';
-                              captureBtn.style.cssText = 'padding: 12px 24px; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
+                              captureBtn.style.cssText = 'padding: 12px 24px; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; z-index: 999999;';
                               
                               const cancelBtn = document.createElement('button');
                               cancelBtn.textContent = '❌ Cancel';
@@ -559,7 +559,7 @@ export default function MailIntake() {
                               const overlay = document.createElement('div');
                               overlay.style.cssText = `
                                 position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-                                background: rgba(0,0,0,0.9); z-index: 9999; display: flex; 
+                                background: rgba(0,0,0,0.95); z-index: 999999; display: flex; 
                                 flex-direction: column; align-items: center; justify-content: center;
                               `;
                               
@@ -571,14 +571,14 @@ export default function MailIntake() {
                               
                               const instructions = document.createElement('div');
                               instructions.textContent = '📱 Point camera at barcode or QR code';
-                              instructions.style.cssText = 'color: white; font-size: 18px; margin-bottom: 15px; text-align: center;';
+                              instructions.style.cssText = 'color: white; font-size: 18px; margin-bottom: 15px; text-align: center; z-index: 999999;';
                               
                               const buttonContainer = document.createElement('div');
-                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px;';
+                              buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px; z-index: 999999;';
                               
                               const captureBtn = document.createElement('button');
                               captureBtn.textContent = '📷 Scan Barcode';
-                              captureBtn.style.cssText = 'padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
+                              captureBtn.style.cssText = 'padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; z-index: 999999;';
                               
                               const cancelBtn = document.createElement('button');
                               cancelBtn.textContent = '❌ Cancel';

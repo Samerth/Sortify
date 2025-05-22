@@ -210,7 +210,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Mail item not found" });
       }
       
-      const validData = insertMailItemSchema.partial().parse(req.body);
+      // Handle date conversion for notify functionality
+      const bodyData = { ...req.body };
+      if (bodyData.notifiedAt && typeof bodyData.notifiedAt === 'string') {
+        bodyData.notifiedAt = new Date(bodyData.notifiedAt);
+      }
+      if (bodyData.deliveredAt && typeof bodyData.deliveredAt === 'string') {
+        bodyData.deliveredAt = new Date(bodyData.deliveredAt);
+      }
+      
+      const validData = insertMailItemSchema.partial().parse(bodyData);
       const updatedItem = await storage.updateMailItem(req.params.id, validData);
       
       // Create history entry if status changed

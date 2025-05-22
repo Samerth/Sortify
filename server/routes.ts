@@ -255,16 +255,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/mail-items/:id', isAuthenticated, withOrganization, async (req: any, res) => {
     try {
+      console.log(`DELETE request received for mail item: ${req.params.id}`);
+      
       const mailItem = await storage.getMailItem(req.params.id);
       if (!mailItem) {
+        console.log(`Mail item ${req.params.id} not found`);
         return res.status(404).json({ message: "Mail item not found" });
       }
       
+      console.log(`Found mail item, proceeding with deletion: ${req.params.id}`);
       await storage.deleteMailItem(req.params.id);
+      console.log(`Delete completed for mail item: ${req.params.id}`);
+      
       res.json({ message: "Mail item deleted successfully" });
     } catch (error) {
       console.error("Error deleting mail item:", error);
-      res.status(500).json({ message: "Failed to delete mail item" });
+      res.status(500).json({ message: "Failed to delete mail item", error: error.message });
     }
   });
 

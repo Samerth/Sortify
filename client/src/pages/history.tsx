@@ -36,8 +36,8 @@ interface HistoryItem {
 export default function History() {
   const { currentOrganization } = useOrganization();
   const [filters, setFilters] = useState({
-    type: "",
-    status: "",
+    type: "all",
+    status: "all",
     dateRange: "7", // Last 7 days
     search: "",
   });
@@ -106,16 +106,33 @@ export default function History() {
   };
 
   const filteredHistoryItems = historyItems.filter(item => {
-    const searchLower = filters.search.toLowerCase();
-    const recipientName = item.recipient 
-      ? `${item.recipient.firstName} ${item.recipient.lastName}`.toLowerCase()
-      : "";
-    const sender = item.sender?.toLowerCase() || "";
-    const tracking = item.trackingNumber?.toLowerCase() || "";
+    // Type filter
+    if (filters.type !== "all" && item.type !== filters.type) {
+      return false;
+    }
     
-    return recipientName.includes(searchLower) || 
-           sender.includes(searchLower) || 
-           tracking.includes(searchLower);
+    // Status filter
+    if (filters.status !== "all" && item.status !== filters.status) {
+      return false;
+    }
+    
+    // Search filter
+    const searchLower = filters.search.toLowerCase();
+    if (searchLower) {
+      const recipientName = item.recipient 
+        ? `${item.recipient.firstName} ${item.recipient.lastName}`.toLowerCase()
+        : "";
+      const sender = item.sender?.toLowerCase() || "";
+      const tracking = item.trackingNumber?.toLowerCase() || "";
+      
+      if (!recipientName.includes(searchLower) && 
+          !sender.includes(searchLower) && 
+          !tracking.includes(searchLower)) {
+        return false;
+      }
+    }
+    
+    return true;
   });
 
   const getStatusIcon = (status: string) => {
@@ -206,7 +223,7 @@ export default function History() {
                     <SelectValue placeholder="All Types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Types</SelectItem>
+                    <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="package">Package</SelectItem>
                     <SelectItem value="letter">Letter</SelectItem>
                     <SelectItem value="certified_mail">Certified Mail</SelectItem>
@@ -224,7 +241,7 @@ export default function History() {
                     <SelectValue placeholder="All Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Status</SelectItem>
+                    <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="notified">Notified</SelectItem>
                     <SelectItem value="delivered">Delivered</SelectItem>

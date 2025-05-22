@@ -157,6 +157,8 @@ export default function MailIntake() {
 
   const deleteMailItemMutation = useMutation({
     mutationFn: async (mailItemId: string) => {
+      console.log(`🗑️ Frontend: Starting delete for item ${mailItemId}`);
+      
       const response = await fetch(`/api/mail-items/${mailItemId}`, {
         method: "DELETE",
         headers: {
@@ -164,14 +166,21 @@ export default function MailIntake() {
         },
         credentials: "include",
       });
+      
+      console.log(`🗑️ Frontend: Delete response status: ${response.status}`);
+      
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`🗑️ Frontend: Delete failed:`, errorText);
         throw new Error(`Failed to delete mail item: ${errorText}`);
       }
       
       try {
-        return await response.json();
+        const result = await response.json();
+        console.log(`🗑️ Frontend: Delete response:`, result);
+        return result;
       } catch (parseError) {
+        console.log(`🗑️ Frontend: No JSON response, assuming success`);
         return { message: "Mail item deleted successfully" };
       }
     },

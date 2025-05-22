@@ -351,9 +351,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteMailItem(id: string): Promise<void> {
-    // Use raw SQL queries since ORM delete isn't working reliably
-    await db.execute(sql`DELETE FROM mail_item_history WHERE mail_item_id = ${id}`);
-    await db.execute(sql`DELETE FROM mail_items WHERE id = ${id}`);
+    console.log(`=== DELETE OPERATION START for ID: ${id} ===`);
+    
+    try {
+      // Check if item exists before deletion
+      const existsBefore = await db.select({ count: sql`count(*)` }).from(mailItems).where(eq(mailItems.id, id));
+      console.log(`Item exists before delete: ${existsBefore[0]?.count}`);
+      
+      // Delete history first
+      console.log(`Deleting history for mail item: ${id}`);
+      const historyResult = await db.execute(sql`DELETE FROM mail_item_history WHERE mail_item_id = ${id}`);
+      console.log(`History delete result:`, historyResult);
+      
+      // Delete the mail item
+      console.log(`Deleting mail item: ${id}`);
+      const itemResult = await db.execute(sql`DELETE FROM mail_items WHERE id = ${id}`);
+      console.log(`Item delete result:`, itemResult);
+      
+      // Check if item still exists after deletion
+      const existsAfter = await db.select({ count: sql`count(*)` }).from(mailItems).where(eq(mailItems.id, id));
+      console.log(`Item exists after delete: ${existsAfter[0]?.count}`);
+      
+      console.log(`=== DELETE OPERATION COMPLETE for ID: ${id} ===`);
+    } catch (error) {
+      console.error(`=== DELETE OPERATION FAILED for ID: ${id} ===`, error);
+      throw error;
+    }
   }
 
   // Mail item history operations

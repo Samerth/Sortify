@@ -43,7 +43,8 @@ export default function OrganizationSetup() {
 
   const createOrganization = useMutation({
     mutationFn: async (data: OrganizationFormData) => {
-      return await apiRequest(`/api/organizations`, "POST", data);
+      const response = await apiRequest("POST", "/api/organizations", data);
+      return await response.json();
     },
     onSuccess: () => {
       toast({

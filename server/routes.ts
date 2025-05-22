@@ -483,8 +483,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Photo upload endpoint
   app.post("/api/upload-photo", withOrganization, async (req: any, res) => {
     try {
-      // Return a placeholder photo URL for now
-      const photoUrl = `/api/photos/placeholder-${Date.now()}.jpg`;
+      // For now, return a working demo image URL
+      const photoUrl = "https://images.unsplash.com/photo-1566479179817-0d5ad74d7ef9?w=400&h=300&fit=crop&crop=center&auto=format&q=80";
       res.json({ photoUrl });
     } catch (error) {
       console.error("Photo upload error:", error);

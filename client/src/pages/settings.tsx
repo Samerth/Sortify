@@ -17,7 +17,8 @@ import {
   User, 
   Shield, 
   Save,
-  Settings as SettingsIcon 
+  Settings as SettingsIcon,
+  Plus
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -381,12 +382,27 @@ export default function Settings() {
                       </div>
                     </div>
 
-                    <div className="text-center py-8">
-                      <SettingsIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500 mb-2">Mailroom configuration</p>
-                      <p className="text-sm text-gray-400">
-                        Configure multiple mailroom locations and their specific settings.
-                      </p>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium text-gray-900">Storage Locations</h4>
+                        <Button size="sm">
+                          Add Location
+                        </Button>
+                      </div>
+                      
+                      <div className="text-center py-8">
+                        <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500 mb-2">Storage Location Management</p>
+                        <p className="text-sm text-gray-400">
+                          Create bins, shelves, and storage areas to organize packages efficiently.
+                          This feature helps staff quickly locate packages during pickup.
+                        </p>
+                        <div className="mt-4">
+                          <p className="text-sm text-gray-600">
+                            💡 <strong>Coming soon:</strong> Full location management with capacity tracking
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

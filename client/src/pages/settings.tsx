@@ -310,12 +310,15 @@ export default function Settings() {
 
   const deleteLocationMutation = useMutation({
     mutationFn: async (locationId: string) => {
-      return apiRequest(`/api/mailroom-locations/${locationId}`, {
+      const response = await fetch(`/api/mailroom-locations/${locationId}`, {
         method: 'DELETE',
         headers: { 
           'x-organization-id': currentOrganization!.id,
         },
+        credentials: 'include',
       });
+      if (!response.ok) throw new Error('Failed to delete storage location');
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: "Storage location deleted successfully!" });

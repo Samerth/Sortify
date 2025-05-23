@@ -946,7 +946,7 @@ export default function MailIntake() {
                               alt="Package photo"
                               className="max-w-xs max-h-48 rounded-lg border shadow-sm object-cover cursor-pointer hover:opacity-80 transition-opacity"
                               onClick={() => {
-                                setSelectedPhoto(item.photoUrl);
+                                setSelectedPhoto(item.photoUrl || "");
                                 setPhotoDialogOpen(true);
                               }}
                             />
@@ -1003,6 +1003,22 @@ export default function MailIntake() {
           )}
         </CardContent>
       </Card>
+
+      {/* Photo Dialog */}
+      <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-4">
+          <DialogHeader>
+            <DialogTitle>Package Photo</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center">
+            <img 
+              src={selectedPhoto} 
+              alt="Package photo - full size"
+              className="max-w-full max-h-[70vh] object-contain rounded-lg"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

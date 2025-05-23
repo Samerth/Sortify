@@ -942,9 +942,7 @@ export default function MailIntake() {
                             <img 
                               src={item.photoUrl} 
                               alt="Package photo"
-                              className="max-w-xs max-h-48 rounded-lg border shadow-sm object-cover cursor-pointer hover:shadow-md transition-shadow"
-                              onClick={() => window.open(item.photoUrl, '_blank')}
-                              title="Click to view full size"
+                              className="max-w-xs max-h-48 rounded-lg border shadow-sm object-cover"
                             />
                           </div>
                         </div>

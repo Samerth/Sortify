@@ -42,7 +42,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-
+  // Photo upload route
+  app.post('/api/upload-photo', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      // For now, return a placeholder URL since we don't have file storage configured
+      // In production, you would upload to a cloud storage service like AWS S3, Cloudinary, etc.
+      const photoUrl = `https://via.placeholder.com/300x200?text=Package+Photo+${Date.now()}`;
+      res.json({ photoUrl });
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      res.status(500).json({ message: "Failed to upload photo" });
+    }
+  });
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -472,9 +483,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Photo upload endpoint
   app.post("/api/upload-photo", withOrganization, async (req: any, res) => {
     try {
-      // Create a simple demo image as a data URL - this will always work
-      const demoImageDataUrl = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzQ0NzVBNCIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTMwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QYWNrYWdlIFBob3RvPC90ZXh0PgogIDx0ZXh0IHg9IjIwMCIgeT0iMTcwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNFNUU3RUIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNsaWNrIHRvIGVubGFyZ2U8L3RleHQ+Cjwvc3ZnPgo=";
-      res.json({ photoUrl: demoImageDataUrl });
+      // Return a placeholder photo URL for now
+      const photoUrl = `/api/photos/placeholder-${Date.now()}.jpg`;
+      res.json({ photoUrl });
     } catch (error) {
       console.error("Photo upload error:", error);
       res.status(500).json({ message: "Failed to upload photo" });

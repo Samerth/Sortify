@@ -121,7 +121,7 @@ export const mailItems = pgTable("mail_items", {
   notifiedAt: timestamp("notified_at"),
   deliveredAt: timestamp("delivered_at"),
   notes: text("notes"),
-  photoUrl: varchar("photo_url", { length: 2000 }),
+  photoUrl: varchar("photo_url", { length: 500 }),
   createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

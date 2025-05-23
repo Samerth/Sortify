@@ -317,6 +317,68 @@ export default function MailIntake() {
     setExpandedItem(expandedItem === itemId ? null : itemId);
   };
 
+  const handlePhotoUpload = async (mailItemId: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        try {
+          // Upload photo
+          const formData = new FormData();
+          formData.append('photo', file);
+          
+          const uploadResponse = await fetch('/api/upload-photo', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'x-organization-id': currentOrganization?.id || '',
+            },
+            credentials: 'include',
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error('Failed to upload photo');
+          }
+
+          const { photoUrl } = await uploadResponse.json();
+
+          // Update mail item with new photo
+          const updateResponse = await fetch(`/api/mail-items/${mailItemId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-organization-id': currentOrganization?.id || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ photoUrl }),
+          });
+
+          if (!updateResponse.ok) {
+            throw new Error('Failed to update mail item with photo');
+          }
+
+          // Refresh the mail items list
+          queryClient.invalidateQueries({ queryKey: ["/api/mail-items"] });
+          
+          toast({
+            title: "Success",
+            description: "Package photo uploaded successfully!",
+          });
+        } catch (error) {
+          console.error('Photo upload error:', error);
+          toast({
+            title: "Error",
+            description: "Failed to upload photo. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+    input.click();
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { label: "Pending", variant: "secondary" as const },
@@ -932,21 +994,36 @@ export default function MailIntake() {
                       </div>
                       
                       {/* Photo Display */}
-                      {item.photoUrl && (
-                        <div className="mb-4">
-                          <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                            <Camera className="w-4 h-4 mr-2 text-gray-500" />
-                            Package Photo
-                          </div>
-                          <div className="pl-6">
-                            <img 
-                              src={item.photoUrl} 
-                              alt="Package photo"
-                              className="max-w-xs max-h-48 rounded-lg border shadow-sm object-cover"
-                            />
-                          </div>
+                      <div className="mb-4">
+                        <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                          <Camera className="w-4 h-4 mr-2 text-gray-500" />
+                          Package Photo
                         </div>
-                      )}
+                        <div className="pl-6">
+                          {item.photoUrl ? (
+                            <div 
+                              className="cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() => handlePhotoUpload(item.id)}
+                            >
+                              <img 
+                                src={item.photoUrl} 
+                                alt="Package photo"
+                                className="max-w-xs max-h-48 rounded-lg border shadow-sm object-cover"
+                              />
+                              <p className="text-xs text-gray-500 mt-1">Click to change photo</p>
+                            </div>
+                          ) : (
+                            <div 
+                              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                              onClick={() => handlePhotoUpload(item.id)}
+                            >
+                              <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                              <p className="text-sm text-gray-600 font-medium">Add Package Photo</p>
+                              <p className="text-xs text-gray-500">Click to upload or take a photo</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                       
                       <div className="flex items-center space-x-2 pt-2 border-t border-gray-200">
                         {item.status === "pending" && (

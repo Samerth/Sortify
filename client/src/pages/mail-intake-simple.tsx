@@ -66,6 +66,8 @@ export default function MailIntake() {
   const [photoMethod, setPhotoMethod] = useState<'camera' | 'barcode' | 'upload'>('upload');
   const [isCapturing, setIsCapturing] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<string>("");
 
   const { data: mailItems = [] } = useQuery({
     queryKey: ["/api/mail-items"],
@@ -942,8 +944,13 @@ export default function MailIntake() {
                             <img 
                               src={item.photoUrl} 
                               alt="Package photo"
-                              className="max-w-xs max-h-48 rounded-lg border shadow-sm object-cover"
+                              className="max-w-xs max-h-48 rounded-lg border shadow-sm object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() => {
+                                setSelectedPhoto(item.photoUrl);
+                                setPhotoDialogOpen(true);
+                              }}
                             />
+                            <p className="text-xs text-gray-500 mt-1">Click to view full size</p>
                           </div>
                         </div>
                       )}

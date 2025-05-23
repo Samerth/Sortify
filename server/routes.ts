@@ -483,8 +483,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Photo upload endpoint
   app.post("/api/upload-photo", withOrganization, async (req: any, res) => {
     try {
-      // Return a working demo image URL
-      const photoUrl = "https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Package+Photo";
+      // For now, we'll need to implement proper file upload handling
+      // This requires either cloud storage (AWS S3, Cloudinary, etc.) or local file storage
+      console.log("Photo upload request received:", req.headers['content-type']);
+      console.log("Request body type:", typeof req.body);
+      
+      // Generate a unique filename for the uploaded photo
+      const timestamp = Date.now();
+      const photoUrl = `/uploads/photos/${timestamp}.jpg`;
+      
+      // TODO: Implement actual file processing and storage
+      // For demonstration, return the path where the file would be stored
       res.json({ photoUrl });
     } catch (error) {
       console.error("Photo upload error:", error);

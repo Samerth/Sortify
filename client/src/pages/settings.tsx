@@ -950,6 +950,99 @@ export default function Settings() {
                 </Card>
               </TabsContent>
 
+              {/* User Management */}
+              <TabsContent value="users">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center">
+                        <User className="w-6 h-6 text-primary mr-3" />
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">User Management & Licensing</h3>
+                          <p className="text-gray-600">Manage users and organization licenses</p>
+                        </div>
+                      </div>
+                      <Button>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Invite User
+                      </Button>
+                    </div>
+
+                    {/* License Overview */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                      <Card className="bg-blue-50 border-blue-200">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-blue-600">1</div>
+                            <div className="text-sm text-blue-600">Active Users</div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-green-50 border-green-200">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-600">5</div>
+                            <div className="text-sm text-green-600">License Limit</div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-orange-50 border-orange-200">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-orange-600">4</div>
+                            <div className="text-sm text-orange-600">Available Seats</div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Current Users */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-gray-900">Current Users</h4>
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="bg-gray-50 px-4 py-3 border-b">
+                          <div className="grid grid-cols-4 text-sm font-medium text-gray-700">
+                            <div>Name</div>
+                            <div>Email</div>
+                            <div>Role</div>
+                            <div>Actions</div>
+                          </div>
+                        </div>
+                        <div className="divide-y">
+                          <div className="px-4 py-3">
+                            <div className="grid grid-cols-4 text-sm">
+                              <div className="font-medium">You</div>
+                              <div className="text-gray-600">samerth.pathak@codsphere.ca</div>
+                              <div>
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  Admin
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 text-xs">Cannot remove</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Upgrade License */}
+                    <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium text-gray-900">Need more user seats?</h4>
+                          <p className="text-sm text-gray-600">Upgrade your license to add more team members</p>
+                        </div>
+                        <Button variant="outline">
+                          Upgrade License
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
               {/* Account Settings */}
               <TabsContent value="account">
                 <Card>

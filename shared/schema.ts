@@ -25,13 +25,15 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)]
 );
 
-// User storage table (mandatory for Replit Auth)
+// User storage table
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  password: varchar("password", { length: 255 }).notNull(), // hashed password
+  firstName: varchar("first_name", { length: 255 }),
+  lastName: varchar("last_name", { length: 255 }),
+  profileImageUrl: varchar("profile_image_url", { length: 500 }),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -46,6 +48,8 @@ export const organizations = pgTable("organizations", {
   contactEmail: varchar("contact_email", { length: 255 }),
   contactPhone: varchar("contact_phone", { length: 50 }),
   logoUrl: varchar("logo_url", { length: 500 }),
+  // License management
+  maxUsers: integer("max_users").default(5), // number of user licenses
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -54,8 +58,21 @@ export const organizations = pgTable("organizations", {
 export const organizationMembers = pgTable("organization_members", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
+  userId: uuid("user_id").references(() => users.id).notNull(),
   role: varchar("role", { length: 50 }).notNull().default("member"), // admin, member
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User invitations for joining organizations
+export const userInvitations = pgTable("user_invitations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  role: varchar("role", { length: 50 }).notNull().default("member"),
+  invitedBy: uuid("invited_by").references(() => users.id).notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(), // invitation token
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -224,6 +224,22 @@ export class DatabaseStorage implements IStorage {
     await db.delete(recipients).where(eq(recipients.id, id));
   }
 
+  async getRecipientByEmail(organizationId: string, email: string): Promise<Recipient | undefined> {
+    const [recipient] = await db
+      .select()
+      .from(recipients)
+      .where(and(eq(recipients.organizationId, organizationId), eq(recipients.email, email)));
+    return recipient;
+  }
+
+  async getRecipientByPhone(organizationId: string, phone: string): Promise<Recipient | undefined> {
+    const [recipient] = await db
+      .select()
+      .from(recipients)
+      .where(and(eq(recipients.organizationId, organizationId), eq(recipients.phone, phone)));
+    return recipient;
+  }
+
   // Mail item operations
   async getMailItems(organizationId: string, filters?: {
     type?: string;

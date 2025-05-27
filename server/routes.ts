@@ -147,11 +147,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         organizationId: req.organizationId,
       });
       
+      // Check for duplicate email within the same organization (if email provided)
+      if (validData.email && validData.email.trim() !== "") {
+        const existingEmailRecipient = await storage.getRecipientByEmail(req.organizationId, validData.email);
+        if (existingEmailRecipient) {
+          return res.status(400).json({ message: "A recipient with this email already exists" });
+        }
+      }
+      
+      // Check for duplicate phone within the same organization (if phone provided)
+      if (validData.phone && validData.phone.trim() !== "") {
+        const existingPhoneRecipient = await storage.getRecipientByPhone(req.organizationId, validData.phone);
+        if (existingPhoneRecipient) {
+          return res.status(400).json({ message: "A recipient with this phone number already exists" });
+        }
+      }
+      
       const recipient = await storage.createRecipient(validData);
       res.json(recipient);
     } catch (error) {
       console.error("Error creating recipient:", error);
-      res.status(500).json({ message: "Failed to create recipient" });
+      if (error instanceof Error && error.message.includes("validation")) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to create recipient" });
+      }
     }
   });
 

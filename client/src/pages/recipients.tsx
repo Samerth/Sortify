@@ -104,7 +104,20 @@ export default function Recipients() {
 
   const updateRecipientMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<RecipientFormData> }) => {
-      return apiRequest("PUT", `/api/recipients/${id}`, data);
+      const response = await fetch(`/api/recipients/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Organization-Id": currentOrganization!.id,
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update recipient");
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/recipients"] });

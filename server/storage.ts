@@ -225,10 +225,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecipientByEmail(organizationId: string, email: string): Promise<Recipient | undefined> {
+    if (!email || email.trim() === "") return undefined;
     const [recipient] = await db
       .select()
       .from(recipients)
-      .where(and(eq(recipients.organizationId, organizationId), eq(recipients.email, email)));
+      .where(and(eq(recipients.organizationId, organizationId), eq(recipients.email, email.trim())));
     return recipient;
   }
 

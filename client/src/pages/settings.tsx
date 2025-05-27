@@ -792,7 +792,7 @@ export default function Settings() {
                                           {mailroomLocations.map((location: any) => (
                                             <div key={location.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                                               <span className="text-sm text-gray-600">
-                                                {location.name} ({location.locationType})
+                                                {location.name} ({location.type})
                                               </span>
                                               <Button 
                                                 size="sm" 

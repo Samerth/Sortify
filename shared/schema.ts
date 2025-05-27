@@ -266,6 +266,14 @@ export const insertRecipientSchema = createInsertSchema(recipients).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  firstName: z.string().min(1, "First name is required").max(100, "First name must be less than 100 characters"),
+  lastName: z.string().min(1, "Last name is required").max(100, "Last name must be less than 100 characters"),
+  email: z.string().email("Invalid email format").optional().or(z.literal("")),
+  phone: z.string().min(1, "Phone number is required").regex(/^[\+]?[1-9][\d]{0,15}$/, "Invalid phone number format"),
+  unit: z.string().optional(),
+  department: z.string().optional(),
+  recipientType: z.enum(["guest", "employee", "resident"]).default("guest"),
 });
 
 export type MailItem = typeof mailItems.$inferSelect;

@@ -52,6 +52,8 @@ export interface IStorage {
   createRecipient(data: InsertRecipient): Promise<Recipient>;
   updateRecipient(id: string, data: Partial<InsertRecipient>): Promise<Recipient>;
   deleteRecipient(id: string): Promise<void>;
+  getRecipientByEmail(organizationId: string, email: string): Promise<Recipient | undefined>;
+  getRecipientByPhone(organizationId: string, phone: string): Promise<Recipient | undefined>;
   
   // Mail item operations
   getMailItems(organizationId: string, filters?: {

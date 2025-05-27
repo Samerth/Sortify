@@ -153,7 +153,7 @@ export const mailItemHistory = pgTable("mail_item_history", {
   previousStatus: varchar("previous_status", { length: 50 }),
   newStatus: varchar("new_status", { length: 50 }),
   notes: text("notes"),
-  performedBy: varchar("performed_by").references(() => users.id),
+  performedBy: uuid("performed_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

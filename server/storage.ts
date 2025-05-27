@@ -19,7 +19,7 @@ import {
   type InsertMailroomLocation,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, count, sql } from "drizzle-orm";
+import { eq, and, desc, count, sql, inArray } from "drizzle-orm";
 import {
   users,
   organizations,
@@ -221,6 +221,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteRecipient(id: string): Promise<void> {
+    // Simple approach: prevent deletion if recipient has mail items
+    const mailItemCount = await db.select({ count: count() }).from(mailItems).where(eq(mailItems.recipientId, id));
+    if (mailItemCount[0]?.count > 0) {
+      throw new Error("Cannot delete recipient with existing mail items. Please remove all mail items first.");
+    }
+    
     await db.delete(recipients).where(eq(recipients.id, id));
   }
 

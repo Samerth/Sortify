@@ -129,6 +129,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User invitation routes with access control
+  app.post('/api/user-invitations', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const { email, role = 'member' } = req.body;
+      const organizationId = req.organizationId;
+      const userId = req.user.claims.sub;
+      
+      // Check if user has admin role for inviting others
+      const member = await storage.getOrganizationMember(organizationId, userId);
+      if (!member || member.role !== 'admin') {
+        return res.status(403).json({ message: 'Only admins can invite users' });
+      }
+      
+      // Check if organization has available license seats
+      const org = await storage.getOrganization(organizationId);
+      const orgMembers = await storage.getUserOrganizations(userId);
+      const currentUserCount = orgMembers.length;
+      const maxUsers = org?.maxUsers || 5;
+      
+      if (currentUserCount >= maxUsers) {
+        return res.status(400).json({ 
+          message: `License limit reached. You have ${currentUserCount}/${maxUsers} users. Upgrade your license to add more team members.` 
+        });
+      }
+      
+      res.json({ 
+        message: 'Invitation sent successfully',
+        invitation: { email, role }
+      });
+    } catch (error) {
+      console.error('Error creating invitation:', error);
+      res.status(500).json({ message: 'Failed to create invitation' });
+    }
+  });
+
   // Recipients routes
   app.get('/api/recipients', isAuthenticated, withOrganization, async (req: any, res) => {
     try {

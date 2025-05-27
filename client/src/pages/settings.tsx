@@ -78,6 +78,32 @@ export default function Settings() {
   const [selectedMailroomId, setSelectedMailroomId] = useState<string | null>(null);
   const [editingMailroom, setEditingMailroom] = useState<any>(null);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("member");
+
+  // Invite user mutation
+  const inviteUserMutation = useMutation({
+    mutationFn: async (data: { email: string; role: string }) => {
+      const res = await apiRequest("POST", "/api/user-invitations", data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Invitation sent!",
+        description: "The team member will receive an email invitation to join your organization.",
+      });
+      setShowInviteDialog(false);
+      setInviteEmail("");
+      setInviteRole("member");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to send invitation",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const form = useForm<OrganizationFormData>({
     resolver: zodResolver(organizationFormSchema),
@@ -1113,6 +1139,67 @@ export default function Settings() {
           </div>
         </div>
       </main>
+
+      {/* Invite User Dialog */}
+      <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5" />
+              Invite Team Member
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Email Address</label>
+              <Input 
+                type="email" 
+                placeholder="colleague@company.com"
+                className="mt-1"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Role</label>
+              <select 
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md"
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value)}
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <p className="text-sm text-blue-700">
+                <strong>Access Control:</strong> Members can view and manage mail items. Admins can also manage users, settings, and organization configuration.
+              </p>
+            </div>
+            <div className="bg-green-50 p-3 rounded-lg">
+              <p className="text-sm text-green-700">
+                <strong>License Check:</strong> You have 4 available seats remaining (1/5 used).
+              </p>
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowInviteDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={() => inviteUserMutation.mutate({ email: inviteEmail, role: inviteRole })}
+                disabled={!inviteEmail || inviteUserMutation.isPending}
+              >
+                {inviteUserMutation.isPending ? "Sending..." : "Send Invitation"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

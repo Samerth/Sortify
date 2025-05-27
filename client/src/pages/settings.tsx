@@ -425,6 +425,13 @@ export default function Settings() {
                       Account
                     </TabsTrigger>
                     <TabsTrigger 
+                      value="users" 
+                      className="justify-start px-3 py-2"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      User Management
+                    </TabsTrigger>
+                    <TabsTrigger 
                       value="security" 
                       className="justify-start px-3 py-2"
                     >

@@ -18,8 +18,10 @@ import {
   Shield, 
   Save,
   Settings as SettingsIcon,
-  Plus
+  Plus,
+  Mail
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertOrganizationSchema } from "@shared/schema";
@@ -75,6 +77,7 @@ export default function Settings() {
   const [showMailroomForm, setShowMailroomForm] = useState(false);
   const [selectedMailroomId, setSelectedMailroomId] = useState<string | null>(null);
   const [editingMailroom, setEditingMailroom] = useState<any>(null);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
 
   const form = useForm<OrganizationFormData>({
     resolver: zodResolver(organizationFormSchema),
@@ -962,7 +965,7 @@ export default function Settings() {
                           <p className="text-gray-600">Manage users and organization licenses</p>
                         </div>
                       </div>
-                      <Button>
+                      <Button onClick={() => setShowInviteDialog(true)}>
                         <Plus className="w-4 h-4 mr-2" />
                         Invite User
                       </Button>

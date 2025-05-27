@@ -25,15 +25,13 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)]
 );
 
-// User storage table
+// User storage table (compatible with Replit Auth)
 export const users = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  email: varchar("email", { length: 255 }).unique().notNull(),
-  password: varchar("password", { length: 255 }).notNull(), // hashed password
-  firstName: varchar("first_name", { length: 255 }),
-  lastName: varchar("last_name", { length: 255 }),
-  profileImageUrl: varchar("profile_image_url", { length: 500 }),
-  isActive: boolean("is_active").default(true),
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -58,7 +56,7 @@ export const organizations = pgTable("organizations", {
 export const organizationMembers = pgTable("organization_members", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
-  userId: uuid("user_id").references(() => users.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   role: varchar("role", { length: 50 }).notNull().default("member"), // admin, member
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -69,7 +67,7 @@ export const userInvitations = pgTable("user_invitations", {
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   role: varchar("role", { length: 50 }).notNull().default("member"),
-  invitedBy: uuid("invited_by").references(() => users.id).notNull(),
+  invitedBy: varchar("invited_by").references(() => users.id).notNull(),
   token: varchar("token", { length: 255 }).notNull().unique(), // invitation token
   expiresAt: timestamp("expires_at").notNull(),
   usedAt: timestamp("used_at"),
@@ -140,7 +138,7 @@ export const mailItems = pgTable("mail_items", {
   deliveredAt: timestamp("delivered_at"),
   notes: text("notes"),
   photoUrl: varchar("photo_url", { length: 500 }),
-  createdBy: uuid("created_by").references(() => users.id),
+  createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -153,7 +151,7 @@ export const mailItemHistory = pgTable("mail_item_history", {
   previousStatus: varchar("previous_status", { length: 50 }),
   newStatus: varchar("new_status", { length: 50 }),
   notes: text("notes"),
-  performedBy: uuid("performed_by").references(() => users.id),
+  performedBy: varchar("performed_by"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

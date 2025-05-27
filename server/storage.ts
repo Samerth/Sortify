@@ -42,6 +42,7 @@ export interface IStorage {
   getOrganization(id: string): Promise<Organization | undefined>;
   getUserOrganizations(userId: string): Promise<(Organization & { role: string })[]>;
   updateOrganization(id: string, data: Partial<InsertOrganization>): Promise<Organization>;
+  getOrganizationByEmailDomain(domain: string): Promise<Organization | undefined>;
   
   // Organization member operations
   addOrganizationMember(data: InsertOrganizationMember): Promise<OrganizationMember>;
@@ -169,6 +170,14 @@ export class DatabaseStorage implements IStorage {
       .set({ ...data, updatedAt: new Date() })
       .where(eq(organizations.id, id))
       .returning();
+    return organization;
+  }
+
+  async getOrganizationByEmailDomain(domain: string): Promise<Organization | undefined> {
+    const [organization] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.emailDomain, domain));
     return organization;
   }
 

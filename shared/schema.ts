@@ -40,6 +40,7 @@ export const users = pgTable("users", {
 export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(),
+  emailDomain: varchar("email_domain", { length: 255 }), // for auto-joining users by email domain
   address: text("address"),
   contactName: varchar("contact_name", { length: 255 }),
   contactEmail: varchar("contact_email", { length: 255 }),

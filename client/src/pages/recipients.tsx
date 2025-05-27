@@ -59,6 +59,7 @@ export default function Recipients() {
       phone: "",
       unit: "",
       department: "",
+      recipientType: "guest",
       isActive: true,
     },
   });
@@ -138,7 +139,15 @@ export default function Recipients() {
 
   const deleteRecipientMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/recipients/${id}`, {});
+      const response = await fetch(`/api/recipients/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Organization-Id": currentOrganization!.id,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to delete recipient");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/recipients"] });

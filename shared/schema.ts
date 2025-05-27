@@ -269,8 +269,8 @@ export const insertRecipientSchema = createInsertSchema(recipients).omit({
 }).extend({
   firstName: z.string().min(1, "First name is required").max(100, "First name must be less than 100 characters"),
   lastName: z.string().min(1, "Last name is required").max(100, "Last name must be less than 100 characters"),
-  email: z.string().email("Invalid email format").optional().or(z.literal("")),
-  phone: z.string().min(1, "Phone number is required").regex(/^[\+]?[1-9][\d]{0,15}$/, "Invalid phone number format"),
+  email: z.string().min(1, "Email is required").email("Invalid email format"),
+  phone: z.string().optional().or(z.literal("")),
   unit: z.string().optional(),
   department: z.string().optional(),
   recipientType: z.enum(["guest", "employee", "resident"]).default("guest"),

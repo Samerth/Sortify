@@ -147,12 +147,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         organizationId: req.organizationId,
       });
       
-      // Check for duplicate email within the same organization (if email provided)
-      if (validData.email && validData.email.trim() !== "") {
-        const existingEmailRecipient = await storage.getRecipientByEmail(req.organizationId, validData.email);
-        if (existingEmailRecipient) {
-          return res.status(400).json({ message: "A recipient with this email already exists" });
-        }
+      // Check for duplicate email within the same organization 
+      const existingEmailRecipient = await storage.getRecipientByEmail(req.organizationId, validData.email);
+      if (existingEmailRecipient) {
+        return res.status(400).json({ message: "A recipient with this email already exists" });
       }
       
       // Check for duplicate phone within the same organization (if phone provided)

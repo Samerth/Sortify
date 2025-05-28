@@ -131,6 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // User invitation routes with access control
   app.post('/api/user-invitations', isAuthenticated, withOrganization, async (req: any, res) => {
+    console.log('🎯 Invitation route hit!', { body: req.body, headers: req.headers });
     try {
       const { email, role = 'member' } = req.body;
       const organizationId = req.organizationId;

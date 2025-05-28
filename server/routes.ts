@@ -154,9 +154,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      res.json({ 
+      // For now, just simulate sending the invitation
+      // In a real app, you would:
+      // 1. Store the invitation in the database
+      // 2. Send an email with invitation link
+      
+      res.status(200).json({ 
+        success: true,
         message: 'Invitation sent successfully',
-        invitation: { email, role }
+        invitation: { 
+          email: email,
+          role: role 
+        }
       });
     } catch (error) {
       console.error('Error creating invitation:', error);

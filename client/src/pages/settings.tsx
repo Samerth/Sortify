@@ -85,7 +85,15 @@ export default function Settings() {
   const inviteUserMutation = useMutation({
     mutationFn: async (data: { email: string; role: string }) => {
       const res = await apiRequest("POST", "/api/user-invitations", data);
-      return await res.json();
+      const responseText = await res.text();
+      console.log("Raw response:", responseText);
+      try {
+        return JSON.parse(responseText);
+      } catch (error) {
+        console.error("JSON parse error:", error);
+        console.error("Response text:", responseText);
+        throw new Error("Invalid JSON response from server");
+      }
     },
     onSuccess: () => {
       toast({

@@ -13,7 +13,7 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   // Get organization ID from localStorage for organization-scoped requests
-  const currentOrgId = localStorage.getItem('currentOrganizationId');
+  const currentOrgId = localStorage.getItem('selectedOrganizationId');
   
   const headers: Record<string, string> = {};
   if (data) {

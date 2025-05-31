@@ -32,6 +32,7 @@ import {
   integrations,
   mailrooms,
   mailroomLocations,
+  userInvitations,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -149,6 +150,60 @@ export class DatabaseStorage implements IStorage {
       .values(userData)
       .returning();
     return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  // Invitation operations
+  async createInvitation(data: InsertUserInvitation): Promise<UserInvitation> {
+    const [invitation] = await db
+      .insert(userInvitations)
+      .values(data)
+      .returning();
+    return invitation;
+  }
+
+  async getPendingInvitation(organizationId: string, email: string): Promise<UserInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(userInvitations)
+      .where(
+        and(
+          eq(userInvitations.organizationId, organizationId),
+          eq(userInvitations.email, email),
+          sql`${userInvitations.usedAt} IS NULL`,
+          sql`${userInvitations.expiresAt} > NOW()`
+        )
+      );
+    return invitation;
+  }
+
+  async deleteInvitation(id: string): Promise<void> {
+    await db.delete(userInvitations).where(eq(userInvitations.id, id));
+  }
+
+  async getInvitationByToken(token: string): Promise<UserInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(userInvitations)
+      .where(
+        and(
+          eq(userInvitations.token, token),
+          sql`${userInvitations.usedAt} IS NULL`,
+          sql`${userInvitations.expiresAt} > NOW()`
+        )
+      );
+    return invitation;
+  }
+
+  async markInvitationAsUsed(id: string): Promise<void> {
+    await db
+      .update(userInvitations)
+      .set({ usedAt: new Date() })
+      .where(eq(userInvitations.id, id));
   }
 
   // Organization operations

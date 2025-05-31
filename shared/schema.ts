@@ -320,6 +320,14 @@ export const insertMailroomLocationSchema = createInsertSchema(mailroomLocations
   updatedAt: true,
 });
 
+export type UserInvitation = typeof userInvitations.$inferSelect;
+export type InsertUserInvitation = typeof userInvitations.$inferInsert;
+export const insertUserInvitationSchema = createInsertSchema(userInvitations).omit({
+  id: true,
+  createdAt: true,
+  usedAt: true,
+});
+
 export type Integration = typeof integrations.$inferSelect;
 export type InsertIntegration = typeof integrations.$inferInsert;
 export const insertIntegrationSchema = createInsertSchema(integrations).omit({

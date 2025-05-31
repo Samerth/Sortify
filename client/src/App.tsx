@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { OrganizationProvider, useOrganization } from "@/components/OrganizationProvider";
 import OrganizationSetup from "@/components/OrganizationSetup";
-import LoginPage from "@/pages/login";
+import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import MailIntake from "@/pages/mail-intake-simple";
 import PendingPickups from "@/pages/pending-pickups";
@@ -75,7 +75,7 @@ function Router() {
           <AuthenticatedRoutes />
         </Route>
       ) : (
-        <Route path="*" component={LoginPage} />
+        <Route path="*" component={AuthPage} />
       )}
     </Switch>
   );

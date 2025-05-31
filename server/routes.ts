@@ -58,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -70,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Organization routes
   app.get('/api/organizations', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const organizations = await storage.getUserOrganizations(userId);
       res.json(organizations);
     } catch (error) {
@@ -81,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/organizations', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validData = insertOrganizationSchema.parse(req.body);
       
       // Create organization
@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, role = 'member' } = req.body;
       const organizationId = req.organizationId;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Check if user has admin role for inviting others
       const member = await storage.getOrganizationMember(organizationId, userId);
@@ -274,7 +274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/mail-items', isAuthenticated, withOrganization, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validData = insertMailItemSchema.parse({
         ...req.body,
         organizationId: req.organizationId,
@@ -300,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/mail-items/:id', isAuthenticated, withOrganization, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const currentItem = await storage.getMailItem(req.params.id);
       
       if (!currentItem) {

@@ -77,8 +77,11 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
     await mailService.send(emailContent);
     console.log(`Invitation email sent successfully to ${params.to}`);
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('SendGrid email error:', error);
+    if (error.response?.body?.errors) {
+      console.error('SendGrid error details:', error.response.body.errors);
+    }
     return false;
   }
 }

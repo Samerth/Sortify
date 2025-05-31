@@ -1,0 +1,51 @@
+Warning: A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component. More info: https://reactjs.org/link/controlled-components
+    at input
+    at _c (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/components/ui/input.tsx:20:11)
+    at https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-EVLBUYTV.js?v=03650f7b:79:13
+    at https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-EVLBUYTV.js?v=03650f7b:56:13
+    at https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/components/ui/form.tsx:130:9
+    at div
+    at https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/components/ui/form.tsx:72:6
+    at Controller (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-4BFJKWC4.js?v=03650f7b:298:35)
+    at FormField (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/components/ui/form.tsx:33:6)
+    at form
+    at FormProvider (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-4BFJKWC4.js?v=03650f7b:102:11)
+    at div
+    at _c9 (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-BOL2CCOG.js?v=03650f7b:42:13
+    at Presence (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-BKU5K62D.js?v=03650f7b:24:11)
+    at https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=03650f7b:383:13
+    at _c5 (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/components/ui/tabs.tsx:72:12)
+    at div
+    at https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-BOL2CCOG.js?v=03650f7b:42:13
+    at Provider (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-M3NVYRND.js?v=03650f7b:48:15)
+    at https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=03650f7b:261:7
+    at div
+    at div
+    at main
+    at Settings (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/pages/settings.tsx:60:35)
+    at Route (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=03650f7b:323:16)
+    at Switch (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=03650f7b:379:17)
+    at ProtectedContent (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/App.tsx?v=YDXR0SZ_BD1D55lFpbMms:38:40)
+    at div
+    at div
+    at Layout (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/components/Layout.tsx:20:34)
+    at OrganizationProvider (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/components/OrganizationProvider.tsx:30:40)
+    at AuthenticatedRoutes
+    at Route (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=03650f7b:323:16)
+    at Switch (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=03650f7b:379:17)
+    at Router (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/src/App.tsx?v=YDXR0SZ_BD1D55lFpbMms:131:31)
+    at Provider (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-M3NVYRND.js?v=03650f7b:48:15)
+    at TooltipProvider (https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=03650f7b:59:5)
+    at QueryClientProvider…
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+🔧 API Request Debug: 
+Object {url: "/api/user-invitations", method: "POST", currentOrgId: "40a38107-2310-475b-a8f7-b98de02c9e12"}
+currentOrgId: "40a38107-2310-475b-a8f7-b98de02c9e12"
+method: "POST"
+url: "/api/user-invitations"
+[[Prototype]]: Object
+🔧 Added organization header: 40a38107-2310-475b-a8f7-b98de02c9e12

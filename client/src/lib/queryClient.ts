@@ -14,7 +14,6 @@ export async function apiRequest(
 ): Promise<Response> {
   // Get organization ID from localStorage for organization-scoped requests
   const currentOrgId = localStorage.getItem('selectedOrganizationId');
-  console.log('🔧 API Request Debug:', { url, method, currentOrgId });
   
   const headers: Record<string, string> = {};
   if (data) {
@@ -22,9 +21,6 @@ export async function apiRequest(
   }
   if (currentOrgId) {
     headers["x-organization-id"] = currentOrgId;
-    console.log('🔧 Added organization header:', currentOrgId);
-  } else {
-    console.log('🔧 No organization ID found in localStorage');
   }
 
   const res = await fetch(url, {

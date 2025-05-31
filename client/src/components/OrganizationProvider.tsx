@@ -40,6 +40,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       
       if (orgToSelect) {
         setCurrentOrganization(orgToSelect);
+        localStorage.setItem("selectedOrganizationId", orgToSelect.id);
       }
     }
   }, [organizations, currentOrganization]);

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./simpleAuth";
 import {
   insertOrganizationSchema,
   insertRecipientSchema,
@@ -22,7 +22,7 @@ const withOrganization = async (req: any, res: any, next: any) => {
   }
 
   // Verify user has access to organization
-  const userId = req.user?.claims?.sub;
+  const userId = req.user?.id;
   console.log(`🔒 User ID: ${userId}`);
   const member = await storage.getOrganizationMember(organizationId, userId);
   console.log(`🔒 Member found: ${!!member}`);

@@ -18,16 +18,16 @@ export default function LoginPage() {
         <div className="w-full max-w-md mx-auto">
           {/* Logo and Title */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">MailManager</h1>
-            <p className="text-gray-600 text-sm">Your complete solution for mailroom management</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Sortify</h1>
+            <p className="text-gray-600 text-sm">Smart package sorting and mailroom management platform</p>
           </div>
 
           {/* Auth Section */}
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome to MailManager</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome to Sortify</h2>
               <p className="text-gray-600 text-sm mb-6">
-                Sign in to access your mailroom management dashboard.
+                Sign in to access your package sorting dashboard.
               </p>
             </div>
             

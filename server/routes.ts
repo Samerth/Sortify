@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./simpleAuth";
+import { sendInvitationEmail } from "./emailService";
+import crypto from "crypto";
 import {
   insertOrganizationSchema,
   insertRecipientSchema,
@@ -159,17 +161,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // For now, just simulate sending the invitation
-      // In a real app, you would:
-      // 1. Store the invitation in the database
-      // 2. Send an email with invitation link
-      
+      // Check if user already exists or has pending invitation
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        const existingMember = await storage.getOrganizationMember(organizationId, existingUser.id);
+        if (existingMember) {
+          return res.status(400).json({ message: 'User is already a member of this organization' });
+        }
+      }
+
+      // Check for existing pending invitation
+      const existingInvitation = await storage.getPendingInvitation(organizationId, email);
+      if (existingInvitation) {
+        return res.status(400).json({ message: 'An invitation has already been sent to this email address' });
+      }
+
+      // Generate invitation token and expiration (7 days)
+      const token = crypto.randomUUID();
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      // Store invitation in database
+      const invitation = await storage.createInvitation({
+        organizationId,
+        email,
+        role,
+        invitedBy: userId,
+        token,
+        expiresAt
+      });
+
+      // Send invitation email
+      const inviter = await storage.getUser(userId);
+      const organization = await storage.getOrganization(organizationId);
+      const appUrl = `${req.protocol}://${req.get('host')}`;
+
+      const emailSent = await sendInvitationEmail({
+        to: email,
+        organizationName: organization?.name || 'Unknown Organization',
+        inviterName: inviter?.email?.split('@')[0] || 'Team Member',
+        invitationToken: token,
+        appUrl
+      });
+
+      if (!emailSent) {
+        // If email fails, clean up the invitation
+        await storage.deleteInvitation(invitation.id);
+        return res.status(500).json({ message: 'Failed to send invitation email. Please try again.' });
+      }
+
       res.status(200).json({ 
         success: true,
         message: 'Invitation sent successfully',
         invitation: { 
-          email: email,
-          role: role 
+          id: invitation.id,
+          email,
+          role,
+          organizationId,
+          expiresAt
         }
       });
     } catch (error) {

@@ -17,6 +17,8 @@ import {
   type InsertMailroom,
   type MailroomLocation,
   type InsertMailroomLocation,
+  type UserInvitation,
+  type InsertUserInvitation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, count, sql, inArray } from "drizzle-orm";
@@ -37,7 +39,15 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: UpsertUser): Promise<User>;
+  
+  // Invitation operations
+  createInvitation(data: InsertUserInvitation): Promise<UserInvitation>;
+  getPendingInvitation(organizationId: string, email: string): Promise<UserInvitation | undefined>;
+  deleteInvitation(id: string): Promise<void>;
+  getInvitationByToken(token: string): Promise<UserInvitation | undefined>;
+  markInvitationAsUsed(id: string): Promise<void>;
   
   // Organization operations
   createOrganization(data: InsertOrganization): Promise<Organization>;

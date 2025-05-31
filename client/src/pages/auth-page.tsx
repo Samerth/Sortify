@@ -78,19 +78,19 @@ export default function AuthPage() {
         <div className="space-y-8">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              MailFlow
+              Sortify
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Professional mailroom management for modern organizations
+              Smart package sorting and mailroom management platform
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg shadow-sm">
               <Mail className="w-8 h-8 text-blue-600 mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">Mail Tracking</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Smart Sorting</h3>
               <p className="text-sm text-gray-600">
-                Track every package and letter from arrival to delivery
+                Intelligent package organization and routing
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm">
@@ -102,9 +102,9 @@ export default function AuthPage() {
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm">
               <Package className="w-8 h-8 text-purple-600 mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">Smart Storage</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Automated Processing</h3>
               <p className="text-sm text-gray-600">
-                Organize mailrooms with bins and location tracking
+                Streamlined workflows for efficient package handling
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm">
@@ -121,7 +121,7 @@ export default function AuthPage() {
         <div className="flex justify-center">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle>Welcome to MailFlow</CardTitle>
+              <CardTitle>Welcome to Sortify</CardTitle>
               <CardDescription>
                 Sign in to your account or create a new one
               </CardDescription>

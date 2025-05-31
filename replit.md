@@ -1,8 +1,8 @@
-# MailManager - Mailroom Management System
+# Sortify - Smart Package Sorting Platform
 
 ## Overview
 
-MailManager is a full-stack web application designed for mailroom management in multi-tenant organizations. It provides a comprehensive solution for tracking mail items, managing recipients, handling notifications, and integrating with external services. The application is built as a modern web app with a React frontend and Express.js backend, using PostgreSQL for data persistence.
+Sortify is a full-stack web application designed for intelligent package sorting and mailroom management in multi-tenant organizations. It provides a comprehensive solution for tracking mail items, managing recipients, handling notifications, and integrating with external services. The application is built as a modern web app with a React frontend and Express.js backend, using PostgreSQL for data persistence.
 
 ## User Preferences
 

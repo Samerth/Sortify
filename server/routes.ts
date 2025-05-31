@@ -145,9 +145,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if user has admin role for inviting others
       const member = await storage.getOrganizationMember(organizationId, userId);
+      console.log('🔍 Admin check:', { organizationId, userId, member });
       if (!member || member.role !== 'admin') {
+        console.log('❌ Admin check failed:', { member: member?.role });
         return res.status(403).json({ message: 'Only admins can invite users' });
       }
+      console.log('✅ Admin check passed');
       
       // Check if organization has available license seats
       const org = await storage.getOrganization(organizationId);

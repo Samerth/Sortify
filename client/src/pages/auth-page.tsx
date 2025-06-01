@@ -175,7 +175,7 @@ export default function AuthPage() {
               )}
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="login" className="w-full">
+              <Tabs defaultValue={invitationToken ? "register" : "login"} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Login</TabsTrigger>
                   <TabsTrigger value="register">Register</TabsTrigger>
@@ -267,7 +267,14 @@ export default function AuthPage() {
                         }
                         placeholder="Enter your email"
                         required
+                        readOnly={!!invitationToken}
+                        className={invitationToken ? "bg-gray-50" : ""}
                       />
+                      {invitationToken && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Email pre-filled from invitation
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="text-sm font-medium">Password</label>

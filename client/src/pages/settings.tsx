@@ -81,6 +81,12 @@ export default function Settings() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
 
+  // Fetch organization members for license count
+  const { data: organizationMembers = [] } = useQuery({
+    queryKey: ['/api/organizations', currentOrganization?.id, 'members'],
+    enabled: !!currentOrganization?.id,
+  });
+
   // Invite user mutation
   const inviteUserMutation = useMutation({
     mutationFn: async (data: { email: string; role: string }) => {
@@ -1010,7 +1016,7 @@ export default function Settings() {
                       <Card className="bg-blue-50 border-blue-200">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-600">1</div>
+                            <div className="text-2xl font-bold text-blue-600">{organizationMembers.length}</div>
                             <div className="text-sm text-blue-600">Active Users</div>
                           </div>
                         </CardContent>
@@ -1018,7 +1024,7 @@ export default function Settings() {
                       <Card className="bg-green-50 border-green-200">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-green-600">5</div>
+                            <div className="text-2xl font-bold text-green-600">{currentOrganization?.maxUsers || 5}</div>
                             <div className="text-sm text-green-600">License Limit</div>
                           </div>
                         </CardContent>
@@ -1026,7 +1032,7 @@ export default function Settings() {
                       <Card className="bg-orange-50 border-orange-200">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-orange-600">4</div>
+                            <div className="text-2xl font-bold text-orange-600">{Math.max(0, (currentOrganization?.maxUsers || 5) - organizationMembers.length)}</div>
                             <div className="text-sm text-orange-600">Available Seats</div>
                           </div>
                         </CardContent>

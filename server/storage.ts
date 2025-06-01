@@ -60,6 +60,7 @@ export interface IStorage {
   // Organization member operations
   addOrganizationMember(data: InsertOrganizationMember): Promise<OrganizationMember>;
   getOrganizationMember(organizationId: string, userId: string): Promise<OrganizationMember | undefined>;
+  getOrganizationMembers(organizationId: string): Promise<(OrganizationMember & { user?: User })[]>;
   
   // Recipient operations
   getRecipients(organizationId: string): Promise<Recipient[]>;
@@ -281,6 +282,41 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return member;
+  }
+
+  async getOrganizationMembers(organizationId: string): Promise<(OrganizationMember & { user?: User })[]> {
+    const members = await db
+      .select({
+        id: organizationMembers.id,
+        organizationId: organizationMembers.organizationId,
+        userId: organizationMembers.userId,
+        role: organizationMembers.role,
+        createdAt: organizationMembers.createdAt,
+        userEmail: users.email,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        userProfileImageUrl: users.profileImageUrl,
+      })
+      .from(organizationMembers)
+      .leftJoin(users, eq(organizationMembers.userId, users.id))
+      .where(eq(organizationMembers.organizationId, organizationId));
+
+    return members.map(member => ({
+      id: member.id,
+      organizationId: member.organizationId,
+      userId: member.userId,
+      role: member.role,
+      createdAt: member.createdAt,
+      user: member.userEmail ? {
+        id: member.userId,
+        email: member.userEmail,
+        firstName: member.userFirstName,
+        lastName: member.userLastName,
+        profileImageUrl: member.userProfileImageUrl,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } : undefined
+    }));
   }
 
   // Recipient operations

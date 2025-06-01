@@ -1018,7 +1018,8 @@ export default function Settings() {
               </TabsContent>
 
               {/* User Management */}
-              <TabsContent value="users">
+              {isAdmin && (
+                <TabsContent value="users">
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-6">
@@ -1125,7 +1126,8 @@ export default function Settings() {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
+                </TabsContent>
+              )}
 
               {/* Account Settings */}
               <TabsContent value="account">
@@ -1151,7 +1153,8 @@ export default function Settings() {
               </TabsContent>
 
               {/* Security Settings */}
-              <TabsContent value="security">
+              {isAdmin && (
+                <TabsContent value="security">
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center mb-6">
@@ -1189,7 +1192,8 @@ export default function Settings() {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </div>

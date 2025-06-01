@@ -187,6 +187,7 @@ export default function MailIntake() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mail-items"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/mailroom-locations"] });
       toast({
         title: "Success",
         description: "Mail item logged successfully.",

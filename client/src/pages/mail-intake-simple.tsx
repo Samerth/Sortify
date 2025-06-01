@@ -169,8 +169,8 @@ export default function MailIntake() {
         }
       }
 
-      // Remove the temporary locationId from cleanedData
-      const { locationId: _, ...finalData } = cleanedData;
+      // Include locationId in the data sent to server
+      const finalData = { ...cleanedData, locationId: formData.locationId || null };
 
       const response = await fetch("/api/mail-items", {
         method: "POST",

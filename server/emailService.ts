@@ -4,6 +4,8 @@ if (!process.env.SENDGRID_API_KEY) {
   throw new Error("SENDGRID_API_KEY environment variable must be set");
 }
 
+console.log('🔑 SendGrid API Key loaded:', process.env.SENDGRID_API_KEY?.substring(0, 20) + '...');
+
 const mailService = new MailService();
 mailService.setApiKey(process.env.SENDGRID_API_KEY);
 

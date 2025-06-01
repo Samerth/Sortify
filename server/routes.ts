@@ -116,9 +116,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/organizations/:id/members', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.get('/api/organizations/:id/members', isAuthenticated, async (req: any, res) => {
     try {
       const organizationId = req.params.id;
+      const userId = req.user.id;
+      
+      // Verify user is a member of this organization
+      const member = await storage.getOrganizationMember(organizationId, userId);
+      if (!member) {
+        return res.status(403).json({ message: "Access denied to this organization" });
+      }
+      
       const members = await storage.getOrganizationMembers(organizationId);
       res.json(members);
     } catch (error) {

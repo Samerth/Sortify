@@ -368,6 +368,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const mailItem = await storage.createMailItem(validData);
       
+      // Update storage location capacity if assigned
+      if (mailItem.locationId) {
+        try {
+          // First get all locations to find the specific one
+          const allLocations = await storage.getMailroomLocations(req.organizationId);
+          const currentLocation = allLocations.find(loc => loc.id === mailItem.locationId);
+          
+          if (currentLocation) {
+            await storage.updateMailroomLocation(mailItem.locationId, {
+              currentCount: (currentLocation.currentCount || 0) + 1,
+            });
+            console.log(`📦 Updated storage location ${currentLocation.name} capacity: ${(currentLocation.currentCount || 0) + 1}/${currentLocation.capacity}`);
+          }
+        } catch (locationError) {
+          console.error('Error updating storage location capacity:', locationError);
+        }
+      }
+      
       // Create history entry
       await storage.createMailItemHistory({
         mailItemId: mailItem.id,
@@ -436,6 +454,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } catch (emailError) {
             console.error('Email notification error:', emailError);
             // Don't fail the mail item update if email fails
+          }
+        }
+
+        // Update storage location capacity when item is delivered
+        if (validData.status === 'delivered' && currentItem.locationId) {
+          try {
+            const allLocations = await storage.getMailroomLocations(req.organizationId);
+            const currentLocation = allLocations.find(loc => loc.id === currentItem.locationId);
+            
+            if (currentLocation && currentLocation.currentCount && currentLocation.currentCount > 0) {
+              await storage.updateMailroomLocation(currentItem.locationId, {
+                currentCount: currentLocation.currentCount - 1,
+              });
+              console.log(`📦 Decreased storage location ${currentLocation.name} capacity: ${currentLocation.currentCount - 1}/${currentLocation.capacity}`);
+            }
+          } catch (locationError) {
+            console.error('Error updating storage location capacity on delivery:', locationError);
           }
         }
       }

@@ -154,3 +154,90 @@ export async function sendWelcomeEmail(email: string, name: string, organization
     return false;
   }
 }
+
+interface MailNotificationParams {
+  to: string;
+  recipientName: string;
+  organizationName: string;
+  mailType: string;
+  sender?: string;
+  trackingNumber?: string;
+  arrivedAt: string;
+}
+
+export async function sendMailNotificationEmail(params: MailNotificationParams): Promise<boolean> {
+  try {
+    const emailContent = {
+      to: params.to,
+      from: 'samerth.pathak@codsphere.ca',
+      subject: `Mail Notification - ${params.mailType} has arrived`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0;">Sortify</h1>
+            <p style="color: #6b7280; margin: 5px 0 0 0;">Smart Package Sorting Platform</p>
+          </div>
+          
+          <div style="background: #f0f9ff; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+            <h2 style="color: #1f2937; margin: 0 0 16px 0;">📦 New Mail Arrival</h2>
+            <p style="color: #4b5563; margin: 0 0 16px 0;">
+              Hello ${params.recipientName},
+            </p>
+            <p style="color: #4b5563; margin: 0 0 16px 0;">
+              You have received a <strong>${params.mailType}</strong> at ${params.organizationName}.
+            </p>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h3 style="color: #1f2937; margin: 0 0 12px 0;">Details:</h3>
+            <ul style="color: #4b5563; margin: 0; padding-left: 20px;">
+              <li><strong>Type:</strong> ${params.mailType}</li>
+              ${params.sender ? `<li><strong>From:</strong> ${params.sender}</li>` : ''}
+              ${params.trackingNumber ? `<li><strong>Tracking Number:</strong> ${params.trackingNumber}</li>` : ''}
+              <li><strong>Arrived:</strong> ${new Date(params.arrivedAt).toLocaleString()}</li>
+            </ul>
+          </div>
+          
+          <div style="background: #fef3c7; border-radius: 8px; padding: 16px; margin: 24px 0;">
+            <p style="color: #92400e; margin: 0; font-weight: 500;">
+              📍 Please collect your mail from the mailroom during business hours.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin: 32px 0;">
+            <p style="color: #6b7280; margin: 0; font-size: 14px;">
+              This is an automated notification from ${params.organizationName}'s mailroom system.
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+        Mail Notification - ${params.mailType} has arrived
+        
+        Hello ${params.recipientName},
+        
+        You have received a ${params.mailType} at ${params.organizationName}.
+        
+        Details:
+        - Type: ${params.mailType}
+        ${params.sender ? `- From: ${params.sender}` : ''}
+        ${params.trackingNumber ? `- Tracking Number: ${params.trackingNumber}` : ''}
+        - Arrived: ${new Date(params.arrivedAt).toLocaleString()}
+        
+        Please collect your mail from the mailroom during business hours.
+        
+        This is an automated notification from ${params.organizationName}'s mailroom system.
+      `
+    };
+
+    await mailService.send(emailContent);
+    console.log(`Mail notification email sent successfully to ${params.to}`);
+    return true;
+  } catch (error: any) {
+    console.error('SendGrid mail notification error:', error);
+    if (error.response?.body?.errors) {
+      console.error('SendGrid error details:', error.response.body.errors);
+    }
+    return false;
+  }
+}

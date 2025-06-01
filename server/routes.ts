@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./simpleAuth";
-import { sendInvitationEmail } from "./emailService";
+import { sendInvitationEmail, sendMailNotificationEmail } from "./emailService";
 import crypto from "crypto";
 import {
   insertOrganizationSchema,
@@ -413,6 +413,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           newStatus: validData.status,
           performedBy: userId,
         });
+
+        // Send email notification if status changed to "notified"
+        if (validData.status === 'notified' && currentItem.recipient?.email) {
+          try {
+            const organization = await storage.getOrganization(req.organizationId);
+            const success = await sendMailNotificationEmail({
+              to: currentItem.recipient.email,
+              recipientName: `${currentItem.recipient.firstName} ${currentItem.recipient.lastName}`,
+              organizationName: organization?.name || 'Your Organization',
+              mailType: updatedItem.type,
+              sender: updatedItem.sender || undefined,
+              trackingNumber: updatedItem.trackingNumber || undefined,
+              arrivedAt: updatedItem.arrivedAt.toISOString(),
+            });
+            
+            if (success) {
+              console.log(`📧 Mail notification email sent to ${currentItem.recipient.email} for mail item ${updatedItem.id}`);
+            } else {
+              console.error(`❌ Failed to send mail notification email to ${currentItem.recipient.email}`);
+            }
+          } catch (emailError) {
+            console.error('Email notification error:', emailError);
+            // Don't fail the mail item update if email fails
+          }
+        }
       }
       
       res.json(updatedItem);

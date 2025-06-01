@@ -88,6 +88,20 @@ export default function Settings() {
   });
 
   const memberCount = Array.isArray(organizationMembers) ? organizationMembers.length : 0;
+  
+  // Get current user's role in the organization
+  const currentUserMember = Array.isArray(organizationMembers) 
+    ? organizationMembers.find((member: any) => member.userId === user?.id)
+    : null;
+  const userRole = currentUserMember?.role || 'member';
+  const isAdmin = userRole === 'admin';
+
+  // Set default tab based on user role
+  React.useEffect(() => {
+    if (!isAdmin && activeTab === "organization") {
+      setActiveTab("notifications");
+    }
+  }, [isAdmin, activeTab]);
 
   // Invite user mutation
   const inviteUserMutation = useMutation({
@@ -440,14 +454,16 @@ export default function Settings() {
             <Card>
               <CardContent className="p-4">
                 <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
-                  <TabsList className="grid w-full grid-rows-5 h-auto">
-                    <TabsTrigger 
-                      value="organization" 
-                      className="justify-start px-3 py-2"
-                    >
-                      <Building className="w-4 h-4 mr-2" />
-                      Organization
-                    </TabsTrigger>
+                  <TabsList className={`grid w-full h-auto ${isAdmin ? 'grid-rows-5' : 'grid-rows-3'}`}>
+                    {isAdmin && (
+                      <TabsTrigger 
+                        value="organization" 
+                        className="justify-start px-3 py-2"
+                      >
+                        <Building className="w-4 h-4 mr-2" />
+                        Organization
+                      </TabsTrigger>
+                    )}
                     <TabsTrigger 
                       value="notifications" 
                       className="justify-start px-3 py-2"
@@ -469,20 +485,24 @@ export default function Settings() {
                       <User className="w-4 h-4 mr-2" />
                       Account
                     </TabsTrigger>
-                    <TabsTrigger 
-                      value="users" 
-                      className="justify-start px-3 py-2"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      User Management
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="security" 
-                      className="justify-start px-3 py-2"
-                    >
-                      <Shield className="w-4 h-4 mr-2" />
-                      Security
-                    </TabsTrigger>
+                    {isAdmin && (
+                      <TabsTrigger 
+                        value="users" 
+                        className="justify-start px-3 py-2"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        User Management
+                      </TabsTrigger>
+                    )}
+                    {isAdmin && (
+                      <TabsTrigger 
+                        value="security" 
+                        className="justify-start px-3 py-2"
+                      >
+                        <Shield className="w-4 h-4 mr-2" />
+                        Security
+                      </TabsTrigger>
+                    )}
                   </TabsList>
                 </Tabs>
               </CardContent>
@@ -493,7 +513,8 @@ export default function Settings() {
           <div className="lg:col-span-3">
             <Tabs value={activeTab}>
               {/* Organization Settings */}
-              <TabsContent value="organization">
+              {isAdmin && (
+                <TabsContent value="organization">
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center mb-6">
@@ -617,7 +638,8 @@ export default function Settings() {
                     )}
                   </CardContent>
                 </Card>
-              </TabsContent>
+                </TabsContent>
+              )}
 
               {/* Notifications Settings */}
               <TabsContent value="notifications">
@@ -1054,20 +1076,37 @@ export default function Settings() {
                           </div>
                         </div>
                         <div className="divide-y">
-                          <div className="px-4 py-3">
-                            <div className="grid grid-cols-4 text-sm">
-                              <div className="font-medium">You</div>
-                              <div className="text-gray-600">samerth.pathak@codsphere.ca</div>
-                              <div>
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                  Admin
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-gray-400 text-xs">Cannot remove</span>
+                          {Array.isArray(organizationMembers) && organizationMembers.map((member: any) => (
+                            <div key={member.id} className="px-4 py-3">
+                              <div className="grid grid-cols-4 text-sm">
+                                <div className="font-medium">
+                                  {member.user?.firstName || member.user?.lastName 
+                                    ? `${member.user.firstName || ''} ${member.user.lastName || ''}`.trim()
+                                    : member.userId === user?.id ? 'You' : 'User'
+                                  }
+                                </div>
+                                <div className="text-gray-600">{member.user?.email || 'No email'}</div>
+                                <div>
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                    member.role === 'admin' 
+                                      ? 'bg-blue-100 text-blue-800' 
+                                      : 'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {member.role === 'admin' ? 'Admin' : 'Member'}
+                                  </span>
+                                </div>
+                                <div>
+                                  {member.userId === user?.id ? (
+                                    <span className="text-gray-400 text-xs">Cannot remove</span>
+                                  ) : (
+                                    <button className="text-red-600 text-xs hover:text-red-800">
+                                      Remove
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          ))}
                         </div>
                       </div>
                     </div>

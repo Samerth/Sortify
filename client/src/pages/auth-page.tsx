@@ -38,13 +38,14 @@ export default function AuthPage() {
   // Fetch invitation details if token exists
   const { data: invitation } = useQuery({
     queryKey: ['/api/invitations/verify', invitationToken],
+    queryFn: () => fetch(`/api/invitations/verify/${invitationToken}`).then(res => res.json()),
     enabled: !!invitationToken,
     retry: false,
   });
 
   // Update form email when invitation is loaded
   useEffect(() => {
-    if (invitation?.email) {
+    if (invitation && 'email' in invitation) {
       setRegisterForm(prev => ({
         ...prev,
         email: invitation.email
@@ -158,8 +159,20 @@ export default function AuthPage() {
             <CardHeader>
               <CardTitle>Welcome to Sortify</CardTitle>
               <CardDescription>
-                Sign in to your account or create a new one
+                {invitationData ? 
+                  `You've been invited to join ${invitationData.organizationName}` :
+                  "Sign in to your account or create a new one"
+                }
               </CardDescription>
+              {invitationData && (
+                <div className="bg-blue-50 p-3 rounded-lg mt-2">
+                  <p className="text-sm text-blue-700">
+                    <strong>Organization:</strong> {invitationData.organizationName}<br/>
+                    <strong>Role:</strong> {invitationData.role}<br/>
+                    <strong>Email:</strong> {invitationData.email}
+                  </p>
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="login" className="w-full">

@@ -7,6 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import connectPg from "connect-pg-simple";
+import crypto from "crypto";
 
 declare global {
   namespace Express {
@@ -88,11 +89,25 @@ export async function setupAuth(app: Express) {
   // Register route
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, password, email, firstName, lastName } = req.body;
+      const { username, password, email, firstName, lastName, invitationToken } = req.body;
       
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
+      }
+
+      // Check if there's an invitation token
+      let invitation = null;
+      if (invitationToken) {
+        invitation = await storage.getInvitationByToken(invitationToken);
+        if (!invitation) {
+          return res.status(400).json({ message: "Invalid or expired invitation" });
+        }
+        
+        // Verify email matches invitation
+        if (invitation.email !== email) {
+          return res.status(400).json({ message: "Email must match the invited email address" });
+        }
       }
 
       const user = await storage.createUser({
@@ -103,6 +118,20 @@ export async function setupAuth(app: Express) {
         profileImageUrl: null,
         password: await hashPassword(password),
       });
+
+      // If there's an invitation, add user to organization
+      if (invitation) {
+        await storage.addOrganizationMember({
+          id: crypto.randomUUID(),
+          organizationId: invitation.organizationId,
+          userId: user.id,
+          role: invitation.role,
+          createdAt: new Date(),
+        });
+        
+        // Mark invitation as used
+        await storage.markInvitationAsUsed(invitation.id);
+      }
 
       req.login(user, (err) => {
         if (err) return next(err);

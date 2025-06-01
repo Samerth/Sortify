@@ -131,6 +131,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Invitation verification endpoint (public - no auth required)
+  app.get('/api/invitations/verify/:token', async (req, res) => {
+    try {
+      const { token } = req.params;
+      const invitation = await storage.getInvitationByToken(token);
+      
+      if (!invitation) {
+        return res.status(404).json({ message: 'Invitation not found or expired' });
+      }
+
+      // Get organization details
+      const organization = await storage.getOrganization(invitation.organizationId);
+
+      // Return invitation details without sensitive info
+      res.json({
+        email: invitation.email,
+        organizationName: organization?.name || 'Organization',
+        role: invitation.role,
+        expiresAt: invitation.expiresAt
+      });
+    } catch (error) {
+      console.error('Error verifying invitation:', error);
+      res.status(500).json({ message: 'Failed to verify invitation' });
+    }
+  });
+
   // User invitation routes with access control
   app.post('/api/user-invitations', isAuthenticated, withOrganization, async (req: any, res) => {
     console.log('🎯 Invitation route hit!', { body: req.body });

@@ -137,6 +137,14 @@ export default function Settings() {
 
   const form = useForm<OrganizationFormData>({
     resolver: zodResolver(organizationFormSchema),
+    defaultValues: {
+      name: "",
+      address: "",
+      contactName: "",
+      contactEmail: "",
+      contactPhone: "",
+      logoUrl: "",
+    },
   });
 
   const locationForm = useForm<LocationFormData>({
@@ -425,21 +433,22 @@ export default function Settings() {
   return (
     <>
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <header className="bg-white border-b border-gray-200 px-3 md:px-6 py-3 md:py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-            <p className="text-gray-600">Manage your organization's settings and preferences</p>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">Settings</h1>
+            <p className="text-sm md:text-base text-gray-600 hidden sm:block">Manage your organization's settings and preferences</p>
           </div>
-          <div className="flex items-center space-x-4">
-            {activeTab === "organization" && (
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {activeTab === "organization" && isAdmin && (
               <Button 
                 onClick={form.handleSubmit(onSubmit)}
                 disabled={updateOrganizationMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 md:px-4 py-2 text-sm md:text-base"
               >
-                <Save className="w-4 h-4 mr-2" />
-                {updateOrganizationMutation.isPending ? "Saving..." : "Save Changes"}
+                <Save className="w-4 h-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">{updateOrganizationMutation.isPending ? "Saving..." : "Save Changes"}</span>
+                <span className="sm:hidden">{updateOrganizationMutation.isPending ? "..." : "Save"}</span>
               </Button>
             )}
           </div>
@@ -447,60 +456,66 @@ export default function Settings() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <main className="flex-1 p-3 md:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Settings Sidebar */}
           <div className="lg:col-span-1">
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2 md:p-4">
                 <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
-                  <TabsList className={`grid w-full h-auto ${isAdmin ? 'grid-rows-5' : 'grid-rows-3'}`}>
+                  <TabsList className={`grid w-full h-auto ${isAdmin ? 'grid-rows-5' : 'grid-rows-3'} gap-1`}>
                     {isAdmin && (
                       <TabsTrigger 
                         value="organization" 
-                        className="justify-start px-3 py-2"
+                        className="justify-start px-2 md:px-3 py-2 text-sm"
                       >
-                        <Building className="w-4 h-4 mr-2" />
-                        Organization
+                        <Building className="w-4 h-4 mr-1 md:mr-2" />
+                        <span className="hidden sm:inline">Organization</span>
+                        <span className="sm:hidden">Org</span>
                       </TabsTrigger>
                     )}
                     <TabsTrigger 
                       value="notifications" 
-                      className="justify-start px-3 py-2"
+                      className="justify-start px-2 md:px-3 py-2 text-sm"
                     >
-                      <Bell className="w-4 h-4 mr-2" />
-                      Notifications
+                      <Bell className="w-4 h-4 mr-1 md:mr-2" />
+                      <span className="hidden sm:inline">Notifications</span>
+                      <span className="sm:hidden">Alerts</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="mailrooms" 
-                      className="justify-start px-3 py-2"
+                      className="justify-start px-2 md:px-3 py-2 text-sm"
                     >
-                      <MapPin className="w-4 h-4 mr-2" />
-                      Mailrooms
+                      <MapPin className="w-4 h-4 mr-1 md:mr-2" />
+                      <span className="hidden sm:inline">Mailrooms</span>
+                      <span className="sm:hidden">Rooms</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="account" 
-                      className="justify-start px-3 py-2"
+                      className="justify-start px-2 md:px-3 py-2 text-sm"
                     >
-                      <User className="w-4 h-4 mr-2" />
-                      Account
+                      <User className="w-4 h-4 mr-1 md:mr-2" />
+                      <span className="hidden sm:inline">Account</span>
+                      <span className="sm:hidden">Profile</span>
                     </TabsTrigger>
                     {isAdmin && (
                       <TabsTrigger 
                         value="users" 
-                        className="justify-start px-3 py-2"
+                        className="justify-start px-2 md:px-3 py-2 text-sm"
                       >
-                        <User className="w-4 h-4 mr-2" />
-                        User Management
+                        <User className="w-4 h-4 mr-1 md:mr-2" />
+                        <span className="hidden sm:inline">User Management</span>
+                        <span className="sm:hidden">Users</span>
                       </TabsTrigger>
                     )}
                     {isAdmin && (
                       <TabsTrigger 
                         value="security" 
-                        className="justify-start px-3 py-2"
+                        className="justify-start px-2 md:px-3 py-2 text-sm"
                       >
-                        <Shield className="w-4 h-4 mr-2" />
-                        Security
+                        <Shield className="w-4 h-4 mr-1 md:mr-2" />
+                        <span className="hidden sm:inline">Security</span>
+                        <span className="sm:hidden">Lock</span>
                       </TabsTrigger>
                     )}
                   </TabsList>

@@ -87,6 +87,8 @@ export default function Settings() {
     enabled: !!currentOrganization?.id,
   });
 
+  const memberCount = Array.isArray(organizationMembers) ? organizationMembers.length : 0;
+
   // Invite user mutation
   const inviteUserMutation = useMutation({
     mutationFn: async (data: { email: string; role: string }) => {
@@ -1016,7 +1018,7 @@ export default function Settings() {
                       <Card className="bg-blue-50 border-blue-200">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-600">{organizationMembers.length}</div>
+                            <div className="text-2xl font-bold text-blue-600">{memberCount}</div>
                             <div className="text-sm text-blue-600">Active Users</div>
                           </div>
                         </CardContent>
@@ -1032,7 +1034,7 @@ export default function Settings() {
                       <Card className="bg-orange-50 border-orange-200">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-orange-600">{Math.max(0, (currentOrganization?.maxUsers || 5) - organizationMembers.length)}</div>
+                            <div className="text-2xl font-bold text-orange-600">{Math.max(0, (currentOrganization?.maxUsers || 5) - memberCount)}</div>
                             <div className="text-sm text-orange-600">Available Seats</div>
                           </div>
                         </CardContent>
@@ -1192,7 +1194,7 @@ export default function Settings() {
             </div>
             <div className="bg-green-50 p-3 rounded-lg">
               <p className="text-sm text-green-700">
-                <strong>License Check:</strong> You have 4 available seats remaining (1/5 used).
+                <strong>License Check:</strong> You have {Math.max(0, (currentOrganization?.maxUsers || 5) - memberCount)} available seats remaining ({memberCount}/{currentOrganization?.maxUsers || 5} used).
               </p>
             </div>
             <div className="flex gap-2 pt-4">

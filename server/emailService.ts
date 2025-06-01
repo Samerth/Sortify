@@ -169,7 +169,7 @@ export async function sendMailNotificationEmail(params: MailNotificationParams):
   try {
     const emailContent = {
       to: params.to,
-      from: 'samerth.pathak@codsphere.ca',
+      from: 'signup@sortifyapp.com',
       subject: `Mail Notification - ${params.mailType} has arrived`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

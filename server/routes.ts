@@ -425,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               mailType: updatedItem.type,
               sender: updatedItem.sender || undefined,
               trackingNumber: updatedItem.trackingNumber || undefined,
-              arrivedAt: updatedItem.arrivedAt.toISOString(),
+              arrivedAt: updatedItem.arrivedAt?.toISOString() || new Date().toISOString(),
             });
             
             if (success) {

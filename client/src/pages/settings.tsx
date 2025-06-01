@@ -83,7 +83,7 @@ export default function Settings() {
 
   // Fetch organization members for license count
   const { data: organizationMembers = [] } = useQuery({
-    queryKey: ['/api/organizations', currentOrganization?.id, 'members'],
+    queryKey: [`/api/organizations/${currentOrganization?.id}/members`],
     enabled: !!currentOrganization?.id,
   });
 

@@ -23,7 +23,7 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
     
     const emailContent = {
       to: params.to,
-      from: 'signup@sortifyapp.com', // Using verified SendGrid sender
+      from: 'samerth.pathak@codsphere.ca', // Using your verified personal email
       subject: `You're invited to join ${params.organizationName} on Sortify`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -92,7 +92,7 @@ export async function sendWelcomeEmail(email: string, name: string, organization
   try {
     const emailContent = {
       to: email,
-      from: 'signup@sortifyapp.com',
+      from: 'samerth.pathak@codsphere.ca',
       subject: `Welcome to ${organizationName} on Sortify!`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

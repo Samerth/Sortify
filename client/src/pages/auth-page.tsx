@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Package, Users, BarChart3 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Redirect } from "wouter";
+import { Redirect, useLocation } from "wouter";
 
 export default function AuthPage() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
+  const [location] = useLocation();
+  const [invitationToken, setInvitationToken] = useState<string | null>(null);
+  const [invitationData, setInvitationData] = useState<any>(null);
+  
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [registerForm, setRegisterForm] = useState({
     username: "",
@@ -21,6 +25,33 @@ export default function AuthPage() {
     firstName: "",
     lastName: "",
   });
+
+  // Extract invitation token from URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+      setInvitationToken(token);
+    }
+  }, [location]);
+
+  // Fetch invitation details if token exists
+  const { data: invitation } = useQuery({
+    queryKey: ['/api/invitations/verify', invitationToken],
+    enabled: !!invitationToken,
+    retry: false,
+  });
+
+  // Update form email when invitation is loaded
+  useEffect(() => {
+    if (invitation?.email) {
+      setRegisterForm(prev => ({
+        ...prev,
+        email: invitation.email
+      }));
+      setInvitationData(invitation);
+    }
+  }, [invitation]);
 
   // Redirect if already logged in
   if (!isLoading && user) {
@@ -46,7 +77,11 @@ export default function AuthPage() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: typeof registerForm) => {
-      const res = await apiRequest("POST", "/api/register", data);
+      const payload = {
+        ...data,
+        invitationToken: invitationToken || undefined
+      };
+      const res = await apiRequest("POST", "/api/register", payload);
       return await res.json();
     },
     onSuccess: () => {

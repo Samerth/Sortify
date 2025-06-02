@@ -23,7 +23,7 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
     
     const emailContent = {
       to: params.to,
-      from: 'samerth.pathak@codsphere.ca', // Using your verified personal email
+      from: 'signup@sortifyapp.com',
       subject: `You're invited to join ${params.organizationName} on Sortify`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Package, Mail, Bell, Check, Eye, Camera, QrCode, Upload, Trash2, ChevronDown, ChevronUp, MapPin, User, Clock } from "lucide-react";
+import { PhotoCapture } from "@/components/PhotoCapture";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -23,7 +24,7 @@ interface MailItem {
   deliveredAt?: string;
   description?: string;
   notes?: string;
-  photoUrl?: string;
+  photoData?: string;
   courierCompany?: string;
   collectorName?: string;
   locationId?: string;
@@ -60,7 +61,7 @@ export default function MailIntake() {
     courierCompany: "",
     collectedByStaff: "",
     collectorName: "",
-    photo: null as File | null,
+    photoData: "",
   });
 
   const [photoMethod, setPhotoMethod] = useState<'camera' | 'barcode' | 'upload'>('upload');
@@ -203,7 +204,7 @@ export default function MailIntake() {
         courierCompany: "",
         collectedByStaff: "",
         collectorName: "",
-        photo: null,
+        photoData: "",
       });
     },
     onError: (error: any) => {

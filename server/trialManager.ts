@@ -186,31 +186,35 @@ export class TrialManager {
     return {
       trial: {
         name: "7-Day Free Trial",
-        price: 0,
+        pricePerUser: 0,
+        minUsers: 1,
         maxUsers: 5,
         maxPackages: 500,
         features: ["Email notifications", "Basic analytics", "Photo storage"]
       },
       starter: {
         name: "Starter",
-        price: 29,
+        pricePerUser: 8,
+        minUsers: 3,
         maxUsers: 25,
-        maxPackages: 2000,
-        features: ["Email notifications", "SMS notifications", "Advanced analytics", "API access"]
+        maxPackages: 1000,
+        features: ["Up to 25 users", "1,000 packages/month", "Email notifications", "Basic analytics", "Photo storage"]
       },
       professional: {
         name: "Professional",
-        price: 79,
+        pricePerUser: 15,
+        minUsers: 5,
         maxUsers: 100,
-        maxPackages: "unlimited",
-        features: ["All Starter features", "Unlimited packages", "Priority support", "Custom integrations"]
+        maxPackages: -1,
+        features: ["Up to 100 users", "Unlimited packages", "Email & SMS notifications", "Advanced analytics", "API integrations", "Priority support"]
       },
       enterprise: {
         name: "Enterprise",
-        price: "custom",
-        maxUsers: "unlimited",
-        maxPackages: "unlimited",
-        features: ["All Professional features", "White-label branding", "Dedicated support", "Custom development"]
+        pricePerUser: 25,
+        minUsers: 25,
+        maxUsers: -1,
+        maxPackages: -1,
+        features: ["Unlimited users", "Unlimited packages", "White-label branding", "Custom integrations", "Dedicated support", "SLA guarantee"]
       }
     };
   }

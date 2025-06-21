@@ -58,8 +58,8 @@ export function TrialStatus() {
                 Your free trial has ended. Upgrade to continue using Sortify.
               </p>
             </div>
-            <Button size="sm" className="bg-red-600 hover:bg-red-700">
-              Upgrade Now
+            <Button size="sm" className="bg-red-600 hover:bg-red-700" asChild>
+              <a href="/checkout">Upgrade Now</a>
             </Button>
           </div>
         </CardContent>
@@ -109,12 +109,14 @@ export function TrialStatus() {
 
         <div className="pt-2 border-t">
           <div className="flex gap-2">
-            <Button size="sm" className="flex-1">
-              <CreditCard className="h-4 w-4 mr-2" />
-              Upgrade Plan
+            <Button size="sm" className="flex-1" asChild>
+              <a href="/checkout">
+                <CreditCard className="h-4 w-4 mr-2" />
+                Upgrade Plan
+              </a>
             </Button>
-            <Button variant="outline" size="sm">
-              View Pricing
+            <Button variant="outline" size="sm" asChild>
+              <a href="/checkout">View Pricing</a>
             </Button>
           </div>
         </div>

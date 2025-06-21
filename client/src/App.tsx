@@ -15,6 +15,7 @@ import Recipients from "@/pages/recipients";
 import History from "@/pages/history";
 import Integrations from "@/pages/integrations";
 import Settings from "@/pages/settings";
+import Checkout from "@/pages/checkout";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
 
@@ -43,6 +44,7 @@ function ProtectedContent() {
       <Route path="/history" component={History} />
       <Route path="/integrations" component={Integrations} />
       <Route path="/settings" component={Settings} />
+      <Route path="/checkout" component={Checkout} />
       <Route component={NotFound} />
     </Switch>
   );

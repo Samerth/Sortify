@@ -80,7 +80,7 @@ export default function Landing() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id="features" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -333,7 +333,7 @@ export default function Landing() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id="pricing" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -349,20 +349,21 @@ export default function Landing() {
               <CardHeader className="text-center pb-8">
                 <CardTitle className="text-2xl">Starter</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$29</span>
-                  <span className="text-gray-600">/month</span>
+                  <span className="text-4xl font-bold">$8</span>
+                  <span className="text-gray-600">/user/month</span>
                 </div>
-                <p className="text-gray-600 mt-2">Perfect for small properties</p>
+                <p className="text-gray-600 mt-2">Perfect for small teams</p>
+                <p className="text-sm text-blue-600 font-medium">Minimum 3 users</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>Up to 5 team members</span>
+                    <span>Up to 25 users</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>500 packages/month</span>
+                    <span>1,000 packages/month</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -372,8 +373,14 @@ export default function Landing() {
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     <span>Basic analytics</span>
                   </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span>Photo storage</span>
+                  </div>
                 </div>
-                <Button className="w-full mt-8">Start Free Trial</Button>
+                <Button className="w-full mt-8" asChild>
+                  <a href="/auth">Start Free Trial</a>
+                </Button>
               </CardContent>
             </Card>
 
@@ -382,16 +389,17 @@ export default function Landing() {
                 <Badge className="mb-2 bg-blue-500">Most Popular</Badge>
                 <CardTitle className="text-2xl">Professional</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$79</span>
-                  <span className="text-gray-600">/month</span>
+                  <span className="text-4xl font-bold">$15</span>
+                  <span className="text-gray-600">/user/month</span>
                 </div>
                 <p className="text-gray-600 mt-2">For growing organizations</p>
+                <p className="text-sm text-blue-600 font-medium">Minimum 5 users</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>Up to 25 team members</span>
+                    <span>Up to 100 users</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -409,8 +417,14 @@ export default function Landing() {
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     <span>API integrations</span>
                   </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span>Priority support</span>
+                  </div>
                 </div>
-                <Button className="w-full mt-8">Start Free Trial</Button>
+                <Button className="w-full mt-8" asChild>
+                  <a href="/auth">Start Free Trial</a>
+                </Button>
               </CardContent>
             </Card>
 
@@ -418,15 +432,17 @@ export default function Landing() {
               <CardHeader className="text-center pb-8">
                 <CardTitle className="text-2xl">Enterprise</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">Custom</span>
+                  <span className="text-4xl font-bold">$25</span>
+                  <span className="text-gray-600">/user/month</span>
                 </div>
                 <p className="text-gray-600 mt-2">For large enterprises</p>
+                <p className="text-sm text-purple-600 font-medium">Minimum 25 users</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>Unlimited team members</span>
+                    <span>Unlimited users</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -444,8 +460,14 @@ export default function Landing() {
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     <span>Dedicated support</span>
                   </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span>SLA guarantee</span>
+                  </div>
                 </div>
-                <Button variant="outline" className="w-full mt-8">Contact Sales</Button>
+                <Button variant="outline" className="w-full mt-8">
+                  Contact Sales
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -468,8 +490,8 @@ export default function Landing() {
                 <ArrowRight className="w-5 h-5 ml-2" />
               </a>
             </Button>
-            <Button size="lg" variant="outline" className="px-8 py-3 text-lg border-white text-white hover:bg-white hover:text-blue-600">
-              Schedule Demo
+            <Button size="lg" variant="outline" className="px-8 py-3 text-lg border-white text-white hover:bg-white hover:text-blue-600" asChild>
+              <a href="#pricing">View Pricing</a>
             </Button>
           </div>
         </div>
@@ -494,10 +516,10 @@ export default function Landing() {
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Features</a></li>
-                <li><a href="#" className="hover:text-white">Pricing</a></li>
-                <li><a href="#" className="hover:text-white">Integrations</a></li>
-                <li><a href="#" className="hover:text-white">API</a></li>
+                <li><a href="#features" className="hover:text-white">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
+                <li><a href="/auth" className="hover:text-white">Get Started</a></li>
+                <li><a href="#features" className="hover:text-white">Demo</a></li>
               </ul>
             </div>
             
@@ -514,10 +536,10 @@ export default function Landing() {
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Documentation</a></li>
-                <li><a href="#" className="hover:text-white">Help Center</a></li>
-                <li><a href="#" className="hover:text-white">Privacy</a></li>
-                <li><a href="#" className="hover:text-white">Terms</a></li>
+                <li><a href="/auth" className="hover:text-white">Documentation</a></li>
+                <li><a href="/auth" className="hover:text-white">Help Center</a></li>
+                <li><a href="/auth" className="hover:text-white">Privacy</a></li>
+                <li><a href="/auth" className="hover:text-white">Terms</a></li>
               </ul>
             </div>
           </div>

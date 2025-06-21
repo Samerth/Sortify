@@ -213,6 +213,11 @@ export class DatabaseStorage implements IStorage {
       .insert(organizations)
       .values(data)
       .returning();
+    
+    // Initialize trial for new organization
+    const { TrialManager } = await import("./trialManager");
+    await TrialManager.initializeTrial(organization.id);
+    
     return organization;
   }
 

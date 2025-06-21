@@ -76,7 +76,11 @@ function Router() {
           <AuthenticatedRoutes />
         </Route>
       ) : (
-        <Route path="*" component={AuthPage} />
+        <>
+          <Route path="/auth" component={AuthPage} />
+          <Route path="/" component={Landing} />
+          <Route component={Landing} />
+        </>
       )}
     </Switch>
   );

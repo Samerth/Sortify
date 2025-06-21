@@ -20,10 +20,10 @@ export default function Landing() {
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" asChild>
-                <a href="/auth">Sign In</a>
+                <a href="/login">Sign In</a>
               </Button>
               <Button asChild>
-                <a href="/auth">Get Started</a>
+                <a href="/register">Get Started</a>
               </Button>
             </div>
           </div>
@@ -485,7 +485,7 @@ export default function Landing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" className="px-8 py-3 text-lg" asChild>
-              <a href="/auth">
+              <a href="/register">
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2" />
               </a>
@@ -500,7 +500,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
@@ -518,28 +518,15 @@ export default function Landing() {
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#features" className="hover:text-white">Features</a></li>
                 <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
-                <li><a href="/auth" className="hover:text-white">Get Started</a></li>
-                <li><a href="#features" className="hover:text-white">Demo</a></li>
+                <li><a href="/register" className="hover:text-white">Get Started</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
+              <h4 className="font-semibold mb-4">Account</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">About</a></li>
-                <li><a href="#" className="hover:text-white">Blog</a></li>
-                <li><a href="#" className="hover:text-white">Careers</a></li>
-                <li><a href="#" className="hover:text-white">Contact</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="/auth" className="hover:text-white">Documentation</a></li>
-                <li><a href="/auth" className="hover:text-white">Help Center</a></li>
-                <li><a href="/auth" className="hover:text-white">Privacy</a></li>
-                <li><a href="/auth" className="hover:text-white">Terms</a></li>
+                <li><a href="/login" className="hover:text-white">Sign In</a></li>
+                <li><a href="/register" className="hover:text-white">Create Account</a></li>
               </ul>
             </div>
           </div>

@@ -9,6 +9,8 @@ import OrganizationSetup from "@/components/OrganizationSetup";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import Landing from "@/pages/landing";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
 import MailIntake from "@/pages/mail-intake-simple";
 import PendingPickups from "@/pages/pending-pickups";
 import Recipients from "@/pages/recipients";
@@ -80,6 +82,8 @@ function Router() {
       ) : (
         <>
           <Route path="/auth" component={AuthPage} />
+          <Route path="/login" component={Login} />
+          <Route path="/register" component={Register} />
           <Route path="/" component={Landing} />
           <Route component={Landing} />
         </>

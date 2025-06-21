@@ -14,41 +14,48 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
-const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+const registerSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
-type LoginForm = z.infer<typeof loginSchema>;
+type RegisterForm = z.infer<typeof registerSchema>;
 
-export default function Login() {
+export default function Register() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const form = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<RegisterForm>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
+      email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: LoginForm) => {
-      const response = await apiRequest("POST", "/api/login", data);
+  const registerMutation = useMutation({
+    mutationFn: async (data: Omit<RegisterForm, 'confirmPassword'>) => {
+      const response = await apiRequest("POST", "/api/register", data);
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
+        title: "Welcome to Sortify!",
+        description: "Your account has been created successfully.",
       });
       window.location.href = "/";
     },
     onError: (error: any) => {
       toast({
-        title: "Login failed",
-        description: error.message || "Invalid username or password",
+        title: "Registration failed",
+        description: error.message || "Failed to create account. Please try again.",
         variant: "destructive",
       });
     },
@@ -59,8 +66,9 @@ export default function Login() {
     return null;
   }
 
-  const onSubmit = (data: LoginForm) => {
-    loginMutation.mutate(data);
+  const onSubmit = (data: RegisterForm) => {
+    const { confirmPassword, ...registerData } = data;
+    registerMutation.mutate(registerData);
   };
 
   return (
@@ -74,10 +82,10 @@ export default function Login() {
               </div>
             </div>
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Welcome Back
+              Create Account
             </CardTitle>
             <p className="text-gray-600 mt-2">
-              Sign in to your Sortify account
+              Start your 7-day free trial today
             </p>
           </CardHeader>
           <CardContent>
@@ -91,9 +99,28 @@ export default function Login() {
                       <FormLabel>Username</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Enter your username" 
+                          placeholder="Choose a username" 
                           {...field}
-                          disabled={loginMutation.isPending}
+                          disabled={registerMutation.isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="email"
+                          placeholder="Enter your email" 
+                          {...field}
+                          disabled={registerMutation.isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -110,9 +137,28 @@ export default function Login() {
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder="Enter your password" 
+                          placeholder="Create a password" 
                           {...field}
-                          disabled={loginMutation.isPending}
+                          disabled={registerMutation.isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="Confirm your password" 
+                          {...field}
+                          disabled={registerMutation.isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -124,18 +170,22 @@ export default function Login() {
                   type="submit" 
                   className="w-full" 
                   size="lg"
-                  disabled={loginMutation.isPending}
+                  disabled={registerMutation.isPending}
                 >
-                  {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                  {registerMutation.isPending ? "Creating account..." : "Start Free Trial"}
                 </Button>
               </form>
             </Form>
 
             <div className="mt-6 text-center space-y-4">
+              <p className="text-xs text-gray-500">
+                By creating an account, you agree to our terms of service and privacy policy.
+              </p>
+              
               <p className="text-sm text-gray-600">
-                Don't have an account?{" "}
-                <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-                  Create one now
+                Already have an account?{" "}
+                <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                  Sign in here
                 </Link>
               </p>
               

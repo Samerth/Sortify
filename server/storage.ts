@@ -401,7 +401,7 @@ export class DatabaseStorage implements IStorage {
         notifiedAt: mailItems.notifiedAt,
         deliveredAt: mailItems.deliveredAt,
         notes: mailItems.notes,
-        photoUrl: mailItems.photoUrl,
+        photoData: mailItems.photoData,
         createdBy: mailItems.createdBy,
         createdAt: mailItems.createdAt,
         updatedAt: mailItems.updatedAt,

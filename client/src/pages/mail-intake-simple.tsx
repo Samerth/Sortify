@@ -147,28 +147,9 @@ export default function MailIntake() {
         collectorName: data.collectorName || null,
       };
 
-      // Handle photo upload if present
-      if (formData.photo) {
-        try {
-          const photoFormData = new FormData();
-          photoFormData.append('photo', formData.photo);
-          
-          const photoResponse = await fetch('/api/upload-photo', {
-            method: 'POST',
-            body: photoFormData,
-            headers: {
-              'x-organization-id': currentOrganization?.id || '',
-            },
-            credentials: 'include',
-          });
-          
-          if (photoResponse.ok) {
-            const { photoUrl } = await photoResponse.json();
-            cleanedData.photoUrl = photoUrl;
-          }
-        } catch (error) {
-          console.log('Photo upload failed, continuing without photo');
-        }
+      // Include optimized photo data if present
+      if (formData.photoData) {
+        cleanedData.photoData = formData.photoData;
       }
 
       // Include locationId in the data sent to server
@@ -893,6 +874,40 @@ export default function MailIntake() {
                         </div>
                       )}
                       
+                      {/* Photo Display */}
+                      {item.photoData && (
+                        <div className="mb-4">
+                          <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            <Camera className="w-4 h-4 mr-2 text-gray-500" />
+                            Package Photo
+                          </div>
+                          <div className="pl-6">
+                            <div className="relative inline-block">
+                              <img
+                                src={item.photoData}
+                                alt="Package photo"
+                                className="w-48 h-32 object-cover rounded-lg border cursor-pointer hover:opacity-90"
+                                onClick={() => {
+                                  setSelectedPhoto(item.photoData || "");
+                                  setPhotoDialogOpen(true);
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="absolute top-2 right-2"
+                                onClick={() => {
+                                  setSelectedPhoto(item.photoData || "");
+                                  setPhotoDialogOpen(true);
+                                }}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Package Info */}
                       {(item.courierCompany || item.collectorName || item.trackingNumber) && (
                         <div className="mb-4">

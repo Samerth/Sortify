@@ -8,6 +8,7 @@ import { OrganizationProvider, useOrganization } from "@/components/Organization
 import OrganizationSetup from "@/components/OrganizationSetup";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
+import Landing from "@/pages/landing";
 import MailIntake from "@/pages/mail-intake-simple";
 import PendingPickups from "@/pages/pending-pickups";
 import Recipients from "@/pages/recipients";

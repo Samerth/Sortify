@@ -194,24 +194,24 @@ export class TrialManager {
       },
       starter: {
         name: "Starter",
-        pricePerUser: 8,
-        minUsers: 3,
-        maxUsers: 25,
-        maxPackages: 1000,
-        features: ["Up to 25 users", "1,000 packages/month", "Email notifications", "Basic analytics", "Photo storage"]
+        pricePerUser: 25,
+        minUsers: 1,
+        maxUsers: 5,
+        maxPackages: 500,
+        features: ["Up to 5 users included", "500 packages/month", "Email notifications", "Basic analytics", "Photo storage"]
       },
       professional: {
         name: "Professional",
-        pricePerUser: 15,
-        minUsers: 5,
-        maxUsers: 100,
-        maxPackages: -1,
-        features: ["Up to 100 users", "Unlimited packages", "Email & SMS notifications", "Advanced analytics", "API integrations", "Priority support"]
+        pricePerUser: 75,
+        minUsers: 1,
+        maxUsers: 25,
+        maxPackages: 2500,
+        features: ["Up to 25 users included", "2,500 packages/month", "Email & SMS notifications", "Advanced analytics", "API integrations", "Priority support"]
       },
       enterprise: {
         name: "Enterprise",
-        pricePerUser: 25,
-        minUsers: 25,
+        pricePerUser: 199,
+        minUsers: 1,
         maxUsers: -1,
         maxPackages: -1,
         features: ["Unlimited users", "Unlimited packages", "White-label branding", "Custom integrations", "Dedicated support", "SLA guarantee"]

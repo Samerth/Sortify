@@ -72,9 +72,10 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-xl border-0">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="w-full max-w-md">
+          <Card className="shadow-xl border-0">
           <CardHeader className="text-center pb-6">
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
@@ -196,7 +197,141 @@ export default function Register() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
+
+      {/* Pricing Preview Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Choose Your Plan After Trial
+            </h2>
+            <p className="text-xl text-gray-600">
+              Start with a 7-day free trial, then select the plan that fits your organization.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-2 border-gray-200">
+              <CardHeader className="text-center">
+                <CardTitle>Starter</CardTitle>
+                <div className="text-3xl font-bold mt-2">$25<span className="text-lg text-gray-500">/month</span></div>
+                <p className="text-sm text-gray-600">Up to 5 users</p>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    500 packages/month
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Email notifications
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Basic analytics
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-blue-500 shadow-lg">
+              <CardHeader className="text-center bg-blue-50">
+                <Badge className="mb-2">Most Popular</Badge>
+                <CardTitle>Professional</CardTitle>
+                <div className="text-3xl font-bold mt-2">$75<span className="text-lg text-gray-500">/month</span></div>
+                <p className="text-sm text-gray-600">Up to 25 users</p>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    2,500 packages/month
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Email & SMS notifications
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Advanced analytics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    API integrations
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-gray-200">
+              <CardHeader className="text-center">
+                <CardTitle>Enterprise</CardTitle>
+                <div className="text-3xl font-bold mt-2">$199<span className="text-lg text-gray-500">/month</span></div>
+                <p className="text-sm text-gray-600">Unlimited users</p>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Unlimited packages
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    White-label branding
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Dedicated support
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    SLA guarantee
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Stripe Integration Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+            Secure Payment Processing
+          </h2>
+          <div className="bg-white rounded-xl p-8 shadow-lg">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <Package className="w-8 h-8 text-blue-600" />
+              <span className="text-2xl font-bold text-gray-900">+</span>
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-8 h-8 text-blue-600" />
+                <span className="text-xl font-bold text-blue-600">Stripe</span>
+              </div>
+            </div>
+            <p className="text-lg text-gray-600 mb-6">
+              Your payments are processed securely through Stripe, trusted by millions of businesses worldwide.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>PCI DSS Level 1 Certified</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>Bank-Level Security</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>Cancel Anytime</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

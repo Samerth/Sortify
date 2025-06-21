@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Package, Mail, Bell, Check, Eye, Camera, QrCode, Upload, Trash2, ChevronDown, ChevronUp, MapPin, User, Clock } from "lucide-react";
 import { PhotoCapture } from "@/components/PhotoCapture";
+import { optimizeImage } from "@/lib/imageUtils";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -583,7 +584,18 @@ export default function MailIntake() {
                                 canvas.toBlob((blob) => {
                                   if (blob) {
                                     const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
-                                    setFormData({ ...formData, photo: file });
+                                    // Convert to optimized base64
+                                    const reader = new FileReader();
+                                    reader.onload = async () => {
+                                      try {
+                                        const optimizedBase64 = await optimizeImage(file);
+                                        setFormData({ ...formData, photoData: optimizedBase64 });
+                                      } catch (error) {
+                                        console.error('Image optimization failed:', error);
+                                        setFormData({ ...formData, photoData: reader.result as string });
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
                                     toast({ title: "Photo captured from camera!" });
                                   }
                                   cleanup();
@@ -743,27 +755,15 @@ export default function MailIntake() {
                   </div>
                 )}
 
-                {/* File Upload */}
+                {/* Photo Upload with Optimization */}
                 {photoMethod === 'upload' && (
-                  <div className="space-y-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setFormData({ ...formData, photo: e.target.files?.[0] || null })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <p className="text-xs text-gray-500">Choose an existing photo from your device</p>
-                  </div>
-                )}
-
-                {/* Photo Preview */}
-                {formData.photo && (
-                  <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md">
-                    <p className="text-sm text-green-600 flex items-center">
-                      <Check className="w-4 h-4 mr-1" />
-                      Photo selected: {formData.photo.name}
-                    </p>
-                  </div>
+                  <PhotoCapture
+                    onPhotoCapture={(base64Data) => {
+                      setFormData({ ...formData, photoData: base64Data });
+                    }}
+                    currentPhoto={formData.photoData}
+                    disabled={createMailItemMutation.isPending}
+                  />
                 )}
               </div>
 

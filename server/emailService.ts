@@ -19,7 +19,7 @@ interface InvitationEmailParams {
 
 export async function sendInvitationEmail(params: InvitationEmailParams): Promise<boolean> {
   try {
-    const invitationUrl = `${params.appUrl}/auth?token=${params.invitationToken}`;
+    const invitationUrl = `${params.appUrl}/auth?invitation=${params.invitationToken}`;
     
     const emailContent = {
       to: params.to,

@@ -238,8 +238,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send invitation email
       const inviter = await storage.getUser(userId);
       const organization = await storage.getOrganization(organizationId);
-      const appUrl = `${req.protocol}://${req.get('host')}`;
+      
+      // Use the correct Replit app URL
+      const appUrl = process.env.REPLIT_DOMAINS?.split(',')[0] ? 
+        `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
+        `${req.protocol}://${req.get('host')}`;
 
+      console.log('📧 Attempting to send invitation email...');
+      console.log('📧 Email recipient:', email);
+      console.log('📧 Organization:', organization?.name);
+      console.log('📧 Inviter:', inviter?.email);
+      console.log('📧 App URL:', appUrl);
+      
       const emailSent = await sendInvitationEmail({
         to: email,
         organizationName: organization?.name || 'Unknown Organization',
@@ -247,6 +257,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         invitationToken: token,
         appUrl
       });
+      
+      console.log('📧 Invitation email result:', emailSent ? 'SUCCESS' : 'FAILED');
 
       if (!emailSent) {
         // If email fails, clean up the invitation

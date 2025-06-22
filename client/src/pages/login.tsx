@@ -150,55 +150,7 @@ export default function Login() {
         </div>
       </div>
       
-      {/* Payment Integration Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
-            Secure Payment Processing
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div className="text-left space-y-4">
-              <h3 className="text-xl font-semibold">Powered by Stripe</h3>
-              <p className="text-gray-600">
-                Your payment information is processed securely through Stripe, the industry leader in online payment processing.
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span>PCI DSS Level 1 compliant</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span>Bank-level security</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span>Cancel anytime</span>
-                </li>
-              </ul>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="bg-white rounded border p-4 mb-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <CreditCard className="w-6 h-6 text-blue-600" />
-                  <span className="font-medium">Secure Checkout</span>
-                </div>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div>• SSL encrypted transactions</div>
-                  <div>• No stored payment data</div>
-                  <div>• Instant processing</div>
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center gap-2 text-sm text-gray-500">
-                  <span>Secured by</span>
-                  <span className="font-bold text-blue-600">Stripe</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+
     </div>
   );
 }

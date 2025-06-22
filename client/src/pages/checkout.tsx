@@ -21,11 +21,11 @@ const plans: Record<string, PlanDetails> = {
   starter: {
     name: "Starter",
     pricePerUser: 25,
-    minUsers: 1,
-    maxUsers: 5,
+    minUsers: 3,
+    maxUsers: 25,
     features: [
-      "Up to 5 users included",
-      "500 packages/month",
+      "Up to 25 users",
+      "1,000 packages/month",
       "Email notifications",
       "Basic analytics",
       "Photo storage"
@@ -33,12 +33,12 @@ const plans: Record<string, PlanDetails> = {
   },
   professional: {
     name: "Professional",
-    pricePerUser: 75,
-    minUsers: 1,
-    maxUsers: 25,
+    pricePerUser: 35,
+    minUsers: 5,
+    maxUsers: 100,
     features: [
-      "Up to 25 users included",
-      "2,500 packages/month",
+      "Up to 100 users",
+      "Unlimited packages",
       "Email & SMS notifications",
       "Advanced analytics",
       "API integrations",
@@ -47,8 +47,8 @@ const plans: Record<string, PlanDetails> = {
   },
   enterprise: {
     name: "Enterprise",
-    pricePerUser: 199,
-    minUsers: 1,
+    pricePerUser: 45,
+    minUsers: 25,
     maxUsers: null,
     features: [
       "Unlimited users",
@@ -63,12 +63,13 @@ const plans: Record<string, PlanDetails> = {
 
 export default function Checkout() {
   const [selectedPlan, setSelectedPlan] = useState<string>("professional");
+  const [userCount, setUserCount] = useState<number>(5);
   const [paymentMethod, setPaymentMethod] = useState<string>("card");
   const { currentOrganization } = useOrganization();
   const { toast } = useToast();
 
   const currentPlan = plans[selectedPlan];
-  const monthlyTotal = currentPlan.pricePerUser;
+  const monthlyTotal = userCount * currentPlan.pricePerUser;
   const yearlyTotal = monthlyTotal * 12 * 0.8; // 20% discount for annual
 
   const handleUpgrade = async () => {
@@ -123,7 +124,7 @@ export default function Checkout() {
                       <div>
                         <h3 className="font-semibold">{plan.name}</h3>
                         <p className="text-sm text-gray-600">
-                          ${plan.pricePerUser}/month
+                          ${plan.pricePerUser}/user/month
                         </p>
                       </div>
                       {selectedPlan === key && (
@@ -143,16 +144,22 @@ export default function Checkout() {
               </div>
 
               <div className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-blue-800 mb-2">
-                    <Users className="h-4 w-4" />
-                    <span className="font-medium">Users Included</span>
+                <div>
+                  <Label htmlFor="users">Number of Users</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Users className="h-4 w-4 text-gray-500" />
+                    <Input
+                      id="users"
+                      type="number"
+                      min={currentPlan.minUsers}
+                      max={currentPlan.maxUsers || 1000}
+                      value={userCount}
+                      onChange={(e) => setUserCount(Number(e.target.value))}
+                      className="flex-1"
+                    />
                   </div>
-                  <p className="text-sm text-blue-700">
-                    {currentPlan.maxUsers === null 
-                      ? "Unlimited users included" 
-                      : `Up to ${currentPlan.maxUsers} users included in this plan`
-                    }
+                  <p className="text-xs text-gray-500 mt-1">
+                    Minimum {currentPlan.minUsers} users required
                   </p>
                 </div>
 
@@ -188,8 +195,8 @@ export default function Checkout() {
                   <h3 className="font-semibold mb-2">{currentPlan.name} Plan</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>{currentPlan.name} Plan</span>
-                      <span>${currentPlan.pricePerUser}/month</span>
+                      <span>{userCount} users × ${currentPlan.pricePerUser}/month</span>
+                      <span>${monthlyTotal}</span>
                     </div>
                     <div className="border-t pt-2 font-semibold">
                       <div className="flex justify-between">

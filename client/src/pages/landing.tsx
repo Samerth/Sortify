@@ -350,20 +350,20 @@ export default function Landing() {
                 <CardTitle className="text-2xl">Starter</CardTitle>
                 <div className="mt-4">
                   <span className="text-4xl font-bold">$25</span>
-                  <span className="text-gray-600">/month</span>
+                  <span className="text-gray-600">/user/month</span>
                 </div>
                 <p className="text-gray-600 mt-2">Perfect for small teams</p>
-                <p className="text-sm text-blue-600 font-medium">Up to 5 users included</p>
+                <p className="text-sm text-blue-600 font-medium">Minimum 3 users</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>Up to 5 users included</span>
+                    <span>Up to 25 users</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>500 packages/month</span>
+                    <span>1,000 packages/month</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -389,21 +389,21 @@ export default function Landing() {
                 <Badge className="mb-2 bg-blue-500">Most Popular</Badge>
                 <CardTitle className="text-2xl">Professional</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$75</span>
-                  <span className="text-gray-600">/month</span>
+                  <span className="text-4xl font-bold">$35</span>
+                  <span className="text-gray-600">/user/month</span>
                 </div>
                 <p className="text-gray-600 mt-2">For growing organizations</p>
-                <p className="text-sm text-blue-600 font-medium">Up to 25 users included</p>
+                <p className="text-sm text-blue-600 font-medium">Minimum 5 users</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>Up to 25 users included</span>
+                    <span>Up to 100 users</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>2,500 packages/month</span>
+                    <span>Unlimited packages</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -432,11 +432,11 @@ export default function Landing() {
               <CardHeader className="text-center pb-8">
                 <CardTitle className="text-2xl">Enterprise</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$199</span>
-                  <span className="text-gray-600">/month</span>
+                  <span className="text-4xl font-bold">$45</span>
+                  <span className="text-gray-600">/user/month</span>
                 </div>
                 <p className="text-gray-600 mt-2">For large enterprises</p>
-                <p className="text-sm text-purple-600 font-medium">Unlimited users</p>
+                <p className="text-sm text-purple-600 font-medium">Minimum 25 users</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">

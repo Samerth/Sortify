@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./simpleAuth";
 import { sendInvitationEmail, sendMailNotificationEmail } from "./emailService";
+import { trialMiddleware, checkActionLimit } from "./middleware/trialMiddleware";
+import { TrialManager } from "./trialManager";
 import crypto from "crypto";
 import {
   insertOrganizationSchema,
@@ -81,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/organizations', isAuthenticated, async (req: any, res) => {
+  app.post('/api/organizations', isAuthenticated, trialMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const validData = insertOrganizationSchema.parse(req.body);
@@ -135,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/organizations/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.put('/api/organizations/:id', isAuthenticated, withOrganization, trialMiddleware, async (req: any, res) => {
     try {
       if (req.userRole !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
@@ -177,7 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User invitation routes with access control
-  app.post('/api/user-invitations', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.post('/api/user-invitations', isAuthenticated, withOrganization, trialMiddleware, checkActionLimit('add_user'), async (req: any, res) => {
     console.log('🎯 Invitation route hit!', { body: req.body });
     
     try {
@@ -194,17 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.log('✅ Admin check passed');
       
-      // Check if organization has available license seats
-      const org = await storage.getOrganization(organizationId);
-      const orgMembers = await storage.getUserOrganizations(userId);
-      const currentUserCount = orgMembers.length;
-      const maxUsers = org?.maxUsers || 5;
-      
-      if (currentUserCount >= maxUsers) {
-        return res.status(400).json({ 
-          message: `License limit reached. You have ${currentUserCount}/${maxUsers} users. Upgrade your license to add more team members.` 
-        });
-      }
+      // License limit checking is now handled by trial middleware
       
       // Check if user already exists or has pending invitation
       const existingUser = await storage.getUserByEmail(email);
@@ -292,7 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/recipients', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.post('/api/recipients', isAuthenticated, withOrganization, trialMiddleware, async (req: any, res) => {
     try {
       const validData = insertRecipientSchema.parse({
         ...req.body,
@@ -327,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/recipients/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.put('/api/recipients/:id', isAuthenticated, withOrganization, trialMiddleware, async (req: any, res) => {
     try {
       const validData = insertRecipientSchema.partial().parse(req.body);
       const recipient = await storage.updateRecipient(req.params.id, validData);
@@ -338,7 +330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/recipients/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.delete('/api/recipients/:id', isAuthenticated, withOrganization, trialMiddleware, async (req: any, res) => {
     try {
       await storage.deleteRecipient(req.params.id);
       res.json({ message: "Recipient deleted successfully" });
@@ -367,7 +359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/mail-items', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.post('/api/mail-items', isAuthenticated, withOrganization, trialMiddleware, checkActionLimit('add_package'), async (req: any, res) => {
     try {
       const userId = req.user.id;
       const validData = insertMailItemSchema.parse({
@@ -411,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/mail-items/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.put('/api/mail-items/:id', isAuthenticated, withOrganization, trialMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const currentItem = await storage.getMailItem(req.params.id);
@@ -543,7 +535,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/dashboard/recent-activity', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.get('/api/dashboard/recent-activity', isAuthenticated, withOrganization, trialMiddleware, async (req: any, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
       const activities = await storage.getRecentActivity(req.organizationId, limit);
@@ -667,7 +659,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/integrations', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.post('/api/integrations', isAuthenticated, withOrganization, trialMiddleware, async (req: any, res) => {
     try {
       if (req.userRole !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
@@ -686,7 +678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/integrations/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.put('/api/integrations/:id', isAuthenticated, withOrganization, trialMiddleware, async (req: any, res) => {
     try {
       if (req.userRole !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
@@ -701,7 +693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/integrations/:id', isAuthenticated, withOrganization, async (req: any, res) => {
+  app.delete('/api/integrations/:id', isAuthenticated, withOrganization, trialMiddleware, async (req: any, res) => {
     try {
       if (req.userRole !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });

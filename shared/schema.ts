@@ -287,7 +287,11 @@ export const insertRecipientSchema = createInsertSchema(recipients).omit({
 }).extend({
   firstName: z.string().min(1, "First name is required").max(100, "First name must be less than 100 characters"),
   lastName: z.string().min(1, "Last name is required").max(100, "Last name must be less than 100 characters"),
-  email: z.string().min(1, "Email is required").email("Invalid email format"),
+  email: z.string().optional().or(z.literal("")).or(z.null())
+    .transform(val => val === "" || val === null ? null : val)
+    .refine(val => val === null || z.string().email().safeParse(val).success, {
+      message: "Invalid email format"
+    }),
   phone: z.string().optional().or(z.literal("")).or(z.null()).transform(val => val === "" || val === null ? null : val),
   unit: z.string().optional(),
   department: z.string().optional(),

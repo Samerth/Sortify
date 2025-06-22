@@ -289,7 +289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         organizationId: req.organizationId,
       });
       
-      // Check for duplicate email within the same organization 
+      // Check for duplicate email within the same organization (only if email is provided)
       if (validData.email && validData.email.trim()) {
         const existingEmailRecipient = await storage.getRecipientByEmail(req.organizationId, validData.email.trim());
         if (existingEmailRecipient) {

@@ -29,7 +29,7 @@ export default function AuthPage() {
   // Extract invitation token from URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    const token = urlParams.get('invitation') || urlParams.get('token');
     if (token) {
       setInvitationToken(token);
     }

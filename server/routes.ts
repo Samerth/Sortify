@@ -435,7 +435,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Send email notification if status changed to "notified"
         if (validData.status === 'notified' && currentItem.recipient?.email) {
           try {
+            console.log('📧 Status changed to notified, sending email to:', currentItem.recipient.email);
             const organization = await storage.getOrganization(req.organizationId);
+            console.log('🏢 Organization for notification:', organization?.name);
+            
             const success = await sendMailNotificationEmail({
               to: currentItem.recipient.email,
               recipientName: `${currentItem.recipient.firstName} ${currentItem.recipient.lastName}`,
@@ -447,12 +450,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
             
             if (success) {
-              console.log(`📧 Mail notification email sent to ${currentItem.recipient.email} for mail item ${updatedItem.id}`);
+              console.log(`✅ Mail notification email sent successfully to ${currentItem.recipient.email} for mail item ${updatedItem.id}`);
             } else {
               console.error(`❌ Failed to send mail notification email to ${currentItem.recipient.email}`);
             }
           } catch (emailError) {
-            console.error('Email notification error:', emailError);
+            console.error('❌ Email notification error:', emailError);
             // Don't fail the mail item update if email fails
           }
         }

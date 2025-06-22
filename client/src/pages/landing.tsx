@@ -51,7 +51,7 @@ export default function Landing() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Button size="lg" className="px-8 py-3 text-lg" asChild>
-              <a href="/auth">
+              <a href="/register">
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2" />
               </a>
@@ -436,7 +436,7 @@ export default function Landing() {
                   <span className="text-gray-600">/user/month</span>
                 </div>
                 <p className="text-gray-600 mt-2">For large enterprises</p>
-                <p className="text-sm text-purple-600 font-medium">Minimum 25 users</p>
+                <p className="text-sm text-purple-600 font-medium">Minimum 10 users</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">

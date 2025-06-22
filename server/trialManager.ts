@@ -211,7 +211,7 @@ export class TrialManager {
       enterprise: {
         name: "Enterprise",
         pricePerUser: 45,
-        minUsers: 25,
+        minUsers: 10,
         maxUsers: -1,
         maxPackages: -1,
         features: ["Unlimited users", "Unlimited packages", "White-label branding", "Custom integrations", "Dedicated support", "SLA guarantee"]

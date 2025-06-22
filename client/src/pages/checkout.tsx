@@ -48,7 +48,7 @@ const plans: Record<string, PlanDetails> = {
   enterprise: {
     name: "Enterprise",
     pricePerUser: 45,
-    minUsers: 25,
+    minUsers: 10,
     maxUsers: null,
     features: [
       "Unlimited users",

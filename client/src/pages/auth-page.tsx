@@ -36,9 +36,19 @@ export default function AuthPage() {
   }, [location]);
 
   // Fetch invitation details if token exists
-  const { data: invitation } = useQuery({
+  const { data: invitation, error: invitationError } = useQuery({
     queryKey: ['/api/invitations/verify', invitationToken],
-    queryFn: () => fetch(`/api/invitations/verify/${invitationToken}`).then(res => res.json()),
+    queryFn: async () => {
+      const res = await fetch(`/api/invitations/verify/${invitationToken}`);
+      if (!res.ok) {
+        // For invalid tokens, just return null and allow registration
+        if (res.status === 404) {
+          return null;
+        }
+        throw new Error('Failed to verify invitation');
+      }
+      return res.json();
+    },
     enabled: !!invitationToken,
     retry: false,
   });
@@ -53,6 +63,13 @@ export default function AuthPage() {
       setInvitationData(invitation);
     }
   }, [invitation]);
+
+  // Show invitation status
+  const invitationStatus = invitationToken ? (
+    invitation ? 'valid' : 
+    invitationError ? 'invalid' : 
+    'loading'
+  ) : null;
 
   // Redirect if already logged in
   if (!isLoading && user) {
@@ -161,6 +178,8 @@ export default function AuthPage() {
               <CardDescription>
                 {invitationData ? 
                   `You've been invited to join ${invitationData.organizationName}` :
+                  invitationStatus === 'invalid' ?
+                  "Invalid or expired invitation. You can still create an account." :
                   "Sign in to your account or create a new one"
                 }
               </CardDescription>
@@ -170,6 +189,13 @@ export default function AuthPage() {
                     <strong>Organization:</strong> {invitationData.organizationName}<br/>
                     <strong>Role:</strong> {invitationData.role}<br/>
                     <strong>Email:</strong> {invitationData.email}
+                  </p>
+                </div>
+              )}
+              {invitationStatus === 'invalid' && (
+                <div className="bg-orange-50 p-3 rounded-lg mt-2">
+                  <p className="text-sm text-orange-700">
+                    The invitation link is invalid or expired, but you can still create an account.
                   </p>
                 </div>
               )}

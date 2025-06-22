@@ -101,12 +101,13 @@ export async function setupAuth(app: Express) {
       if (invitationToken) {
         invitation = await storage.getInvitationByToken(invitationToken);
         if (!invitation) {
-          return res.status(400).json({ message: "Invalid or expired invitation" });
-        }
-        
-        // Verify email matches invitation
-        if (invitation.email !== email) {
-          return res.status(400).json({ message: "Email must match the invited email address" });
+          console.log('⚠️ Invalid invitation token provided, proceeding with normal registration');
+          // Don't block registration, just proceed without organization assignment
+        } else {
+          // Verify email matches invitation
+          if (invitation.email !== email) {
+            return res.status(400).json({ message: "Email must match the invited email address" });
+          }
         }
       }
 

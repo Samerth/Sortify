@@ -239,11 +239,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const inviter = await storage.getUser(userId);
       const organization = await storage.getOrganization(organizationId);
       
-      // Use the correct Replit app URL - fallback to .replit.app domain
-      const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
-      const appUrl = replitDomain ? 
-        `https://${replitDomain}` : 
-        `https://${process.env.REPL_SLUG || 'uff4441'}-${process.env.REPL_OWNER || 'sortifyapp'}.replit.app`;
+      // Use the production domain for invitations
+      const appUrl = 'https://sortifyapp.com';
 
       console.log('📧 Attempting to send invitation email...');
       console.log('📧 Email recipient:', email);

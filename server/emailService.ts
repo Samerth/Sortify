@@ -19,7 +19,9 @@ interface InvitationEmailParams {
 
 export async function sendInvitationEmail(params: InvitationEmailParams): Promise<boolean> {
   try {
-    const invitationUrl = `${params.appUrl}/auth?invitation=${params.invitationToken}`;
+    // Use the production domain for invitations
+    const baseUrl = params.appUrl.includes('replit.dev') ? 'https://sortifyapp.com' : params.appUrl;
+    const invitationUrl = `${baseUrl}/auth?invitation=${params.invitationToken}`;
     
     const emailContent = {
       to: params.to,

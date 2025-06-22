@@ -18,6 +18,7 @@ import History from "@/pages/history";
 import Integrations from "@/pages/integrations";
 import Settings from "@/pages/settings";
 import Checkout from "@/pages/checkout";
+import SuperAdmin from "@/pages/super-admin";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
 
@@ -47,6 +48,7 @@ function ProtectedContent() {
       <Route path="/integrations" component={Integrations} />
       <Route path="/settings" component={Settings} />
       <Route path="/checkout" component={Checkout} />
+      <Route path="/super-admin" component={SuperAdmin} />
       <Route component={NotFound} />
     </Switch>
   );

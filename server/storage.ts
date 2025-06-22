@@ -43,6 +43,20 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: UpsertUser): Promise<User>;
   
+  // Super Admin operations
+  getAllOrganizations(): Promise<(Organization & { memberCount: number; packageCount: number })[]>;
+  getAllUsers(): Promise<(User & { organizations: Array<{ id: string; name: string; role: string }> })[]>;
+  getSystemStats(): Promise<{
+    totalOrganizations: number;
+    totalUsers: number;
+    activeTrials: number;
+    paidSubscriptions: number;
+    totalPackagesThisMonth: number;
+    revenue: number;
+  }>;
+  updateUserSuperAdminStatus(userId: string, isSuperAdmin: boolean): Promise<User>;
+  updateOrganizationStatus(orgId: string, updates: Partial<Organization>): Promise<Organization>;
+  
   // Invitation operations
   createInvitation(data: InsertUserInvitation): Promise<UserInvitation>;
   getPendingInvitation(organizationId: string, email: string): Promise<UserInvitation | undefined>;
@@ -792,6 +806,120 @@ export class DatabaseStorage implements IStorage {
 
   async deleteMailroomLocation(id: string): Promise<void> {
     await db.delete(mailroomLocations).where(eq(mailroomLocations.id, id));
+  }
+
+  // Super Admin operations
+  async getAllOrganizations(): Promise<(Organization & { memberCount: number; packageCount: number })[]> {
+    const orgs = await db.select().from(organizations);
+    
+    const orgsWithCounts = await Promise.all(
+      orgs.map(async (org) => {
+        const [memberCountResult] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(organizationMembers)
+          .where(eq(organizationMembers.organizationId, org.id));
+        
+        const [packageCountResult] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(mailItems)
+          .where(eq(mailItems.organizationId, org.id));
+        
+        return {
+          ...org,
+          memberCount: memberCountResult?.count || 0,
+          packageCount: packageCountResult?.count || 0,
+        };
+      })
+    );
+    
+    return orgsWithCounts;
+  }
+
+  async getAllUsers(): Promise<(User & { organizations: Array<{ id: string; name: string; role: string }> })[]> {
+    const allUsers = await db.select().from(users);
+    
+    const usersWithOrgs = await Promise.all(
+      allUsers.map(async (user) => {
+        const userOrgs = await db
+          .select({
+            id: organizations.id,
+            name: organizations.name,
+            role: organizationMembers.role,
+          })
+          .from(organizationMembers)
+          .innerJoin(organizations, eq(organizationMembers.organizationId, organizations.id))
+          .where(eq(organizationMembers.userId, user.id));
+        
+        return {
+          ...user,
+          organizations: userOrgs,
+        };
+      })
+    );
+    
+    return usersWithOrgs;
+  }
+
+  async getSystemStats(): Promise<{
+    totalOrganizations: number;
+    totalUsers: number;
+    activeTrials: number;
+    paidSubscriptions: number;
+    totalPackagesThisMonth: number;
+    revenue: number;
+  }> {
+    const [orgCount] = await db.select({ count: sql<number>`count(*)` }).from(organizations);
+    const [userCount] = await db.select({ count: sql<number>`count(*)` }).from(users);
+    
+    const [trialCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(organizations)
+      .where(eq(organizations.planType, 'trial'));
+    
+    const [paidCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(organizations)
+      .where(and(
+        ne(organizations.planType, 'trial'),
+        eq(organizations.subscriptionStatus, 'active')
+      ));
+    
+    const currentMonth = new Date();
+    currentMonth.setDate(1);
+    const [packageCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(mailItems)
+      .where(gte(mailItems.createdAt, currentMonth));
+    
+    // Calculate revenue (simplified - would need actual billing data)
+    const revenue = paidCount.count * 100; // Placeholder calculation
+    
+    return {
+      totalOrganizations: orgCount.count,
+      totalUsers: userCount.count,
+      activeTrials: trialCount.count,
+      paidSubscriptions: paidCount.count,
+      totalPackagesThisMonth: packageCount.count,
+      revenue,
+    };
+  }
+
+  async updateUserSuperAdminStatus(userId: string, isSuperAdmin: boolean): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ isSuperAdmin, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateOrganizationStatus(orgId: string, updates: Partial<Organization>): Promise<Organization> {
+    const [org] = await db
+      .update(organizations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(organizations.id, orgId))
+      .returning();
+    return org;
   }
 }
 

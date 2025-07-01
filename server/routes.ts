@@ -708,6 +708,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Organization settings routes
+  app.get('/api/organization-settings', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const settings = await storage.getOrganizationSettings(req.organizationId);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching organization settings:", error);
+      res.status(500).json({ message: "Failed to fetch organization settings" });
+    }
+  });
+
+  app.put('/api/organization-settings', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const settingsData = { ...req.body, organizationId: req.organizationId };
+      const settings = await storage.upsertOrganizationSettings(settingsData);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating organization settings:", error);
+      res.status(500).json({ message: "Failed to update organization settings" });
+    }
+  });
+
   // Photo upload endpoint
   app.post("/api/upload-photo", withOrganization, async (req: any, res) => {
     try {

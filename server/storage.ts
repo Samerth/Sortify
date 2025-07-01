@@ -13,6 +13,8 @@ import {
   type InsertMailItemHistory,
   type Integration,
   type InsertIntegration,
+  type OrganizationSettings,
+  type InsertOrganizationSettings,
   type Mailroom,
   type InsertMailroom,
   type MailroomLocation,
@@ -33,6 +35,7 @@ import {
   mailItems,
   mailItemHistory,
   integrations,
+  organizationSettings,
   mailrooms,
   mailroomLocations,
   userInvitations,
@@ -860,6 +863,30 @@ export class DatabaseStorage implements IStorage {
 
   async deleteMailroomLocation(id: string): Promise<void> {
     await db.delete(mailroomLocations).where(eq(mailroomLocations.id, id));
+  }
+
+  // Organization settings operations
+  async getOrganizationSettings(organizationId: string): Promise<OrganizationSettings | undefined> {
+    const [settings] = await db
+      .select()
+      .from(organizationSettings)
+      .where(eq(organizationSettings.organizationId, organizationId));
+    return settings || undefined;
+  }
+
+  async upsertOrganizationSettings(data: InsertOrganizationSettings): Promise<OrganizationSettings> {
+    const [settings] = await db
+      .insert(organizationSettings)
+      .values(data)
+      .onConflictDoUpdate({
+        target: organizationSettings.organizationId,
+        set: {
+          ...data,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return settings;
   }
 
   // Super Admin operations

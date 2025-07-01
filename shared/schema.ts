@@ -41,7 +41,7 @@ export const users = pgTable("users", {
 // Password reset tokens table
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   token: varchar("token").notNull().unique(),
   expiresAt: timestamp("expires_at").notNull(),
   usedAt: timestamp("used_at"),
@@ -68,7 +68,7 @@ export const organizations = pgTable("organizations", {
 export const organizationMembers = pgTable("organization_members", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
+  userId: uuid("user_id").references(() => users.id).notNull(),
   role: varchar("role", { length: 50 }).notNull().default("member"), // admin, member
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -79,7 +79,7 @@ export const userInvitations = pgTable("user_invitations", {
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   role: varchar("role", { length: 50 }).notNull().default("member"),
-  invitedBy: varchar("invited_by").references(() => users.id).notNull(),
+  invitedBy: uuid("invited_by").references(() => users.id).notNull(),
   token: varchar("token", { length: 255 }).notNull().unique(), // invitation token
   expiresAt: timestamp("expires_at").notNull(),
   usedAt: timestamp("used_at"),
@@ -150,7 +150,7 @@ export const mailItems = pgTable("mail_items", {
   deliveredAt: timestamp("delivered_at"),
   notes: text("notes"),
   photoData: text("photo_data"), // Base64 encoded optimized image
-  createdBy: varchar("created_by").references(() => users.id),
+  createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

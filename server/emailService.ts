@@ -243,3 +243,101 @@ export async function sendMailNotificationEmail(params: MailNotificationParams):
     return false;
   }
 }
+
+interface PasswordResetEmailParams {
+  to: string;
+  name: string;
+  resetToken: string;
+  appUrl: string;
+}
+
+export async function sendPasswordResetEmail(params: PasswordResetEmailParams): Promise<boolean> {
+  const { to, name, resetToken, appUrl } = params;
+  const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
+
+  try {
+    const emailContent = {
+      to,
+      from: 'noreply@sortifyapp.com',
+      subject: '🔑 Reset Your Sortify Password',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0;">Sortify</h1>
+            <p style="color: #6b7280; margin: 5px 0 0 0;">Smart Package Sorting Platform</p>
+          </div>
+          
+          <div style="background: #f0f9ff; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+            <h2 style="color: #1f2937; margin: 0 0 16px 0;">🔑 Password Reset Request</h2>
+            <p style="color: #4b5563; margin: 0 0 16px 0;">
+              Hello ${name},
+            </p>
+            <p style="color: #4b5563; margin: 0 0 16px 0;">
+              We received a request to reset your password for your Sortify account.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" 
+               style="background: #2563eb; 
+                      color: white; 
+                      padding: 15px 30px; 
+                      text-decoration: none; 
+                      border-radius: 8px; 
+                      font-weight: bold; 
+                      display: inline-block;
+                      font-size: 16px;">
+              Reset Your Password
+            </a>
+          </div>
+          
+          <div style="background: #fef3c7; border-radius: 8px; padding: 16px; margin: 24px 0;">
+            <p style="color: #92400e; margin: 0; font-size: 14px;">
+              ⚠️ This link will expire in 1 hour for security reasons.
+            </p>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+            If you didn't request this password reset, you can safely ignore this email.
+          </p>
+          
+          <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+            If the button doesn't work, copy and paste this link into your browser:<br>
+            <a href="${resetUrl}" style="color: #2563eb; word-break: break-all;">${resetUrl}</a>
+          </p>
+          
+          <div style="text-align: center; margin: 32px 0;">
+            <p style="color: #6b7280; margin: 0; font-size: 14px;">
+              This is an automated email from Sortify. Please do not reply to this email.
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+        Password Reset Request
+        
+        Hello ${name},
+        
+        We received a request to reset your password for your Sortify account.
+        
+        Click here to reset your password: ${resetUrl}
+        
+        This link will expire in 1 hour for security reasons.
+        
+        If you didn't request this password reset, you can safely ignore this email.
+        
+        This is an automated email from Sortify. Please do not reply to this email.
+      `
+    };
+
+    await mailService.send(emailContent);
+    console.log(`Password reset email sent successfully to ${to}`);
+    return true;
+  } catch (error: any) {
+    console.error('SendGrid password reset email error:', error);
+    if (error.response?.body?.errors) {
+      console.error('SendGrid error details:', error.response.body.errors);
+    }
+    return false;
+  }
+}

@@ -2,10 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./simpleAuth";
-import { sendInvitationEmail, sendMailNotificationEmail } from "./emailService";
+import { sendInvitationEmail, sendMailNotificationEmail, sendPasswordResetEmail } from "./emailService";
 import { trialMiddleware, checkActionLimit } from "./middleware/trialMiddleware";
 import { TrialManager } from "./trialManager";
 import crypto from "crypto";
+import { hashPassword } from "./simpleAuth";
 import {
   insertOrganizationSchema,
   insertRecipientSchema,
@@ -725,6 +726,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Photo upload error:", error);
       res.status(500).json({ message: "Failed to upload photo" });
+    }
+  });
+
+  // Password reset routes
+  app.post('/api/forgot-password', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if user exists or not for security
+        return res.json({ message: 'If an account exists with this email, you will receive a password reset link.' });
+      }
+
+      // Clean up expired tokens first
+      await storage.deleteExpiredPasswordResetTokens();
+
+      // Generate secure token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour expiry
+
+      await storage.createPasswordResetToken({
+        userId: user.id,
+        token: resetToken,
+        expiresAt,
+      });
+
+      // Send password reset email
+      const appUrl = req.protocol + '://' + req.get('host');
+      const emailSent = await sendPasswordResetEmail({
+        to: email,
+        name: user.firstName || user.id,
+        resetToken,
+        appUrl,
+      });
+
+      if (!emailSent) {
+        console.error('Failed to send password reset email');
+        return res.status(500).json({ message: 'Failed to send password reset email' });
+      }
+
+      res.json({ message: 'If an account exists with this email, you will receive a password reset link.' });
+    } catch (error) {
+      console.error('Password reset request error:', error);
+      res.status(500).json({ message: 'Failed to process password reset request' });
+    }
+  });
+
+  app.post('/api/reset-password', async (req, res) => {
+    try {
+      const { token, password } = req.body;
+      
+      if (!token || !password) {
+        return res.status(400).json({ message: 'Token and password are required' });
+      }
+
+      if (password.length < 8) {
+        return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+      }
+
+      const resetToken = await storage.getPasswordResetToken(token);
+      if (!resetToken) {
+        return res.status(400).json({ message: 'Invalid or expired reset token' });
+      }
+
+      // Check if token is expired
+      if (new Date() > resetToken.expiresAt) {
+        return res.status(400).json({ message: 'Reset token has expired' });
+      }
+
+      // Check if token has already been used
+      if (resetToken.usedAt) {
+        return res.status(400).json({ message: 'Reset token has already been used' });
+      }
+
+      // Hash the new password
+      const hashedPassword = await hashPassword(password);
+
+      // Update user password
+      await storage.updateUserPassword(resetToken.userId, hashedPassword);
+
+      // Mark token as used
+      await storage.markPasswordResetTokenAsUsed(resetToken.id);
+
+      res.json({ message: 'Password reset successfully' });
+    } catch (error) {
+      console.error('Password reset error:', error);
+      res.status(500).json({ message: 'Failed to reset password' });
     }
   });
 

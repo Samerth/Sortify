@@ -19,10 +19,11 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, QrCode, Package, Mail, Bell, Check, Eye } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Plus, QrCode, Package, Mail, Bell, Check, Eye, Edit, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertMailItemSchema } from "@shared/schema";
+import { insertMailItemSchema, insertRecipientSchema } from "@shared/schema";
 import { z } from "zod";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
@@ -31,7 +32,12 @@ const mailItemFormSchema = insertMailItemSchema.extend({
   recipientId: z.string().optional(),
 });
 
+const recipientFormSchema = insertRecipientSchema.extend({
+  recipientType: z.string().default("resident"),
+});
+
 type MailItemFormData = z.infer<typeof mailItemFormSchema>;
+type RecipientFormData = z.infer<typeof recipientFormSchema>;
 
 interface MailItem {
   id: string;

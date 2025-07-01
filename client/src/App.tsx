@@ -19,6 +19,7 @@ import Recipients from "@/pages/recipients";
 import History from "@/pages/history";
 import Integrations from "@/pages/integrations";
 import Settings from "@/pages/settings";
+import OrganizationSettings from "@/pages/organization-settings";
 import Checkout from "@/pages/checkout";
 import SuperAdmin from "@/pages/super-admin";
 import Layout from "@/components/Layout";
@@ -49,6 +50,7 @@ function ProtectedContent() {
       <Route path="/history" component={History} />
       <Route path="/integrations" component={Integrations} />
       <Route path="/settings" component={Settings} />
+      <Route path="/organization-settings" component={OrganizationSettings} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/super-admin" component={SuperAdmin} />
       <Route component={NotFound} />

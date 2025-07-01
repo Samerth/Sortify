@@ -25,6 +25,7 @@ const navigationItems = [
 
 const adminItems = [
   { path: "/integrations", label: "Integrations", icon: Plug },
+  { path: "/organization-settings", label: "Customization", icon: Settings },
   { path: "/settings", label: "Settings", icon: Settings },
 ];
 

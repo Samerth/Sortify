@@ -19,6 +19,8 @@ import {
   type InsertMailroomLocation,
   type UserInvitation,
   type InsertUserInvitation,
+  type PasswordResetToken,
+  type InsertPasswordResetToken,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, count, sql, inArray } from "drizzle-orm";
@@ -33,6 +35,7 @@ import {
   mailrooms,
   mailroomLocations,
   userInvitations,
+  passwordResetTokens,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -42,6 +45,13 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: UpsertUser): Promise<User>;
+  updateUserPassword(userId: string, hashedPassword: string): Promise<User>;
+  
+  // Password reset operations
+  createPasswordResetToken(data: InsertPasswordResetToken): Promise<PasswordResetToken>;
+  getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
+  markPasswordResetTokenAsUsed(id: string): Promise<void>;
+  deleteExpiredPasswordResetTokens(): Promise<void>;
   
   // Super Admin operations
   getAllOrganizations(): Promise<(Organization & { memberCount: number; packageCount: number })[]>;
@@ -170,6 +180,45 @@ export class DatabaseStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
+  }
+
+  async updateUserPassword(userId: string, hashedPassword: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ password: hashedPassword, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  // Password reset operations
+  async createPasswordResetToken(data: InsertPasswordResetToken): Promise<PasswordResetToken> {
+    const [token] = await db
+      .insert(passwordResetTokens)
+      .values(data)
+      .returning();
+    return token;
+  }
+
+  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    const [resetToken] = await db
+      .select()
+      .from(passwordResetTokens)
+      .where(eq(passwordResetTokens.token, token));
+    return resetToken;
+  }
+
+  async markPasswordResetTokenAsUsed(id: string): Promise<void> {
+    await db
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(eq(passwordResetTokens.id, id));
+  }
+
+  async deleteExpiredPasswordResetTokens(): Promise<void> {
+    await db
+      .delete(passwordResetTokens)
+      .where(sql`${passwordResetTokens.expiresAt} < NOW()`);
   }
 
   // Invitation operations

@@ -14,6 +14,7 @@ import {
   insertIntegrationSchema,
 } from "@shared/schema";
 import { z } from "zod";
+import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
 // Organization context middleware
 const withOrganization = async (req: any, res: any, next: any) => {
@@ -845,6 +846,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Password reset error:', error);
       res.status(500).json({ message: 'Failed to reset password' });
+    }
+  });
+
+  // PayPal payment routes
+  app.get("/api/paypal/setup", async (req, res) => {
+    await loadPaypalDefault(req, res);
+  });
+
+  app.post("/api/paypal/order", async (req, res) => {
+    // Request body should contain: { intent, amount, currency }
+    await createPaypalOrder(req, res);
+  });
+
+  app.post("/api/paypal/order/:orderID/capture", async (req, res) => {
+    try {
+      // First capture the PayPal payment
+      await capturePaypalOrder(req, res);
+      
+      // If we have an authenticated user and organization, upgrade their subscription
+      if (req.isAuthenticated && req.isAuthenticated() && req.headers['x-organization-id']) {
+        const organizationId = req.headers['x-organization-id'] as string;
+        const { planType, userCount } = req.body;
+        
+        if (planType && userCount) {
+          // Calculate the plan pricing
+          const pricing = TrialManager.getPlanPricing();
+          const selectedPlan = pricing[planType];
+          
+          if (selectedPlan) {
+            // Update organization subscription status
+            await storage.updateOrganization(organizationId, {
+              subscriptionStatus: 'active',
+              planType: planType,
+              maxUsers: selectedPlan.maxUsers === -1 ? 999999 : selectedPlan.maxUsers,
+              maxPackagesPerMonth: selectedPlan.maxPackages === -1 ? 999999 : selectedPlan.maxPackages,
+            });
+            
+            console.log(`Organization ${organizationId} upgraded to ${planType} plan via PayPal`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('PayPal capture error:', error);
+      res.status(500).json({ error: 'Failed to process payment' });
     }
   });
 

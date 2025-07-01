@@ -5,9 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CreditCard, Users, Package, CheckCircle } from "lucide-react";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { useToast } from "@/hooks/use-toast";
+import PayPalButton from "@/components/PayPalButton";
 
 interface PlanDetails {
   name: string;
@@ -231,22 +233,62 @@ export default function Checkout() {
               </div>
 
               <div className="space-y-4">
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={handleUpgrade}
-                >
-                  Start Free Trial
-                </Button>
-                
-                <div className="text-center">
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <p className="text-sm text-yellow-800">
-                      <strong>Stripe Integration:</strong> Payment processing coming in next update. 
-                      Your trial will continue uninterrupted.
-                    </p>
-                  </div>
+                <div className="space-y-3">
+                  <h4 className="font-medium">Choose Payment Method:</h4>
+                  <RadioGroup
+                    value={paymentMethod}
+                    onValueChange={setPaymentMethod}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="card" id="card" />
+                      <Label htmlFor="card" className="flex items-center gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        Credit Card
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="paypal" id="paypal" />
+                      <Label htmlFor="paypal" className="flex items-center gap-2">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M8.52 18.54H6.44l1.65-10.44h2.08zM11.27 8.1c.84 0 1.72.13 2.36.39.64.26 1.16.63 1.51 1.07.35.44.57.94.66 1.49.09.55.07 1.12-.07 1.7-.14.58-.39 1.13-.74 1.61-.35.48-.78.89-1.29 1.22-.51.33-1.08.58-1.7.75-.62.17-1.28.26-1.98.26h-1.66l.42-2.7h1.24c.6 0 1.11-.15 1.54-.44.43-.29.74-.69.93-1.2.19-.51.23-1.03.13-1.56-.1-.53-.38-.93-.84-1.2-.46-.27-1.08-.41-1.86-.41h-.85l-.42 2.7h-2.08l1.65-10.44h2.08l-.42 2.7h.85z"/>
+                        </svg>
+                        PayPal
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
+
+                {paymentMethod === "card" && (
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    onClick={handleUpgrade}
+                  >
+                    Start Free Trial
+                  </Button>
+                )}
+
+                {paymentMethod === "paypal" && (
+                  <div className="w-full">
+                    <PayPalButton
+                      amount={monthlyTotal.toString()}
+                      currency="USD"
+                      intent="capture"
+                    />
+                  </div>
+                )}
+                
+                {paymentMethod === "card" && (
+                  <div className="text-center">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Stripe Integration:</strong> Payment processing coming in next update. 
+                        Your trial will continue uninterrupted.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 
                 <p className="text-xs text-gray-500 text-center">
                   Cancel anytime. No setup fees. Secure payment processing by Stripe.

@@ -23,12 +23,20 @@ interface PayPalButtonProps {
   amount: string;
   currency: string;
   intent: string;
+  planType?: string;
+  userCount?: number;
+  onSuccess?: (orderData: any) => void;
+  onError?: (error: any) => void;
 }
 
 export default function PayPalButton({
   amount,
   currency,
   intent,
+  planType,
+  userCount,
+  onSuccess,
+  onError,
 }: PayPalButtonProps) {
   const createOrder = async () => {
     const orderPayload = {
@@ -51,6 +59,10 @@ export default function PayPalButton({
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        planType,
+        userCount,
+      }),
     });
     const data = await response.json();
 
@@ -59,16 +71,29 @@ export default function PayPalButton({
 
   const onApprove = async (data: any) => {
     console.log("onApprove", data);
-    const orderData = await captureOrder(data.orderId);
-    console.log("Capture result", orderData);
+    try {
+      const orderData = await captureOrder(data.orderId);
+      console.log("Capture result", orderData);
+      if (onSuccess) {
+        onSuccess(orderData);
+      }
+    } catch (error) {
+      console.error("Payment capture failed:", error);
+      if (onError) {
+        onError(error);
+      }
+    }
   };
 
   const onCancel = async (data: any) => {
     console.log("onCancel", data);
   };
 
-  const onError = async (data: any) => {
+  const onErrorHandler = async (data: any) => {
     console.log("onError", data);
+    if (onError) {
+      onError(data);
+    }
   };
 
   useEffect(() => {
@@ -108,7 +133,7 @@ export default function PayPalButton({
             sdkInstance.createPayPalOneTimePaymentSession({
               onApprove,
               onCancel,
-              onError,
+              onError: onErrorHandler,
             });
 
       const onClick = async () => {

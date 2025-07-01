@@ -8,11 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Package, Mail, Bell, Check, Eye, Camera, QrCode, Upload, Trash2, ChevronDown, ChevronUp, MapPin, User, Clock } from "lucide-react";
+import { Plus, Package, Mail, Bell, Check, Eye, Camera, QrCode, Upload, Trash2, ChevronDown, ChevronUp, MapPin, User, Clock, Edit, UserPlus } from "lucide-react";
 import { PhotoCapture } from "@/components/PhotoCapture";
 import { optimizeImage } from "@/lib/imageUtils";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
+import { EditMailItemDialog } from "@/components/EditMailItemDialog";
+import { AddRecipientDialog } from "@/components/AddRecipientDialog";
 
 interface MailItem {
   id: string;
@@ -70,6 +72,9 @@ export default function MailIntake() {
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<string>("");
+  const [editingItem, setEditingItem] = useState<MailItem | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddRecipientDialogOpen, setIsAddRecipientDialogOpen] = useState(false);
 
   const { data: mailItems = [] } = useQuery({
     queryKey: ["/api/mail-items"],
@@ -301,6 +306,16 @@ export default function MailIntake() {
 
   const toggleExpanded = (itemId: string) => {
     setExpandedItem(expandedItem === itemId ? null : itemId);
+  };
+
+  // Handler functions for dialogs
+  const handleEditItem = (item: MailItem) => {
+    setEditingItem(item);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleRecipientAdded = (recipientId: string) => {
+    setFormData(prev => ({ ...prev, recipientId }));
   };
 
   const getStatusBadge = (status: string) => {
@@ -811,6 +826,14 @@ export default function MailIntake() {
                     </div>
                     <div className="flex items-center space-x-2">
                       {getStatusBadge(item.status)}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleEditItem(item)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"

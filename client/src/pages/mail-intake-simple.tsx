@@ -364,7 +364,19 @@ export default function MailIntake() {
               </div>
 
               <div>
-                <Label htmlFor="recipientId">Who is this package for?</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="recipientId">Who is this package for?</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsAddRecipientDialogOpen(true)}
+                    className="text-sm"
+                  >
+                    <UserPlus className="w-4 h-4 mr-1" />
+                    Add Recipient
+                  </Button>
+                </div>
                 <p className="text-sm text-gray-500 mb-2">Select the guest, employee, or resident this mail belongs to</p>
                 <select
                   id="recipientId"
@@ -1059,6 +1071,25 @@ export default function MailIntake() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Mail Item Dialog */}
+      {editingItem && (
+        <EditMailItemDialog
+          mailItem={editingItem}
+          isOpen={isEditDialogOpen}
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            setEditingItem(null);
+          }}
+        />
+      )}
+
+      {/* Add Recipient Dialog */}
+      <AddRecipientDialog
+        isOpen={isAddRecipientDialogOpen}
+        onClose={() => setIsAddRecipientDialogOpen(false)}
+        onRecipientAdded={handleRecipientAdded}
+      />
     </div>
   );
 }

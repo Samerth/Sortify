@@ -11,6 +11,8 @@ import Dashboard from "@/pages/dashboard";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
+import ForgotPasswordPage from "@/pages/forgot-password";
+import ResetPasswordPage from "@/pages/reset-password";
 import MailIntake from "@/pages/mail-intake-simple";
 import PendingPickups from "@/pages/pending-pickups";
 import Recipients from "@/pages/recipients";
@@ -86,6 +88,8 @@ function Router() {
           <Route path="/auth" component={AuthPage} />
           <Route path="/login" component={Login} />
           <Route path="/register" component={Register} />
+          <Route path="/forgot-password" component={ForgotPasswordPage} />
+          <Route path="/reset-password" component={ResetPasswordPage} />
           <Route path="/" component={Landing} />
         </>
       )}

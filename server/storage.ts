@@ -24,6 +24,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, count, sql, inArray } from "drizzle-orm";
+import * as crypto from "crypto";
 import {
   users,
   organizations,
@@ -172,7 +173,10 @@ export class DatabaseStorage implements IStorage {
   async createUser(userData: UpsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values({
+        ...userData,
+        id: crypto.randomUUID(),
+      })
       .returning();
     return user;
   }

@@ -112,7 +112,6 @@ export async function setupAuth(app: Express) {
       }
 
       const user = await storage.createUser({
-        id: username, // Use username as ID for simplicity
         email,
         firstName,
         lastName,

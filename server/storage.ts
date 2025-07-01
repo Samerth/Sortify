@@ -141,6 +141,10 @@ export interface IStorage {
   createIntegration(data: InsertIntegration): Promise<Integration>;
   updateIntegration(id: string, data: Partial<InsertIntegration>): Promise<Integration>;
   deleteIntegration(id: string): Promise<void>;
+
+  // Organization settings operations
+  getOrganizationSettings(organizationId: string): Promise<OrganizationSettings | undefined>;
+  upsertOrganizationSettings(data: InsertOrganizationSettings): Promise<OrganizationSettings>;
 }
 
 export class DatabaseStorage implements IStorage {

@@ -179,13 +179,29 @@ export const integrations = pgTable("integrations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Organization settings for customizable dropdowns and preferences
+export const organizationSettings = pgTable("organization_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id).notNull().unique(),
+  packageTypes: jsonb("package_types").default('["package", "letter", "certified_mail", "express", "fragile"]'),
+  packageSizes: jsonb("package_sizes").default('["small", "medium", "large", "extra_large"]'),
+  courierCompanies: jsonb("courier_companies").default('["FedEx", "UPS", "DHL", "USPS", "Amazon", "Other"]'),
+  customStatuses: jsonb("custom_statuses").default('["pending", "notified", "delivered", "returned"]'),
+  allowEditAfterDelivery: boolean("allow_edit_after_delivery").default(false),
+  requirePhotoUpload: boolean("require_photo_upload").default(false),
+  autoNotifyRecipients: boolean("auto_notify_recipients").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
-export const organizationsRelations = relations(organizations, ({ many }) => ({
+export const organizationsRelations = relations(organizations, ({ one, many }) => ({
   members: many(organizationMembers),
   recipients: many(recipients),
   mailItems: many(mailItems),
   integrations: many(integrations),
   mailroomLocations: many(mailroomLocations),
+  settings: one(organizationSettings),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -276,6 +292,13 @@ export const integrationsRelations = relations(integrations, ({ one }) => ({
   }),
 }));
 
+export const organizationSettingsRelations = relations(organizationSettings, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [organizationSettings.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
 // Export types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -346,6 +369,14 @@ export const insertUserInvitationSchema = createInsertSchema(userInvitations).om
 export type Integration = typeof integrations.$inferSelect;
 export type InsertIntegration = typeof integrations.$inferInsert;
 export const insertIntegrationSchema = createInsertSchema(integrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type OrganizationSettings = typeof organizationSettings.$inferSelect;
+export type InsertOrganizationSettings = typeof organizationSettings.$inferInsert;
+export const insertOrganizationSettingsSchema = createInsertSchema(organizationSettings).omit({
   id: true,
   createdAt: true,
   updatedAt: true,

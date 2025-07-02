@@ -143,11 +143,11 @@ export default function BillingContent() {
     starter: {
       name: "Starter",
       pricePerUser: 25,
-      minUsers: 3,
-      maxUsers: 25,
+      minUsers: 1,
+      maxUsers: 5,
       maxPackages: 1000,
       features: [
-        "Up to 25 users",
+        "Up to 5 users",
         "1,000 packages/month",
         "Email notifications",
         "Basic analytics",
@@ -158,10 +158,10 @@ export default function BillingContent() {
       name: "Professional",
       pricePerUser: 35,
       minUsers: 5,
-      maxUsers: 100,
+      maxUsers: 10,
       maxPackages: -1,
       features: [
-        "Up to 100 users",
+        "5 - 10 users",
         "Unlimited packages",
         "Email & SMS notifications",
         "Advanced analytics",
@@ -239,56 +239,39 @@ export default function BillingContent() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600 mb-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Plan Name */}
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">
                 {billingInfo.organization.planType === 'trial' ? 'Free Trial' : 
                  billingInfo.organization.planType.charAt(0).toUpperCase() + billingInfo.organization.planType.slice(1)}
               </div>
-              <div className="text-sm text-gray-600">
-                {billingInfo.trialInfo.isTrialActive ? (
-                  <div className="flex items-center justify-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {billingInfo.trialInfo.daysRemaining} days remaining
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-1">
-                    <CheckCircle className="w-4 h-4" />
-                    Active Subscription
-                  </div>
-                )}
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <CheckCircle className="w-4 h-4" />
+                Active
+              </div>
+              <div className="text-sm text-gray-600 mt-1">
+                Subscription
               </div>
             </div>
 
+            {/* Users */}
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="text-3xl font-bold text-gray-900 mb-2">
                 {billingInfo.currentUsers} Users
               </div>
               <div className="text-sm text-gray-600">
-                {billingInfo.trialInfo.usageLimits.canAddUsers ? (
-                  `Limit: ${billingInfo.trialInfo.usageLimits.maxUsers}`
-                ) : (
-                  <div className="flex items-center justify-center gap-1 text-red-600">
-                    <AlertTriangle className="w-4 h-4" />
-                    At user limit
-                  </div>
-                )}
+                Limit: {billingInfo.trialInfo.usageLimits.maxUsers === -1 ? '∞' : billingInfo.trialInfo.usageLimits.maxUsers}
               </div>
             </div>
 
+            {/* Packages */}
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="text-3xl font-bold text-gray-900 mb-2">
                 {billingInfo?.trialInfo?.usageLimits?.currentPackages || 0} Packages
               </div>
               <div className="text-sm text-gray-600">
-                {billingInfo?.trialInfo?.usageLimits?.canAddPackages ? (
-                  `This month`
-                ) : (
-                  <div className="flex items-center justify-center gap-1 text-red-600">
-                    <AlertTriangle className="w-4 h-4" />
-                    At monthly limit
-                  </div>
-                )}
+                This month
               </div>
             </div>
           </div>

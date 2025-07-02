@@ -353,13 +353,13 @@ export default function Landing() {
                   <span className="text-gray-600">/user/month</span>
                 </div>
                 <p className="text-gray-600 mt-2">Perfect for small teams</p>
-                <p className="text-sm text-blue-600 font-medium">Minimum 3 users</p>
+                <p className="text-sm text-blue-600 font-medium">Up to 5 users</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>Up to 25 users</span>
+                    <span>Up to 5 users</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -393,13 +393,13 @@ export default function Landing() {
                   <span className="text-gray-600">/user/month</span>
                 </div>
                 <p className="text-gray-600 mt-2">For growing organizations</p>
-                <p className="text-sm text-blue-600 font-medium">Minimum 5 users</p>
+                <p className="text-sm text-blue-600 font-medium">5 - 10 users</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>Up to 100 users</span>
+                    <span>5 - 10 users</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500" />

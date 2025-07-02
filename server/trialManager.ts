@@ -162,8 +162,8 @@ export class TrialManager {
     stripeSubscriptionId?: string
   ): Promise<void> {
     const planLimits = {
-      starter: { maxUsers: 25, maxPackagesPerMonth: 1000 },
-      professional: { maxUsers: 100, maxPackagesPerMonth: -1 }, // unlimited
+      starter: { maxUsers: 5, maxPackagesPerMonth: 1000 },
+      professional: { maxUsers: 10, maxPackagesPerMonth: -1 }, // unlimited
       enterprise: { maxUsers: -1, maxPackagesPerMonth: -1 }, // unlimited
     };
 
@@ -199,18 +199,18 @@ export class TrialManager {
       starter: {
         name: "Starter",
         pricePerUser: 25,
-        minUsers: 3,
-        maxUsers: 25,
+        minUsers: 1,
+        maxUsers: 5,
         maxPackages: 1000,
-        features: ["Up to 25 users", "1,000 packages/month", "Email notifications", "Basic analytics", "Photo storage"]
+        features: ["Up to 5 users", "1,000 packages/month", "Email notifications", "Basic analytics", "Photo storage"]
       },
       professional: {
         name: "Professional",
         pricePerUser: 35,
         minUsers: 5,
-        maxUsers: 100,
+        maxUsers: 10,
         maxPackages: -1,
-        features: ["Up to 100 users", "Unlimited packages", "Email & SMS notifications", "Advanced analytics", "API integrations", "Priority support"]
+        features: ["5 - 10 users", "Unlimited packages", "Email & SMS notifications", "Advanced analytics", "API integrations", "Priority support"]
       },
       enterprise: {
         name: "Enterprise",

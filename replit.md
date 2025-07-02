@@ -143,3 +143,19 @@ Preferred communication style: Simple, everyday language.
 - **Database Connection Pooling**: Neon serverless handles connection scaling
 - **CDN Ready**: Static assets can be served from CDN
 - **Multi-tenant Architecture**: Single deployment serves multiple organizations
+
+## Recent Changes
+
+### January 2, 2025 - Enhanced Unified Settings System
+- **Expanded Settings Interface**: Added comprehensive 6-tab settings system:
+  - Organization: Company profile and contact information
+  - Customization: Dropdown value management (package types, sizes, couriers, statuses)
+  - Preferences: System behavior toggles (photo requirements, notifications, edit permissions)
+  - Members & Licenses: License management, user limits, member invitation/removal
+  - Mailrooms: Physical location and storage area management
+  - Integrations: Email and SMS notification service configuration
+- **License Management**: Added license tracking with user count limits and status display
+- **Member Management**: Enhanced with invite/remove functionality and role management
+- **Mailroom Configuration**: Restored mailroom and storage location setup capabilities
+- **Consolidated Navigation**: Integrated all settings under single "Settings" menu option
+- **Infrastructure Ready**: All backend APIs and database schemas support full functionality

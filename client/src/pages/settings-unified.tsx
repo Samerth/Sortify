@@ -28,7 +28,12 @@ import {
   Cog,
   Shield,
   Users,
-  Bell
+  Bell,
+  Plug,
+  UserMinus,
+  UserPlus,
+  Crown,
+  MapPin
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -269,7 +274,7 @@ export default function SettingsUnified() {
 
       <div className="flex-1 p-6 space-y-6">
         <Tabs defaultValue="organization" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="organization" className="flex items-center gap-2">
               <Building2 className="w-4 h-4" />
               Organization
@@ -284,7 +289,15 @@ export default function SettingsUnified() {
             </TabsTrigger>
             <TabsTrigger value="members" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Members
+              Members & Licenses
+            </TabsTrigger>
+            <TabsTrigger value="mailrooms" className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Mailrooms
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="flex items-center gap-2">
+              <Plug className="w-4 h-4" />
+              Integrations
             </TabsTrigger>
           </TabsList>
 
@@ -548,39 +561,157 @@ export default function SettingsUnified() {
             </Card>
           </TabsContent>
 
-          {/* Members Management */}
+          {/* Members & License Management */}
           <TabsContent value="members" className="space-y-6">
+            {/* License Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="w-4 h-4" />
+                  License Information
+                </CardTitle>
+                <p className="text-sm text-gray-600">Current plan and user limits</p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <p className="text-2xl font-bold text-primary">{organizationMembers.length}</p>
+                    <p className="text-sm text-gray-600">Active Users</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <p className="text-2xl font-bold text-primary">{organization?.maxUsers || 'Unlimited'}</p>
+                    <p className="text-sm text-gray-600">User Limit</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">Active</p>
+                    <p className="text-sm text-gray-600">License Status</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Team Members */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
-                  Organization Members
+                  Team Members
                 </CardTitle>
                 <p className="text-sm text-gray-600">Manage team members and their roles</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {organizationMembers.map((member: any) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                          {member.user?.firstName?.[0] || member.user?.email?.[0] || '?'}
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-600">
+                      {organizationMembers.length} of {organization?.maxUsers || '∞'} user licenses used
+                    </p>
+                    <Button className="flex items-center gap-2">
+                      <UserPlus className="w-4 h-4" />
+                      Invite Member
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {organizationMembers.map((member: any) => (
+                      <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                            {member.user?.firstName?.[0] || member.user?.email?.[0] || '?'}
+                          </div>
+                          <div>
+                            <p className="font-medium">
+                              {member.user?.firstName && member.user?.lastName 
+                                ? `${member.user.firstName} ${member.user.lastName}`
+                                : member.user?.email
+                              }
+                            </p>
+                            <p className="text-sm text-gray-500">{member.user?.email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">
-                            {member.user?.firstName && member.user?.lastName 
-                              ? `${member.user.firstName} ${member.user.lastName}`
-                              : member.user?.email
-                            }
-                          </p>
-                          <p className="text-sm text-gray-500">{member.user?.email}</p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
+                            {member.role}
+                          </Badge>
+                          <Button variant="ghost" size="sm">
+                            <UserMinus className="w-4 h-4 text-red-500" />
+                          </Button>
                         </div>
                       </div>
-                      <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
-                        {member.role}
-                      </Badge>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Mailroom Settings */}
+          <TabsContent value="mailrooms" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-4 h-4" />
+                  Mailroom Configuration
+                </CardTitle>
+                <p className="text-sm text-gray-600">Set up physical mailroom locations and storage</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Button className="flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Mailroom
+                  </Button>
+                  <p className="text-sm text-gray-500">
+                    No mailrooms configured yet. Create your first mailroom to organize package storage locations.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Storage Locations
+                </CardTitle>
+                <p className="text-sm text-gray-600">Manage bins, shelves, and storage areas</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Button className="flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Storage Location
+                  </Button>
+                  <p className="text-sm text-gray-500">
+                    No storage locations configured yet. Add bins, shelves, or storage areas to track package placement.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Integrations */}
+          <TabsContent value="integrations" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="w-4 h-4" />
+                  Email & SMS Notifications
+                </CardTitle>
+                <p className="text-sm text-gray-600">Configure notification services</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Button className="flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Configure Email
+                  </Button>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Configure SMS
+                  </Button>
+                  <p className="text-sm text-gray-500">
+                    Set up email and SMS integrations to automatically notify recipients about their mail.
+                  </p>
                 </div>
               </CardContent>
             </Card>

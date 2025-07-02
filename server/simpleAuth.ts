@@ -149,14 +149,33 @@ export async function setupAuth(app: Express) {
   });
 
   // Login route
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    const user = req.user as SelectUser;
-    res.status(200).json({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName
-    });
+  app.post("/api/login", (req, res, next) => {
+    console.log('🔐 Login attempt:', { username: req.body.username, hasPassword: !!req.body.password });
+    
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        console.error('🔐 Login error:', err);
+        return next(err);
+      }
+      if (!user) {
+        console.log('🔐 Login failed: Invalid credentials for', req.body.username);
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          console.error('🔐 Session login error:', loginErr);
+          return next(loginErr);
+        }
+        console.log('🔐 Login successful for:', user.email);
+        res.status(200).json({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName
+        });
+      });
+    })(req, res, next);
   });
 
   // Logout route

@@ -34,7 +34,12 @@ import { StripeCheckout } from "./StripeCheckout";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!);
+// Initialize Stripe with public key
+if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
+  throw new Error('Missing required Stripe public key: VITE_STRIPE_PUBLIC_KEY');
+}
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 interface BillingInfo {
   organization: {

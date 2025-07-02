@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserPlus, Edit, Trash2, Mail, Phone, Building } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -181,6 +182,7 @@ export default function Recipients() {
       phone: recipient.phone || "",
       unit: recipient.unit || "",
       department: recipient.department || "",
+      recipientType: (recipient as any).recipientType || "guest",
       isActive: recipient.isActive,
     });
     setIsDialogOpen(true);
@@ -283,7 +285,12 @@ export default function Recipients() {
                         <FormItem>
                           <FormLabel>Email (Optional)</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="john.doe@example.com" {...field} />
+                            <Input 
+                              type="email" 
+                              placeholder="john.doe@example.com" 
+                              {...field} 
+                              value={field.value ?? ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -297,7 +304,11 @@ export default function Recipients() {
                         <FormItem>
                           <FormLabel>Phone</FormLabel>
                           <FormControl>
-                            <Input placeholder="+1 (555) 123-4567" {...field} />
+                            <Input 
+                              placeholder="+1 (555) 123-4567" 
+                              {...field} 
+                              value={field.value ?? ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -333,6 +344,31 @@ export default function Recipients() {
                         )}
                       />
                     </div>
+
+                    <FormField
+                      control={form.control}
+                      name="recipientType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Recipient Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="resident">Resident</SelectItem>
+                              <SelectItem value="employee">Employee</SelectItem>
+                              <SelectItem value="guest">Guest</SelectItem>
+                              <SelectItem value="visitor">Visitor</SelectItem>
+                              <SelectItem value="contractor">Contractor</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <div className="flex justify-end space-x-2">
                       <Button 

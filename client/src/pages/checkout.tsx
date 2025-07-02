@@ -275,6 +275,58 @@ export default function Checkout() {
                       amount={monthlyTotal.toString()}
                       currency="USD"
                       intent="capture"
+                      planType={selectedPlan}
+                      userCount={userCount}
+                      onSuccess={async (orderData) => {
+                        console.log("PayPal payment successful:", orderData);
+                        
+                        try {
+                          // Upgrade the organization after successful payment
+                          const response = await fetch(`/api/organizations/${organization?.id}/upgrade`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'x-organization-id': organization?.id || '',
+                            },
+                            body: JSON.stringify({
+                              planType: selectedPlan,
+                              userCount: userCount
+                            })
+                          });
+
+                          if (response.ok) {
+                            const upgradeResult = await response.json();
+                            console.log("Organization upgraded:", upgradeResult);
+                            
+                            toast({
+                              title: "Payment Successful!",
+                              description: `Your organization has been upgraded to ${currentPlan.name} plan.`,
+                            });
+                            
+                            // Redirect to dashboard after successful upgrade
+                            setTimeout(() => {
+                              window.location.href = "/dashboard";
+                            }, 1500);
+                          } else {
+                            throw new Error('Failed to upgrade organization');
+                          }
+                        } catch (error) {
+                          console.error("Organization upgrade failed:", error);
+                          toast({
+                            title: "Payment Successful, but...",
+                            description: "Payment completed successfully, but there was an issue updating your plan. Please contact support.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      onError={(error) => {
+                        console.error("PayPal payment failed:", error);
+                        toast({
+                          title: "Payment Failed",
+                          description: "There was an issue processing your payment. Please try again.",
+                          variant: "destructive",
+                        });
+                      }}
                     />
                   </div>
                 )}

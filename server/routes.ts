@@ -864,32 +864,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // First capture the PayPal payment
       await capturePaypalOrder(req, res);
       
-      // If we have an authenticated user and organization, upgrade their subscription
-      if (req.isAuthenticated && req.isAuthenticated() && req.headers['x-organization-id']) {
-        const organizationId = req.headers['x-organization-id'] as string;
-        const { planType, userCount } = req.body;
-        
-        if (planType && userCount) {
-          // Calculate the plan pricing
-          const pricing = TrialManager.getPlanPricing();
-          const selectedPlan = pricing[planType];
-          
-          if (selectedPlan) {
-            // Update organization subscription status
-            await storage.updateOrganization(organizationId, {
-              subscriptionStatus: 'active',
-              planType: planType,
-              maxUsers: selectedPlan.maxUsers === -1 ? 999999 : selectedPlan.maxUsers,
-              maxPackagesPerMonth: selectedPlan.maxPackages === -1 ? 999999 : selectedPlan.maxPackages,
-            });
-            
-            console.log(`Organization ${organizationId} upgraded to ${planType} plan via PayPal`);
-          }
-        }
+      // Log successful PayPal payment for debugging
+      console.log('PayPal payment captured successfully');
+      
+      // If we have plan information in the request body, handle subscription upgrade
+      const { planType, userCount } = req.body;
+      if (planType && userCount) {
+        console.log(`PayPal payment completed for plan: ${planType}, users: ${userCount}`);
+        // Note: Organization upgrade will need to be handled in the frontend
+        // after successful payment, since we don't have authentication context here
       }
+      
     } catch (error) {
       console.error('PayPal capture error:', error);
-      res.status(500).json({ error: 'Failed to process payment' });
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to process payment' });
+      }
+    }
+  });
+
+  // Organization upgrade endpoint for PayPal payments
+  app.post("/api/organizations/:organizationId/upgrade", isAuthenticated, async (req, res) => {
+    try {
+      const { organizationId } = req.params;
+      const { planType, userCount } = req.body;
+
+      if (!planType || !userCount) {
+        return res.status(400).json({ error: 'Plan type and user count are required' });
+      }
+
+      // Get plan pricing
+      const pricing = TrialManager.getPlanPricing();
+      const selectedPlan = pricing[planType as keyof typeof pricing];
+
+      if (!selectedPlan) {
+        return res.status(400).json({ error: 'Invalid plan type' });
+      }
+
+      // Update organization with new plan
+      const updatedOrg = await storage.updateOrganization(organizationId, {
+        maxUsers: selectedPlan.maxUsers === -1 ? 999999 : selectedPlan.maxUsers,
+      });
+
+      console.log(`Organization ${organizationId} upgraded to ${planType} plan`);
+
+      res.json({ 
+        success: true, 
+        organization: updatedOrg,
+        plan: selectedPlan 
+      });
+
+    } catch (error) {
+      console.error('Organization upgrade error:', error);
+      res.status(500).json({ error: 'Failed to upgrade organization' });
     }
   });
 

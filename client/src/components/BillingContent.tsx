@@ -142,47 +142,46 @@ export default function BillingContent() {
   const plans: Record<string, PlanInfo> = {
     starter: {
       name: "Starter",
-      pricePerUser: 12,
-      minUsers: 5,
+      pricePerUser: 25,
+      minUsers: 3,
       maxUsers: 25,
       maxPackages: 1000,
       features: [
         "Up to 25 users",
-        "1,000 packages per month",
-        "Basic mail tracking",
+        "1,000 packages/month",
         "Email notifications",
-        "Standard support"
+        "Basic analytics",
+        "Photo storage"
       ]
     },
     professional: {
       name: "Professional",
-      pricePerUser: 18,
-      minUsers: 10,
+      pricePerUser: 35,
+      minUsers: 5,
       maxUsers: 100,
-      maxPackages: 5000,
+      maxPackages: -1,
       features: [
         "Up to 100 users",
-        "5,000 packages per month",
-        "Advanced mail tracking",
-        "SMS & Email notifications",
-        "Priority support",
-        "Custom integrations"
+        "Unlimited packages",
+        "Email & SMS notifications",
+        "Advanced analytics",
+        "API integrations",
+        "Priority support"
       ]
     },
     enterprise: {
       name: "Enterprise",
-      pricePerUser: 25,
-      minUsers: 25,
-      maxUsers: 1000,
-      maxPackages: 25000,
+      pricePerUser: 45,
+      minUsers: 10,
+      maxUsers: -1,
+      maxPackages: -1,
       features: [
-        "Up to 1,000 users",
-        "25,000 packages per month",
-        "Full feature access",
-        "Dedicated account manager",
-        "24/7 support",
+        "Unlimited users",
+        "Unlimited packages",
+        "White-label branding",
         "Custom integrations",
-        "Advanced analytics"
+        "Dedicated support",
+        "SLA guarantee"
       ]
     }
   };
@@ -377,10 +376,10 @@ export default function BillingContent() {
                 <div className="space-y-4">
                   <div className="text-center">
                     <div className="text-sm text-gray-600">
-                      {plan.minUsers} - {plan.maxUsers} users
+                      {plan.minUsers} - {plan.maxUsers === -1 ? "∞" : plan.maxUsers} users
                     </div>
                     <div className="text-sm text-gray-600">
-                      Up to {plan.maxPackages.toLocaleString()} packages/month
+                      {plan.maxPackages === -1 ? "Unlimited packages" : `Up to ${plan.maxPackages.toLocaleString()} packages/month`}
                     </div>
                   </div>
                   

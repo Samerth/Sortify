@@ -162,7 +162,7 @@ export class TrialManager {
     stripeSubscriptionId?: string
   ): Promise<void> {
     const planLimits = {
-      starter: { maxUsers: 25, maxPackagesPerMonth: 2000 },
+      starter: { maxUsers: 25, maxPackagesPerMonth: 1000 },
       professional: { maxUsers: 100, maxPackagesPerMonth: -1 }, // unlimited
       enterprise: { maxUsers: -1, maxPackagesPerMonth: -1 }, // unlimited
     };

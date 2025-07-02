@@ -12,9 +12,7 @@ import { insertRecipientSchema } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 
-const recipientFormSchema = insertRecipientSchema.extend({
-  recipientType: z.string().default("resident"),
-});
+const recipientFormSchema = insertRecipientSchema;
 
 type RecipientFormData = z.infer<typeof recipientFormSchema>;
 
@@ -31,13 +29,15 @@ export function AddRecipientDialog({ isOpen, onClose, onRecipientAdded }: AddRec
   const form = useForm<RecipientFormData>({
     resolver: zodResolver(recipientFormSchema),
     defaultValues: {
+      organizationId: "",
       firstName: "",
       lastName: "",
       email: "",
       phone: "",
       unit: "",
       department: "",
-      recipientType: "resident",
+      recipientType: "guest",
+      isActive: true,
     },
   });
 
@@ -71,6 +71,7 @@ export function AddRecipientDialog({ isOpen, onClose, onRecipientAdded }: AddRec
   });
 
   const onSubmit = (data: RecipientFormData) => {
+    console.log("AddRecipientDialog onSubmit called with:", data);
     addRecipientMutation.mutate(data);
   };
 
@@ -201,10 +202,9 @@ export function AddRecipientDialog({ isOpen, onClose, onRecipientAdded }: AddRec
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="resident">Resident</SelectItem>
+                        <SelectItem value="guest">Guest</SelectItem>
                         <SelectItem value="employee">Employee</SelectItem>
-                        <SelectItem value="visitor">Visitor</SelectItem>
-                        <SelectItem value="contractor">Contractor</SelectItem>
+                        <SelectItem value="resident">Resident</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

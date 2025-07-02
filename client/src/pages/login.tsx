@@ -15,7 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
+  username: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -89,10 +89,11 @@ export default function Login() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Email Address</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Enter your username" 
+                          type="email"
+                          placeholder="Enter your email address" 
                           {...field}
                           disabled={loginMutation.isPending}
                         />
@@ -133,6 +134,13 @@ export default function Login() {
             </Form>
 
             <div className="mt-6 text-center space-y-4">
+              <Link 
+                href="/forgot-password" 
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline block"
+              >
+                Forgot your password?
+              </Link>
+              
               <p className="text-sm text-gray-600">
                 Don't have an account?{" "}
                 <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">

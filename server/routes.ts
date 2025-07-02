@@ -5,6 +5,7 @@ import { setupAuth, isAuthenticated } from "./simpleAuth";
 import { sendInvitationEmail, sendMailNotificationEmail, sendPasswordResetEmail } from "./emailService";
 import { trialMiddleware, checkActionLimit } from "./middleware/trialMiddleware";
 import { TrialManager } from "./trialManager";
+import Stripe from "stripe";
 import crypto from "crypto";
 import { hashPassword } from "./simpleAuth";
 import {
@@ -999,109 +1000,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid plan type' });
       }
 
-      // Calculate total amount
-      const totalAmount = selectedPlan.pricePerUser * userCount;
+      // Calculate total amount in cents for Stripe
+      const totalAmount = selectedPlan.pricePerUser * userCount * 100; // Convert to cents
       
-      // Create PayPal order directly using the same simplified logic
-      const collect = {
-        body: {
-          intent: "CAPTURE",
-          purchaseUnits: [
-            {
-              amount: {
-                currencyCode: "USD",
-                value: totalAmount.toString(),
-              },
-              description: `Sortify ${planType} Plan - ${userCount} users`,
-              invoiceId: `INV-${organizationId}-${Date.now()}`,
-              customId: `SORTIFY-${planType}-${userCount}`,
-            },
-          ],
+      // Initialize Stripe
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+      // Create Stripe Payment Intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(totalAmount),
+        currency: "usd",
+        automatic_payment_methods: {
+          enabled: true,
         },
-        prefer: "return=representation",
-      };
+        metadata: {
+          planType,
+          userCount: userCount.toString(),
+          organizationId,
+          billingCycle,
+        },
+        description: `Sortify ${planType} Plan - ${userCount} users`,
+      });
 
-      try {
-        // Use the same PayPal client setup as in paypal.ts
-        const { OrdersController, Client, Environment } = await import('@paypal/paypal-server-sdk');
-        
-        const client = new Client({
-          clientCredentialsAuthCredentials: {
-            oAuthClientId: process.env.PAYPAL_CLIENT_ID!,
-            oAuthClientSecret: process.env.PAYPAL_CLIENT_SECRET!,
-          },
-          timeout: 0,
-          environment: process.env.NODE_ENV === "production" 
-            ? Environment.Production 
-            : Environment.Sandbox,
+      console.log('Stripe Payment Intent Created:', {
+        paymentIntentId: paymentIntent.id,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency,
+        status: paymentIntent.status,
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
+        plan: selectedPlan,
+        totalAmount: totalAmount / 100, // Convert back to dollars for display
+        billingCycle,
+        planType,
+        userCount,
+        organizationId
+      });
+
+    } catch (error) {
+      console.error('Stripe Payment Intent creation error:', error);
+      res.status(500).json({ error: 'Failed to process upgrade request' });
+    }
+  });
+
+  // Handle successful Stripe payment
+  app.post("/api/billing/confirm-payment", isAuthenticated, withOrganization, async (req, res) => {
+    try {
+      const organizationId = req.headers["x-organization-id"] as string;
+      const { paymentIntentId } = req.body;
+
+      if (!paymentIntentId) {
+        return res.status(400).json({ error: 'Payment Intent ID is required' });
+      }
+
+      // Initialize Stripe to verify payment
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+      // Retrieve payment intent to confirm success
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+      if (paymentIntent.status === 'succeeded') {
+        const { planType, userCount, billingCycle } = paymentIntent.metadata;
+
+        // Update organization with new plan details
+        await storage.updateOrganizationBilling(organizationId, {
+          planType,
+          maxUsers: parseInt(userCount),
+          subscriptionStatus: 'active',
+          billingCycle,
+          stripePaymentIntentId: paymentIntentId,
+          subscriptionStartDate: new Date(),
+          subscriptionEndDate: new Date(Date.now() + (billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000)
         });
-        
-        const ordersController = new OrdersController(client);
-        const { body, ...httpResponse } = await ordersController.createOrder(collect);
-        const paypalOrder = JSON.parse(String(body));
-        
-        // Extract approval URL from PayPal response
-        const approvalUrl = paypalOrder.links?.find((link: any) => link.rel === 'approve')?.href;
 
-        console.log('Billing PayPal Order Creation Response:', {
-          statusCode: httpResponse.statusCode,
-          orderId: paypalOrder.id,
-          status: paypalOrder.status,
-          approvalUrl
+        console.log('Organization billing updated:', {
+          organizationId,
+          planType,
+          userCount,
+          paymentIntentId
         });
 
         res.json({
-          paypalOrderData: {
-            ...paypalOrder,
-            approvalUrl,
-            planType,
-            userCount,
-            organizationId
-          },
-          plan: selectedPlan,
-          totalAmount,
-          billingCycle
+          success: true,
+          message: 'Payment successful and organization upgraded',
+          planType,
+          userCount
         });
-      } catch (error) {
-        console.error("Billing PayPal order creation failed:", error);
-        
-        // For sandbox testing, provide a mock response that allows testing the flow
-        if (process.env.NODE_ENV !== "production") {
-          console.log("Providing billing sandbox fallback for testing purposes");
-          const mockOrder = {
-            id: `MOCK_BILLING_${Date.now()}`,
-            status: "CREATED",
-            links: [
-              {
-                href: `https://www.sandbox.paypal.com/checkoutnow?token=MOCK_BILLING_${Date.now()}`,
-                rel: "approve",
-                method: "GET"
-              }
-            ]
-          };
-          
-          const approvalUrl = mockOrder.links[0].href;
-          
-          res.json({
-            paypalOrderData: {
-              ...mockOrder,
-              approvalUrl,
-              planType,
-              userCount,
-              organizationId
-            },
-            plan: selectedPlan,
-            totalAmount,
-            billingCycle
-          });
-        } else {
-          res.status(500).json({ error: 'Failed to process upgrade request' });
-        }
+      } else {
+        res.status(400).json({ error: 'Payment not successful' });
       }
 
     } catch (error) {
-      console.error('Billing upgrade error:', error);
-      res.status(500).json({ error: 'Failed to process upgrade request' });
+      console.error('Payment confirmation error:', error);
+      res.status(500).json({ error: 'Failed to confirm payment' });
     }
   });
 

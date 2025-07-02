@@ -28,8 +28,13 @@ import {
   Star,
   Download
 } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import { StripeCheckout } from "./StripeCheckout";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!);
 
 interface BillingInfo {
   organization: {
@@ -81,6 +86,8 @@ export default function BillingContent() {
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [selectedUsers, setSelectedUsers] = useState<number>(5);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [stripePaymentData, setStripePaymentData] = useState<any>(null);
+  const [showStripeCheckout, setShowStripeCheckout] = useState(false);
 
   const { data: billingInfo, isLoading } = useQuery<BillingInfo>({
     queryKey: ['/api/billing/info'],
@@ -93,17 +100,9 @@ export default function BillingContent() {
       return response.json();
     },
     onSuccess: (data: any) => {
-      // If PayPal order data is returned, redirect to PayPal
-      if (data.paypalOrderData && data.paypalOrderData.approvalUrl) {
-        window.location.href = data.paypalOrderData.approvalUrl;
-        return;
-      }
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/billing/info'] });
-      toast({
-        title: "Plan Upgrade Initiated",
-        description: "Your plan upgrade has been initiated. You'll be redirected to complete payment.",
-      });
+      // Store Stripe payment data and show checkout
+      setStripePaymentData(data);
+      setShowStripeCheckout(true);
       setShowUpgradeDialog(false);
     },
     onError: (error: any) => {
@@ -519,6 +518,41 @@ export default function BillingContent() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stripe Checkout Dialog */}
+      <Dialog open={showStripeCheckout} onOpenChange={setShowStripeCheckout}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Complete Payment</DialogTitle>
+          </DialogHeader>
+          {stripePaymentData && (
+            <Elements 
+              stripe={stripePromise} 
+              options={{ 
+                clientSecret: stripePaymentData.clientSecret,
+                appearance: { theme: 'stripe' }
+              }}
+            >
+              <StripeCheckout
+                planType={stripePaymentData.planType}
+                userCount={stripePaymentData.userCount}
+                totalAmount={stripePaymentData.totalAmount}
+                paymentIntentId={stripePaymentData.paymentIntentId}
+                organizationId={currentOrganization?.id || ''}
+                onSuccess={() => {
+                  setShowStripeCheckout(false);
+                  queryClient.invalidateQueries({ queryKey: ['/api/billing/info'] });
+                  toast({
+                    title: "Payment Successful",
+                    description: "Your subscription has been upgraded successfully!",
+                  });
+                }}
+                onCancel={() => setShowStripeCheckout(false)}
+              />
+            </Elements>
+          )}
         </DialogContent>
       </Dialog>
     </div>

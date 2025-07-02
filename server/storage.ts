@@ -84,6 +84,15 @@ export interface IStorage {
   getOrganization(id: string): Promise<Organization | undefined>;
   getUserOrganizations(userId: string): Promise<(Organization & { role: string })[]>;
   updateOrganization(id: string, data: Partial<InsertOrganization>): Promise<Organization>;
+  updateOrganizationBilling(id: string, billingData: {
+    planType: string;
+    maxUsers: number;
+    subscriptionStatus: string;
+    billingCycle: string;
+    stripePaymentIntentId: string;
+    subscriptionStartDate: Date;
+    subscriptionEndDate: Date;
+  }): Promise<Organization>;
   getOrganizationByEmailDomain(domain: string): Promise<Organization | undefined>;
   
   // Organization member operations
@@ -335,6 +344,31 @@ export class DatabaseStorage implements IStorage {
     const [organization] = await db
       .update(organizations)
       .set({ ...data, updatedAt: new Date() })
+      .where(eq(organizations.id, id))
+      .returning();
+    return organization;
+  }
+
+  async updateOrganizationBilling(id: string, billingData: {
+    planType: string;
+    maxUsers: number;
+    subscriptionStatus: string;
+    billingCycle: string;
+    stripePaymentIntentId: string;
+    subscriptionStartDate: Date;
+    subscriptionEndDate: Date;
+  }): Promise<Organization> {
+    const [organization] = await db
+      .update(organizations)
+      .set({ 
+        planType: billingData.planType,
+        maxUsers: billingData.maxUsers,
+        subscriptionStatus: billingData.subscriptionStatus,
+        billingCycle: billingData.billingCycle,
+        nextBillingDate: billingData.subscriptionEndDate,
+        lastPaymentDate: billingData.subscriptionStartDate,
+        updatedAt: new Date() 
+      })
       .where(eq(organizations.id, id))
       .returning();
     return organization;

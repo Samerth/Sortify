@@ -36,6 +36,41 @@ import {
   MapPin
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+// Schemas for mailroom and storage location forms
+const mailroomSchema = z.object({
+  name: z.string().min(1, "Mailroom name is required"),
+  description: z.string().optional(),
+});
+
+const storageLocationSchema = z.object({
+  name: z.string().min(1, "Storage location name is required"),
+  type: z.string().min(1, "Storage type is required"),
+  mailroomId: z.string().min(1, "Parent mailroom is required"),
+  capacity: z.coerce.number().min(1, "Capacity must be at least 1"),
+  notes: z.string().optional(),
+});
+
+type MailroomFormData = z.infer<typeof mailroomSchema>;
+type StorageLocationFormData = z.infer<typeof storageLocationSchema>;
 
 interface OrganizationSettings {
   id: string;
@@ -106,6 +141,31 @@ export default function SettingsUnified() {
   const { currentOrganization } = useOrganization();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Dialog state management
+  const [showMailroomDialog, setShowMailroomDialog] = useState(false);
+  const [showStorageDialog, setShowStorageDialog] = useState(false);
+  const [selectedMailroomId, setSelectedMailroomId] = useState<string>("");
+  
+  // Form instances
+  const mailroomForm = useForm<MailroomFormData>({
+    resolver: zodResolver(mailroomSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+  
+  const storageLocationForm = useForm<StorageLocationFormData>({
+    resolver: zodResolver(storageLocationSchema),
+    defaultValues: {
+      name: "",
+      type: "bin",
+      mailroomId: "",
+      capacity: 20,
+      notes: "",
+    },
+  });
   const [editingItem, setEditingItem] = useState<{ category: string; index: number; value: string } | null>(null);
   const [newItems, setNewItems] = useState<Record<string, string>>({});
   const [organizationForm, setOrganizationForm] = useState<Partial<Organization>>({});
@@ -131,6 +191,91 @@ export default function SettingsUnified() {
     queryKey: [`/api/organizations/${currentOrganization?.id}/members`],
     enabled: !!currentOrganization?.id,
   });
+  
+  // Mailrooms and storage locations queries
+  const { data: mailrooms = [], refetch: refetchMailrooms } = useQuery({
+    queryKey: ["/api/mailrooms"],
+    enabled: !!currentOrganization?.id,
+    queryFn: async () => {
+      const response = await fetch("/api/mailrooms", {
+        headers: {
+          "x-organization-id": currentOrganization!.id,
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch mailrooms");
+      return response.json();
+    },
+  });
+
+  const { data: storageLocations = [], refetch: refetchStorageLocations } = useQuery({
+    queryKey: ["/api/mailroom-locations"],
+    enabled: !!currentOrganization?.id,
+    queryFn: async () => {
+      const response = await fetch("/api/mailroom-locations", {
+        headers: {
+          "x-organization-id": currentOrganization!.id,
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch storage locations");
+      return response.json();
+    },
+  });
+
+  // Mutations for mailroom management
+  const createMailroomMutation = useMutation({
+    mutationFn: async (data: MailroomFormData) => {
+      return await apiRequest("POST", "/api/mailrooms", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Mailroom created successfully",
+      });
+      refetchMailrooms();
+      setShowMailroomDialog(false);
+      mailroomForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create mailroom",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createStorageLocationMutation = useMutation({
+    mutationFn: async (data: StorageLocationFormData) => {
+      return await apiRequest("POST", "/api/mailroom-locations", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Storage location created successfully",
+      });
+      refetchStorageLocations();
+      setShowStorageDialog(false);
+      storageLocationForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error", 
+        description: error.message || "Failed to create storage location",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Form submission handlers
+  const onCreateMailroom = (data: MailroomFormData) => {
+    createMailroomMutation.mutate(data);
+  };
+
+  const onCreateStorageLocation = (data: StorageLocationFormData) => {
+    createStorageLocationMutation.mutate(data);
+  };
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: Partial<OrganizationSettings>) => {
@@ -656,13 +801,100 @@ export default function SettingsUnified() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <Button className="flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add Mailroom
-                  </Button>
-                  <p className="text-sm text-gray-500">
-                    No mailrooms configured yet. Create your first mailroom to organize package storage locations.
-                  </p>
+                  <Dialog open={showMailroomDialog} onOpenChange={setShowMailroomDialog}>
+                    <DialogTrigger asChild>
+                      <Button className="flex items-center gap-2">
+                        <Plus className="w-4 h-4" />
+                        Add Mailroom
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Create New Mailroom</DialogTitle>
+                      </DialogHeader>
+                      <Form {...mailroomForm}>
+                        <form onSubmit={mailroomForm.handleSubmit(onCreateMailroom)} className="space-y-4">
+                          <FormField
+                            control={mailroomForm.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Mailroom Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g., Main Mailroom, Building A" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={mailroomForm.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Description (Optional)</FormLabel>
+                                <FormControl>
+                                  <Textarea placeholder="Description of the mailroom location..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button type="button" variant="outline" onClick={() => setShowMailroomDialog(false)}>
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={createMailroomMutation.isPending}>
+                              {createMailroomMutation.isPending ? "Creating..." : "Create Mailroom"}
+                            </Button>
+                          </div>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+
+                  {mailrooms.length === 0 ? (
+                    <p className="text-sm text-gray-500">
+                      No mailrooms configured yet. Create your first mailroom to organize package storage locations.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      <h5 className="font-medium text-gray-900">Your Mailrooms</h5>
+                      {mailrooms.map((mailroom: any) => {
+                        const mailroomStorageLocations = storageLocations.filter((loc: any) => loc.mailroomId === mailroom.id);
+                        return (
+                          <Card key={mailroom.id} className="p-4">
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h6 className="font-medium text-gray-900">{mailroom.name}</h6>
+                                  {mailroom.description && (
+                                    <p className="text-sm text-gray-600 mt-1">{mailroom.description}</p>
+                                  )}
+                                </div>
+                                <Badge variant="outline">
+                                  {mailroomStorageLocations.length} locations
+                                </Badge>
+                              </div>
+                              
+                              {mailroomStorageLocations.length > 0 && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {mailroomStorageLocations.map((location: any) => (
+                                    <div key={location.id} className="p-2 bg-gray-50 rounded text-sm">
+                                      <div className="font-medium">{location.name}</div>
+                                      <div className="text-gray-600">
+                                        {location.type} • {location.currentCount}/{location.capacity} capacity
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -677,13 +909,158 @@ export default function SettingsUnified() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <Button className="flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add Storage Location
-                  </Button>
-                  <p className="text-sm text-gray-500">
-                    No storage locations configured yet. Add bins, shelves, or storage areas to track package placement.
-                  </p>
+                  <Dialog open={showStorageDialog} onOpenChange={setShowStorageDialog}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        className="flex items-center gap-2"
+                        disabled={mailrooms.length === 0}
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Storage Location
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Create Storage Location</DialogTitle>
+                      </DialogHeader>
+                      <Form {...storageLocationForm}>
+                        <form onSubmit={storageLocationForm.handleSubmit(onCreateStorageLocation)} className="space-y-4">
+                          <FormField
+                            control={storageLocationForm.control}
+                            name="mailroomId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Parent Mailroom</FormLabel>
+                                <FormControl>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select mailroom..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {mailrooms.map((mailroom: any) => (
+                                        <SelectItem key={mailroom.id} value={mailroom.id}>
+                                          {mailroom.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={storageLocationForm.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Location Name</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g., Bin A1, Shelf B2" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={storageLocationForm.control}
+                              name="type"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Storage Type</FormLabel>
+                                  <FormControl>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="bin">Bin</SelectItem>
+                                        <SelectItem value="shelf">Shelf</SelectItem>
+                                        <SelectItem value="locker">Locker</SelectItem>
+                                        <SelectItem value="cold_storage">Cold Storage</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={storageLocationForm.control}
+                              name="capacity"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Capacity</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" placeholder="20" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <FormField
+                            control={storageLocationForm.control}
+                            name="notes"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Notes (Optional)</FormLabel>
+                                <FormControl>
+                                  <Textarea placeholder="Additional notes about this storage location..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button type="button" variant="outline" onClick={() => setShowStorageDialog(false)}>
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={createStorageLocationMutation.isPending}>
+                              {createStorageLocationMutation.isPending ? "Creating..." : "Create Location"}
+                            </Button>
+                          </div>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+
+                  {mailrooms.length === 0 ? (
+                    <p className="text-sm text-gray-500">
+                      Create a mailroom first before adding storage locations.
+                    </p>
+                  ) : storageLocations.length === 0 ? (
+                    <p className="text-sm text-gray-500">
+                      No storage locations configured yet. Add bins, shelves, or storage areas to track package placement.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {storageLocations.map((location: any) => {
+                        const mailroom = mailrooms.find((m: any) => m.id === location.mailroomId);
+                        return (
+                          <Card key={location.id} className="p-3">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <h6 className="font-medium text-sm">{location.name}</h6>
+                                <Badge variant="outline" className="text-xs">
+                                  {location.type}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-gray-600">
+                                {mailroom?.name}
+                              </p>
+                              <div className="text-xs text-gray-600">
+                                Capacity: {location.currentCount}/{location.capacity}
+                              </div>
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

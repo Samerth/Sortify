@@ -185,9 +185,12 @@ export default function Recipients() {
   };
 
   const onSubmit = (data: RecipientFormData) => {
+    console.log("onSubmit called with data:", data);
     if (editingRecipient) {
+      console.log("Updating recipient:", editingRecipient.id);
       updateRecipientMutation.mutate({ id: editingRecipient.id, data });
     } else {
+      console.log("Creating new recipient");
       createRecipientMutation.mutate(data);
     }
   };
@@ -373,11 +376,16 @@ export default function Recipients() {
                         Cancel
                       </Button>
                       <Button 
-                        type="submit" 
+                        type="button"
                         disabled={createRecipientMutation.isPending || updateRecipientMutation.isPending}
                         onClick={() => {
+                          console.log("Button clicked!");
                           console.log("Form errors:", form.formState.errors);
                           console.log("Form values:", form.getValues());
+                          console.log("Form valid:", form.formState.isValid);
+                          
+                          // Manually trigger form submission
+                          form.handleSubmit(onSubmit)();
                         }}
                       >
                         {createRecipientMutation.isPending || updateRecipientMutation.isPending 

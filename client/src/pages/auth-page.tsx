@@ -210,14 +210,14 @@ export default function AuthPage() {
                 <TabsContent value="login">
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium">Username</label>
+                      <label className="text-sm font-medium">Email Address</label>
                       <Input
-                        type="text"
+                        type="email"
                         value={loginForm.username}
                         onChange={(e) =>
                           setLoginForm({ ...loginForm, username: e.target.value })
                         }
-                        placeholder="Enter your username"
+                        placeholder="Enter your email address"
                         required
                       />
                     </div>
@@ -240,13 +240,26 @@ export default function AuthPage() {
                     >
                       {loginMutation.isPending ? "Signing in..." : "Sign In"}
                     </Button>
-                    <div className="text-center">
+                    <div className="text-center space-y-2">
                       <a 
                         href="/forgot-password" 
-                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline block"
                       >
                         Forgot your password?
                       </a>
+                      <p className="text-sm text-gray-600">
+                        Don't have an account?{" "}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const registerTab = document.querySelector('[value="register"]') as HTMLElement;
+                            registerTab?.click();
+                          }}
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Create one now
+                        </button>
+                      </p>
                     </div>
                   </form>
                 </TabsContent>

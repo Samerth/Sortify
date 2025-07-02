@@ -73,6 +73,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { firstName, lastName } = req.body;
+      
+      if (!firstName || !lastName) {
+        return res.status(400).json({ message: "First name and last name are required" });
+      }
+
+      const updatedUser = await storage.updateUser(userId, { firstName, lastName });
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
   // Organization routes
   app.get('/api/organizations', isAuthenticated, async (req: any, res) => {
     try {

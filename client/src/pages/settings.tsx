@@ -1247,18 +1247,7 @@ export default function Settings() {
                       </div>
                     </div>
 
-                    {/* Upgrade License */}
-                    <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-gray-900">Need more user seats?</h4>
-                          <p className="text-sm text-gray-600">Upgrade your license to add more team members</p>
-                        </div>
-                        <Button variant="outline">
-                          Upgrade License
-                        </Button>
-                      </div>
-                    </div>
+
                   </CardContent>
                 </Card>
                 </TabsContent>

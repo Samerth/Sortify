@@ -87,17 +87,17 @@ const planDetails: Record<string, PlanInfo> = {
     name: "Starter",
     pricePerUser: 25,
     minUsers: 1,
-    maxUsers: 5,
+    maxUsers: 3,
     maxPackages: 1000,
-    features: ["Up to 5 users", "1,000 packages/month", "Email notifications", "Basic analytics", "Photo storage"]
+    features: ["Up to 3 users", "1,000 packages/month", "Email notifications", "Basic analytics", "Photo storage"]
   },
   professional: {
     name: "Professional",
     pricePerUser: 35,
-    minUsers: 5,
+    minUsers: 1,
     maxUsers: 10,
     maxPackages: -1,
-    features: ["5 - 10 users", "Unlimited packages", "Email & SMS notifications", "Advanced analytics", "API integrations", "Priority support"]
+    features: ["Up to 10 users", "Unlimited packages", "Email & SMS notifications", "Advanced analytics", "API integrations", "Priority support"]
   },
   enterprise: {
     name: "Enterprise",
@@ -219,7 +219,7 @@ export default function BillingSettings() {
     const planInfo = planDetails[selectedPlan];
     upgradePlanMutation.mutate({
       planType: selectedPlan,
-      userCount: Math.max(userCount, planInfo.minUsers),
+      userCount: userCount,
       billingCycle: "monthly"
     });
   };
@@ -464,7 +464,7 @@ export default function BillingSettings() {
                         <span className="text-sm text-gray-600">/user/month</span>
                       </div>
                       <p className="text-sm text-gray-600">
-                        {plan.minUsers} - {plan.maxUsers === -1 ? "∞" : plan.maxUsers} users
+                        Up to {plan.maxUsers === -1 ? "∞" : plan.maxUsers} users
                       </p>
                     </div>
                     <div className="space-y-2">
@@ -488,7 +488,7 @@ export default function BillingSettings() {
                       type="number"
                       value={userCount}
                       onChange={(e) => setUserCount(Number(e.target.value))}
-                      min={planDetails[selectedPlan]?.minUsers || 1}
+                      min={1}
                       max={planDetails[selectedPlan]?.maxUsers === -1 ? 1000 : planDetails[selectedPlan]?.maxUsers}
                       className="w-24 mt-1"
                     />

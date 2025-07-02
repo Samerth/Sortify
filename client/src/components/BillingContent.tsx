@@ -144,10 +144,10 @@ export default function BillingContent() {
       name: "Starter",
       pricePerUser: 25,
       minUsers: 1,
-      maxUsers: 5,
+      maxUsers: 3,
       maxPackages: 1000,
       features: [
-        "Up to 5 users",
+        "Up to 3 users",
         "1,000 packages/month",
         "Email notifications",
         "Basic analytics",
@@ -157,11 +157,11 @@ export default function BillingContent() {
     professional: {
       name: "Professional",
       pricePerUser: 35,
-      minUsers: 5,
+      minUsers: 1,
       maxUsers: 10,
       maxPackages: -1,
       features: [
-        "5 - 10 users",
+        "Up to 10 users",
         "Unlimited packages",
         "Email & SMS notifications",
         "Advanced analytics",
@@ -359,7 +359,7 @@ export default function BillingContent() {
                 <div className="space-y-4">
                   <div className="text-center">
                     <div className="text-sm text-gray-600">
-                      {plan.minUsers} - {plan.maxUsers === -1 ? "∞" : plan.maxUsers} users
+                      Up to {plan.maxUsers === -1 ? "∞" : plan.maxUsers} users
                     </div>
                     <div className="text-sm text-gray-600">
                       {plan.maxPackages === -1 ? "Unlimited packages" : `Up to ${plan.maxPackages.toLocaleString()} packages/month`}
@@ -465,8 +465,8 @@ export default function BillingContent() {
                 </SelectTrigger>
                 <SelectContent>
                   {selectedPlan && Array.from(
-                    { length: plans[selectedPlan].maxUsers - plans[selectedPlan].minUsers + 1 },
-                    (_, i) => plans[selectedPlan].minUsers + i
+                    { length: plans[selectedPlan].maxUsers === -1 ? 100 : plans[selectedPlan].maxUsers },
+                    (_, i) => i + 1
                   ).map((count) => (
                     <SelectItem key={count} value={count.toString()}>
                       {count} users

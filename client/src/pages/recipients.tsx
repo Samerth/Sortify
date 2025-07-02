@@ -232,9 +232,35 @@ export default function Recipients() {
             <p className="text-gray-600">Manage recipient database and contact information</p>
           </div>
           <div className="flex items-center space-x-4">
+            <Button 
+              onClick={() => {
+                console.log("Test button clicked!");
+                createRecipientMutation.mutate({
+                  organizationId: currentOrganization!.id,
+                  firstName: "Test",
+                  lastName: "User",
+                  email: "test@example.com",
+                  phone: "",
+                  unit: "",
+                  department: "",
+                  recipientType: "guest",
+                  isActive: true,
+                });
+              }}
+              variant="outline"
+              disabled={createRecipientMutation.isPending}
+            >
+              {createRecipientMutation.isPending ? "Testing..." : "Test Create"}
+            </Button>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary-dark">
+                <Button 
+                  className="bg-primary hover:bg-primary-dark"
+                  onClick={() => {
+                    console.log("Dialog trigger clicked! Opening dialog...");
+                    setIsDialogOpen(true);
+                  }}
+                >
                   <UserPlus className="w-4 h-4 mr-2" />
                   Add Recipient
                 </Button>

@@ -381,6 +381,10 @@ export default function Recipients() {
                       <Button 
                         type="submit" 
                         disabled={createRecipientMutation.isPending || updateRecipientMutation.isPending}
+                        onClick={() => {
+                          console.log("Form errors:", form.formState.errors);
+                          console.log("Form values:", form.getValues());
+                        }}
                       >
                         {createRecipientMutation.isPending || updateRecipientMutation.isPending 
                           ? "Saving..." 

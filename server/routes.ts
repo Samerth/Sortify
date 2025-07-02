@@ -1002,37 +1002,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate total amount
       const totalAmount = selectedPlan.pricePerUser * userCount;
       
-      // Create a mock request object for PayPal order creation
-      const mockReq = {
+      // Create PayPal order directly using the same logic as createPaypalOrder
+      const collect = {
         body: {
           intent: "CAPTURE",
-          amount: totalAmount.toString(),
-          currency: "USD"
-        }
-      } as Request;
+          purchaseUnits: [
+            {
+              amount: {
+                currencyCode: "USD",
+                value: totalAmount.toString(),
+              },
+              description: `Sortify ${planType} Plan - ${userCount} users`,
+              invoiceId: `INV-${organizationId}-${Date.now()}`,
+              customId: `SORTIFY-${planType}-${userCount}`,
+            },
+          ],
+          applicationContext: {
+            brandName: "Sortify",
+            landingPage: "BILLING",
+            userAction: "PAY_NOW",
+            paymentMethod: {
+              payerSelected: "PAYPAL",
+              payeePreferred: "IMMEDIATE_PAYMENT_REQUIRED",
+            },
+          },
+        },
+        prefer: "return=representation",
+      };
 
-      // Create a mock response object to capture PayPal response
-      let paypalResponse: any = null;
-      const mockRes = {
-        status: (code: number) => ({
-          json: (data: any) => {
-            paypalResponse = { statusCode: code, data };
-          }
-        }),
-        json: (data: any) => {
-          paypalResponse = { statusCode: 200, data };
-        }
-      } as Response;
-
-      // Use existing PayPal integration
-      await createPaypalOrder(mockReq, mockRes);
+      // Use the same PayPal client setup as in paypal.ts
+      const { OrdersController, Client, Environment } = await import('@paypal/paypal-server-sdk');
+      
+      const client = new Client({
+        clientCredentialsAuthCredentials: {
+          oAuthClientId: process.env.PAYPAL_CLIENT_ID!,
+          oAuthClientSecret: process.env.PAYPAL_CLIENT_SECRET!,
+        },
+        timeout: 0,
+        environment: process.env.NODE_ENV === "production" 
+          ? Environment.Production 
+          : Environment.Sandbox,
+      });
+      
+      const ordersController = new OrdersController(client);
+      const { body, ...httpResponse } = await ordersController.createOrder(collect);
+      const paypalOrder = JSON.parse(String(body));
       
       // Extract approval URL from PayPal response
-      const approvalUrl = paypalResponse?.data?.links?.find((link: any) => link.rel === 'approve')?.href;
+      const approvalUrl = paypalOrder.links?.find((link: any) => link.rel === 'approve')?.href;
 
       res.json({
         paypalOrderData: {
-          ...paypalResponse?.data,
+          ...paypalOrder,
           approvalUrl,
           planType,
           userCount,

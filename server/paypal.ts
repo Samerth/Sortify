@@ -100,10 +100,22 @@ export async function createPaypalOrder(req: Request, res: Response) {
               currencyCode: currency,
               value: amount,
             },
+            description: "Sortify Subscription Plan",
+            invoiceId: `INV-${Date.now()}`,
+            customId: `SORTIFY-${Date.now()}`,
           },
         ],
+        applicationContext: {
+          brandName: "Sortify",
+          landingPage: "BILLING",
+          userAction: "PAY_NOW",
+          paymentMethod: {
+            payerSelected: "PAYPAL",
+            payeePreferred: "IMMEDIATE_PAYMENT_REQUIRED",
+          },
+        },
       },
-      prefer: "return=minimal",
+      prefer: "return=representation",
     };
 
     const { body, ...httpResponse } =

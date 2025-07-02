@@ -995,6 +995,15 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  async getOrganizationMemberCount(organizationId: string): Promise<number> {
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(organizationMembers)
+      .where(eq(organizationMembers.organizationId, organizationId));
+    
+    return result?.count || 0;
+  }
+
   async updateUserSuperAdminStatus(userId: string, isSuperAdmin: boolean): Promise<User> {
     const [user] = await db
       .update(users)

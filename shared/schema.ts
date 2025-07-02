@@ -60,6 +60,25 @@ export const organizations = pgTable("organizations", {
   logoUrl: varchar("logo_url", { length: 500 }),
   // License management
   maxUsers: integer("max_users").default(5), // number of user licenses
+  // Billing and subscription fields
+  planType: varchar("plan_type", { length: 50 }).default("trial"), // trial, starter, professional, enterprise
+  subscriptionStatus: varchar("subscription_status", { length: 50 }).default("trial"), // trial, active, past_due, canceled, incomplete
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+  stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
+  billingEmail: varchar("billing_email", { length: 255 }),
+  // Trial management
+  trialStartDate: timestamp("trial_start_date"),
+  trialEndDate: timestamp("trial_end_date"),
+  // Usage tracking
+  maxPackagesPerMonth: integer("max_packages_per_month").default(500),
+  currentMonthPackages: integer("current_month_packages").default(0),
+  usageResetDate: timestamp("usage_reset_date").defaultNow(),
+  // Billing cycle
+  billingCycle: varchar("billing_cycle", { length: 20 }).default("monthly"), // monthly, yearly
+  nextBillingDate: timestamp("next_billing_date"),
+  // Payment info
+  lastPaymentDate: timestamp("last_payment_date"),
+  lastPaymentAmount: integer("last_payment_amount"), // in cents
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -954,11 +954,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Organization upgrade endpoint for PayPal payments
-  app.post("/api/organizations/:organizationId/upgrade", isAuthenticated, async (req, res) => {
+  // Billing and subscription endpoints
+  app.get("/api/billing/info", isAuthenticated, withOrganization, async (req, res) => {
     try {
-      const { organizationId } = req.params;
-      const { planType, userCount } = req.body;
+      const organizationId = req.headers["x-organization-id"] as string;
+      
+      // Get organization with billing info
+      const organization = await storage.getOrganizationById(organizationId);
+      if (!organization) {
+        return res.status(404).json({ error: 'Organization not found' });
+      }
+
+      // Get trial info
+      const trialInfo = await TrialManager.getTrialInfo(organizationId);
+      
+      // Get current user count
+      const currentUsers = await storage.getOrganizationMemberCount(organizationId);
+
+      res.json({
+        organization,
+        trialInfo,
+        currentUsers
+      });
+    } catch (error) {
+      console.error('Billing info error:', error);
+      res.status(500).json({ error: 'Failed to fetch billing information' });
+    }
+  });
+
+  app.post("/api/billing/upgrade", isAuthenticated, withOrganization, async (req, res) => {
+    try {
+      const organizationId = req.headers["x-organization-id"] as string;
+      const { planType, userCount, billingCycle = "monthly" } = req.body;
 
       if (!planType || !userCount) {
         return res.status(400).json({ error: 'Plan type and user count are required' });
@@ -972,17 +999,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid plan type' });
       }
 
-      // Update organization with new plan
-      const updatedOrg = await storage.updateOrganization(organizationId, {
-        maxUsers: selectedPlan.maxUsers === -1 ? 999999 : selectedPlan.maxUsers,
+      // Calculate total amount
+      const totalAmount = selectedPlan.pricePerUser * userCount;
+      
+      // Create PayPal order for this upgrade
+      const paypalOrderData = {
+        intent: "CAPTURE",
+        amount: totalAmount.toString(),
+        currency: "USD",
+        planType,
+        userCount,
+        organizationId
+      };
+
+      res.json({
+        paypalOrderData,
+        plan: selectedPlan,
+        totalAmount,
+        billingCycle
       });
 
-      console.log(`Organization ${organizationId} upgraded to ${planType} plan`);
+    } catch (error) {
+      console.error('Billing upgrade error:', error);
+      res.status(500).json({ error: 'Failed to process upgrade request' });
+    }
+  });
+
+  app.patch("/api/billing/update", isAuthenticated, withOrganization, async (req, res) => {
+    try {
+      const organizationId = req.headers["x-organization-id"] as string;
+      const { billingEmail } = req.body;
+
+      if (!billingEmail) {
+        return res.status(400).json({ error: 'Billing email is required' });
+      }
+
+      // Update organization billing information
+      const updatedOrg = await storage.updateOrganization(organizationId, {
+        billingEmail
+      });
+
+      res.json(updatedOrg);
+    } catch (error) {
+      console.error('Billing update error:', error);
+      res.status(500).json({ error: 'Failed to update billing information' });
+    }
+  });
+
+  // Organization upgrade endpoint for PayPal payments
+  app.post("/api/organizations/:organizationId/upgrade", isAuthenticated, async (req, res) => {
+    try {
+      const { organizationId } = req.params;
+      const { planType, userCount, paypalOrderId } = req.body;
+
+      if (!planType || !userCount) {
+        return res.status(400).json({ error: 'Plan type and user count are required' });
+      }
+
+      // Get plan pricing
+      const pricing = TrialManager.getPlanPricing();
+      const selectedPlan = pricing[planType as keyof typeof pricing];
+
+      if (!selectedPlan) {
+        return res.status(400).json({ error: 'Invalid plan type' });
+      }
+
+      // Upgrade organization to paid plan
+      await TrialManager.upgradeToPaidPlan(
+        organizationId,
+        planType as "starter" | "professional" | "enterprise",
+        undefined, // No Stripe customer ID
+        paypalOrderId // Use PayPal order ID for reference
+      );
+
+      // Update additional billing info
+      const billingAmount = selectedPlan.pricePerUser * userCount;
+      const nextBillingDate = new Date();
+      nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+
+      await storage.updateOrganization(organizationId, {
+        lastPaymentDate: new Date(),
+        lastPaymentAmount: billingAmount * 100, // Store in cents
+        nextBillingDate,
+        billingCycle: "monthly"
+      });
+
+      console.log(`Organization ${organizationId} upgraded to ${planType} plan via PayPal`);
 
       res.json({ 
         success: true, 
-        organization: updatedOrg,
-        plan: selectedPlan 
+        planType,
+        userCount,
+        totalAmount: billingAmount
       });
 
     } catch (error) {

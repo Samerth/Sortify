@@ -508,16 +508,7 @@ export default function Settings() {
                         <span className="sm:hidden">Users</span>
                       </TabsTrigger>
                     )}
-                    {isAdmin && (
-                      <TabsTrigger 
-                        value="security" 
-                        className="justify-start px-2 md:px-3 py-2 text-sm"
-                      >
-                        <Shield className="w-4 h-4 mr-1 md:mr-2" />
-                        <span className="hidden sm:inline">Security</span>
-                        <span className="sm:hidden">Lock</span>
-                      </TabsTrigger>
-                    )}
+
                   </TabsList>
                 </Tabs>
               </CardContent>
@@ -1152,63 +1143,111 @@ export default function Settings() {
                       <User className="w-6 h-6 text-primary mr-3" />
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">Account Settings</h3>
-                        <p className="text-gray-600">Manage your personal account preferences</p>
+                        <p className="text-gray-600">Manage your personal account information</p>
                       </div>
                     </div>
 
-                    <div className="text-center py-8">
-                      <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500 mb-2">User account settings</p>
-                      <p className="text-sm text-gray-400">
-                        Manage your profile, preferences, and account security.
-                      </p>
+                    <div className="space-y-6">
+                      {/* User Profile Information */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            First Name
+                          </label>
+                          <Input
+                            value={user?.firstName || ""}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Last Name
+                          </label>
+                          <Input
+                            value={user?.lastName || ""}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Email Address
+                        </label>
+                        <Input
+                          value={user?.email || ""}
+                          readOnly
+                          className="bg-gray-50"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
+                          Your email address is managed through your authentication provider
+                        </p>
+                      </div>
+
+                      {/* Account Status */}
+                      <div className="border-t pt-6">
+                        <h4 className="font-medium text-gray-900 mb-4">Account Status</h4>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-sm font-medium text-gray-700">Account Type</span>
+                              <p className="text-sm text-gray-500">Current account privileges</p>
+                            </div>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Active
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-sm font-medium text-gray-700">Member Since</span>
+                              <p className="text-sm text-gray-500">Account creation date</p>
+                            </div>
+                            <span className="text-sm text-gray-600">
+                              {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Account Actions */}
+                      <div className="border-t pt-6">
+                        <h4 className="font-medium text-gray-900 mb-4">Account Actions</h4>
+                        <div className="space-y-3">
+                          <Button variant="outline" className="w-full justify-start">
+                            <User className="w-4 h-4 mr-2" />
+                            Update Profile Information
+                          </Button>
+                          <Button variant="outline" className="w-full justify-start">
+                            <Shield className="w-4 h-4 mr-2" />
+                            Change Password
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Privacy Notice */}
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <div className="flex">
+                          <div className="flex-shrink-0">
+                            <Shield className="h-5 w-5 text-blue-400" />
+                          </div>
+                          <div className="ml-3">
+                            <h4 className="text-sm font-medium text-blue-800">Privacy & Security</h4>
+                            <p className="text-sm text-blue-700 mt-1">
+                              Your account information is securely managed and encrypted. 
+                              Contact your administrator for any account changes.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              {/* Security Settings */}
-              {isAdmin && (
-                <TabsContent value="security">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center mb-6">
-                      <Shield className="w-6 h-6 text-primary mr-3" />
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Security Settings</h3>
-                        <p className="text-gray-600">Configure security and access controls</p>
-                      </div>
-                    </div>
 
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-gray-900">Two-Factor Authentication</h4>
-                          <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
-                        </div>
-                        <Switch />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-gray-900">Session Timeout</h4>
-                          <p className="text-sm text-gray-600">Automatically log out after inactivity</p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-gray-900">Login Notifications</h4>
-                          <p className="text-sm text-gray-600">Get notified of new login attempts</p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                </TabsContent>
-              )}
             </Tabs>
           </div>
         </div>

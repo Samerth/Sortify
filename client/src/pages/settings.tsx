@@ -1303,6 +1303,14 @@ export default function Settings() {
                           />
                         </div>
 
+                        {/* Save Button */}
+                        <div className="flex justify-end">
+                          <Button type="submit" disabled={updateAccountMutation.isPending}>
+                            <Save className="w-4 h-4 mr-2" />
+                            {updateAccountMutation.isPending ? "Saving..." : "Save Changes"}
+                          </Button>
+                        </div>
+
                         {/* Change Password Section */}
                         <div className="border-t pt-6">
                           <h4 className="font-medium text-gray-900 mb-4">Change Password</h4>
@@ -1369,14 +1377,6 @@ export default function Settings() {
                               {changePasswordMutation.isPending ? "Changing Password..." : "Change Password"}
                             </Button>
                           </div>
-                        </div>
-
-                        {/* Save Button */}
-                        <div className="flex justify-end">
-                          <Button type="submit" disabled={updateAccountMutation.isPending}>
-                            <Save className="w-4 h-4 mr-2" />
-                            {updateAccountMutation.isPending ? "Saving..." : "Save Changes"}
-                          </Button>
                         </div>
                       </form>
                     </Form>

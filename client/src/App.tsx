@@ -52,6 +52,7 @@ function ProtectedContent() {
       <Route path="/integrations" component={Integrations} />
       <Route path="/settings" component={Settings} />
       <Route path="/organization-settings" component={OrganizationSettings} />
+      <Route path="/settings/customization" component={SettingsCustomization} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/super-admin" component={SuperAdmin} />
       <Route component={NotFound} />

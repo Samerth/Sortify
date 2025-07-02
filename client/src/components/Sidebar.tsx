@@ -12,7 +12,8 @@ import {
   History, 
   Settings, 
   Plug,
-  LogOut 
+  LogOut,
+  Building 
 } from "lucide-react";
 
 const navigationItems = [
@@ -25,8 +26,9 @@ const navigationItems = [
 
 const adminItems = [
   { path: "/integrations", label: "Integrations", icon: Plug },
-  { path: "/organization-settings", label: "Customization", icon: Settings },
-  { path: "/settings", label: "Settings", icon: Settings },
+  { path: "/settings/customization", label: "Customization", icon: Settings },
+  { path: "/organization-settings", label: "Organization", icon: Settings },
+  { path: "/settings", label: "System Settings", icon: Settings },
 ];
 
 export default function Sidebar() {

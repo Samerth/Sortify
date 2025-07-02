@@ -24,9 +24,7 @@ import { insertRecipientSchema } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 
-const recipientFormSchema = insertRecipientSchema.extend({
-  organizationId: z.string().optional(),
-});
+const recipientFormSchema = insertRecipientSchema;
 
 type RecipientFormData = z.infer<typeof recipientFormSchema>;
 
@@ -54,6 +52,7 @@ export default function Recipients() {
   const form = useForm<RecipientFormData>({
     resolver: zodResolver(recipientFormSchema),
     defaultValues: {
+      organizationId: currentOrganization?.id || "",
       firstName: "",
       lastName: "",
       email: "",
@@ -81,10 +80,7 @@ export default function Recipients() {
 
   const createRecipientMutation = useMutation({
     mutationFn: async (data: RecipientFormData) => {
-      return apiRequest("POST", "/api/recipients", {
-        ...data,
-        organizationId: currentOrganization!.id,
-      });
+      return apiRequest("POST", "/api/recipients", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/recipients"] });
@@ -358,11 +354,9 @@ export default function Recipients() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="resident">Resident</SelectItem>
-                              <SelectItem value="employee">Employee</SelectItem>
                               <SelectItem value="guest">Guest</SelectItem>
-                              <SelectItem value="visitor">Visitor</SelectItem>
-                              <SelectItem value="contractor">Contractor</SelectItem>
+                              <SelectItem value="employee">Employee</SelectItem>
+                              <SelectItem value="resident">Resident</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

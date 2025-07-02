@@ -122,7 +122,7 @@ export default function SettingsUnified() {
     }
   }, [organization]);
 
-  const { data: organizationMembers = [] } = useQuery({
+  const { data: organizationMembers = [] } = useQuery<any[]>({
     queryKey: [`/api/organizations/${currentOrganization?.id}/members`],
     enabled: !!currentOrganization?.id,
   });

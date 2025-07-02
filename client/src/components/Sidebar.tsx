@@ -75,9 +75,9 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-16 md:w-64 bg-gray-900 text-white flex flex-col">
+    <div className="w-16 md:w-64 bg-gray-900 text-white flex flex-col h-screen">
       {/* Logo */}
-      <div className="p-3 md:p-6 border-b border-gray-700">
+      <div className="p-3 md:p-6 border-b border-gray-700 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <Mail className="w-4 h-4 text-white" />
@@ -87,7 +87,7 @@ export default function Sidebar() {
       </div>
 
       {/* Organization Selector */}
-      <div className="p-2 md:p-4 border-b border-gray-700">
+      <div className="p-2 md:p-4 border-b border-gray-700 flex-shrink-0">
         <div className="text-xs text-gray-300 uppercase tracking-wide mb-2 font-medium hidden md:block">Organization</div>
         <Select 
           value={currentOrganization?.id || ""} 
@@ -106,8 +106,8 @@ export default function Sidebar() {
         </Select>
       </div>
 
-      {/* Navigation Menu */}
-      <nav className="flex-1 p-2 md:p-4 space-y-1 md:space-y-2">
+      {/* Navigation Menu - Scrollable */}
+      <nav className="flex-1 p-2 md:p-4 space-y-1 md:space-y-2 overflow-y-auto min-h-0">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = location === item.path || (item.path === "/dashboard" && location === "/");
@@ -148,21 +148,22 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      {/* User Profile */}
-      <div className="p-2 md:p-4 border-t border-gray-700">
+      {/* User Profile - Always visible at bottom */}
+      <div className="p-2 md:p-4 border-t border-gray-700 flex-shrink-0">
         <div className="flex items-center space-x-2 md:space-x-3">
           <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-medium text-white">{getUserInitials()}</span>
           </div>
-          <div className="flex-1 hidden md:block">
-            <div className="text-sm font-medium text-white">{getUserName()}</div>
-            <div className="text-xs text-gray-300">{user?.email}</div>
+          <div className="flex-1 hidden md:block min-w-0">
+            <div className="text-sm font-medium text-white truncate">{getUserName()}</div>
+            <div className="text-xs text-gray-300 truncate">{user?.email}</div>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleLogout}
             className="text-gray-300 hover:text-white hover:bg-gray-800 p-1 flex-shrink-0"
+            title="Logout"
           >
             <LogOut className="w-4 h-4" />
           </Button>

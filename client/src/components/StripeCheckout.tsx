@@ -8,7 +8,7 @@ interface StripeCheckoutProps {
   planType: string;
   userCount: number;
   totalAmount: number;
-  paymentIntentId: string;
+  subscriptionId: string;
   organizationId: string;
   onSuccess: () => void;
   onCancel: () => void;
@@ -18,7 +18,7 @@ export function StripeCheckout({
   planType, 
   userCount, 
   totalAmount, 
-  paymentIntentId,
+  subscriptionId,
   organizationId,
   onSuccess, 
   onCancel 
@@ -66,9 +66,9 @@ export function StripeCheckout({
         });
         setIsProcessing(false);
       } else {
-        // Confirm payment on backend
+        // Confirm subscription on backend
         await apiRequest('POST', '/api/billing/confirm-payment', {
-          paymentIntentId,
+          subscriptionId,
           organizationId
         });
 

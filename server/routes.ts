@@ -1002,18 +1002,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate total amount
       const totalAmount = selectedPlan.pricePerUser * userCount;
       
-      // Create PayPal order for this upgrade
-      const paypalOrderData = {
-        intent: "CAPTURE",
-        amount: totalAmount.toString(),
-        currency: "USD",
-        planType,
-        userCount,
-        organizationId
-      };
+      // Create a mock request object for PayPal order creation
+      const mockReq = {
+        body: {
+          intent: "CAPTURE",
+          amount: totalAmount.toString(),
+          currency: "USD"
+        }
+      } as Request;
+
+      // Create a mock response object to capture PayPal response
+      let paypalResponse: any = null;
+      const mockRes = {
+        status: (code: number) => ({
+          json: (data: any) => {
+            paypalResponse = { statusCode: code, data };
+          }
+        }),
+        json: (data: any) => {
+          paypalResponse = { statusCode: 200, data };
+        }
+      } as Response;
+
+      // Use existing PayPal integration
+      await createPaypalOrder(mockReq, mockRes);
+      
+      // Extract approval URL from PayPal response
+      const approvalUrl = paypalResponse?.data?.links?.find((link: any) => link.rel === 'approve')?.href;
 
       res.json({
-        paypalOrderData,
+        paypalOrderData: {
+          ...paypalResponse?.data,
+          approvalUrl,
+          planType,
+          userCount,
+          organizationId
+        },
         plan: selectedPlan,
         totalAmount,
         billingCycle

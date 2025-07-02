@@ -89,9 +89,16 @@ export default function BillingContent() {
 
   const upgradePlanMutation = useMutation({
     mutationFn: async (data: { planType: string; userCount: number }) => {
-      return apiRequest('POST', '/api/billing/upgrade', data);
+      const response = await apiRequest('POST', '/api/billing/upgrade', data);
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      // If PayPal order data is returned, redirect to PayPal
+      if (data.paypalOrderData && data.paypalOrderData.approvalUrl) {
+        window.location.href = data.paypalOrderData.approvalUrl;
+        return;
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['/api/billing/info'] });
       toast({
         title: "Plan Upgrade Initiated",

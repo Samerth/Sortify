@@ -158,6 +158,7 @@ export interface IStorage {
   // Organization settings operations
   getOrganizationSettings(organizationId: string): Promise<OrganizationSettings | undefined>;
   upsertOrganizationSettings(data: InsertOrganizationSettings): Promise<OrganizationSettings>;
+  updateOrganizationSettings(organizationId: string, data: Partial<InsertOrganizationSettings>): Promise<OrganizationSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -931,6 +932,39 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return settings;
+  }
+
+  async updateOrganizationSettings(organizationId: string, data: Partial<InsertOrganizationSettings>): Promise<OrganizationSettings> {
+    // First, get or create the settings record
+    let settings = await this.getOrganizationSettings(organizationId);
+    
+    if (!settings) {
+      // Create default settings if none exist
+      const defaultSettings: InsertOrganizationSettings = {
+        organizationId,
+        packageTypes: ["package", "letter", "certified_mail", "express", "fragile"],
+        packageSizes: ["small", "medium", "large", "extra_large"],
+        courierCompanies: ["FedEx", "UPS", "DHL", "USPS", "Amazon", "Other"],
+        customStatuses: ["pending", "notified", "delivered", "returned"],
+        allowEditAfterDelivery: false,
+        requirePhotoUpload: false,
+        autoNotifyRecipients: true,
+        ...data,
+      };
+      return this.upsertOrganizationSettings(defaultSettings);
+    }
+
+    // Update existing settings
+    const [updatedSettings] = await db
+      .update(organizationSettings)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(organizationSettings.organizationId, organizationId))
+      .returning();
+    
+    return updatedSettings;
   }
 
   // Super Admin operations

@@ -332,6 +332,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Organization Settings routes
+  app.get('/api/organization-settings/:organizationId', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const settings = await storage.getOrganizationSettings(req.params.organizationId);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching organization settings:", error);
+      res.status(500).json({ message: "Failed to fetch organization settings" });
+    }
+  });
+
+  app.put('/api/organization-settings/:organizationId', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      // Only admins can update organization settings
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ message: "Only admins can update organization settings" });
+      }
+
+      const settings = await storage.updateOrganizationSettings(req.params.organizationId, req.body);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating organization settings:", error);
+      res.status(500).json({ message: "Failed to update organization settings" });
+    }
+  });
+
   // Recipients routes
   app.get('/api/recipients', isAuthenticated, withOrganization, async (req: any, res) => {
     try {

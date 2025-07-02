@@ -28,6 +28,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertOrganizationSchema } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
+import { insertOrganizationSettingsSchema } from "@shared/schema";
+import { Trash2, Edit3 } from "lucide-react";
 
 const organizationFormSchema = insertOrganizationSchema.partial();
 type OrganizationFormData = z.infer<typeof organizationFormSchema>;
@@ -89,6 +91,261 @@ interface MailroomLocation {
   notes?: string;
   organizationId: string;
   isActive: boolean;
+}
+
+// Customization Tab Component
+interface CustomizationTabProps {
+  organizationId: string;
+}
+
+function CustomizationTab({ organizationId }: CustomizationTabProps) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [newValue, setNewValue] = useState('');
+
+  // Fetch organization settings
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ["/api/organization-settings", organizationId],
+    queryFn: async () => {
+      const response = await fetch(`/api/organization-settings/${organizationId}`, {
+        headers: { 'x-organization-id': organizationId },
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch settings');
+      return response.json();
+    },
+  });
+
+  // Update settings mutation
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (updatedSettings: any) => {
+      const response = await apiRequest("PUT", `/api/organization-settings/${organizationId}`, updatedSettings);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update settings');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Settings updated successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/organization-settings", organizationId] });
+      setEditingSection(null);
+      setNewValue('');
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error updating settings", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
+  const addValue = (section: keyof typeof settings, value: string) => {
+    if (!settings || !value.trim()) return;
+    
+    const currentValues = settings[section] || [];
+    if (currentValues.includes(value.trim())) {
+      toast({ 
+        title: "Value already exists", 
+        description: `"${value}" is already in the list`,
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    const newValues = [...currentValues, value.trim()];
+    updateSettingsMutation.mutate({ [section]: newValues });
+  };
+
+  const removeValue = (section: keyof typeof settings, valueToRemove: string) => {
+    if (!settings) return;
+    
+    const currentValues = settings[section] || [];
+    const newValues = currentValues.filter((v: string) => v !== valueToRemove);
+    updateSettingsMutation.mutate({ [section]: newValues });
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const sections = [
+    {
+      key: 'packageTypes',
+      title: 'Package Types',
+      description: 'Configure the types of packages your organization handles',
+      values: settings?.packageTypes || [],
+    },
+    {
+      key: 'packageSizes',
+      title: 'Package Sizes',
+      description: 'Define size categories for your packages',
+      values: settings?.packageSizes || [],
+    },
+    {
+      key: 'courierCompanies',
+      title: 'Courier Companies',
+      description: 'List of courier companies that deliver to your organization',
+      values: settings?.courierCompanies || [],
+    },
+    {
+      key: 'customStatuses',
+      title: 'Custom Statuses',
+      description: 'Define custom status options for mail tracking',
+      values: settings?.customStatuses || [],
+    },
+  ];
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center mb-6">
+          <SettingsIcon className="w-6 h-6 text-primary mr-3" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Customization</h3>
+            <p className="text-gray-600">Configure dropdown options and custom values for your organization</p>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          {sections.map((section) => (
+            <div key={section.key} className="border-b border-gray-200 pb-6 last:border-b-0">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h4 className="text-md font-medium text-gray-900">{section.title}</h4>
+                  <p className="text-sm text-gray-600 mt-1">{section.description}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditingSection(section.key);
+                    setNewValue('');
+                  }}
+                  disabled={updateSettingsMutation.isPending}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+
+              {/* Values List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+                {section.values.map((value: string, index: number) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-50 border rounded-lg px-3 py-2"
+                  >
+                    <span className="text-sm text-gray-700">{value}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeValue(section.key as keyof typeof settings, value)}
+                      disabled={updateSettingsMutation.isPending}
+                      className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add New Value Form */}
+              {editingSection === section.key && (
+                <div className="flex gap-2 mt-3">
+                  <Input
+                    placeholder={`Add new ${section.title.toLowerCase()}...`}
+                    value={newValue}
+                    onChange={(e) => setNewValue(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        addValue(section.key as keyof typeof settings, newValue);
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={() => addValue(section.key as keyof typeof settings, newValue)}
+                    disabled={updateSettingsMutation.isPending || !newValue.trim()}
+                    size="sm"
+                  >
+                    {updateSettingsMutation.isPending ? "Adding..." : "Add"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setEditingSection(null);
+                      setNewValue('');
+                    }}
+                    size="sm"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Preferences Section */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <h4 className="text-md font-medium text-gray-900 mb-4">System Preferences</h4>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Require Photo Upload</label>
+                <p className="text-xs text-gray-500">Require staff to upload photos when logging packages</p>
+              </div>
+              <Switch
+                checked={settings?.requirePhotoUpload || false}
+                onCheckedChange={(checked) => 
+                  updateSettingsMutation.mutate({ requirePhotoUpload: checked })
+                }
+                disabled={updateSettingsMutation.isPending}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Auto-Notify Recipients</label>
+                <p className="text-xs text-gray-500">Automatically send notifications when mail arrives</p>
+              </div>
+              <Switch
+                checked={settings?.autoNotifyRecipients !== false}
+                onCheckedChange={(checked) => 
+                  updateSettingsMutation.mutate({ autoNotifyRecipients: checked })
+                }
+                disabled={updateSettingsMutation.isPending}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Allow Edit After Delivery</label>
+                <p className="text-xs text-gray-500">Allow staff to edit mail details after marking as delivered</p>
+              </div>
+              <Switch
+                checked={settings?.allowEditAfterDelivery || false}
+                onCheckedChange={(checked) => 
+                  updateSettingsMutation.mutate({ allowEditAfterDelivery: checked })
+                }
+                disabled={updateSettingsMutation.isPending}
+              />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function Settings() {
@@ -595,7 +852,7 @@ export default function Settings() {
             <Card>
               <CardContent className="p-2 md:p-4">
                 <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
-                  <TabsList className={`grid w-full h-auto ${isAdmin ? 'grid-rows-5' : 'grid-rows-3'} gap-1`}>
+                  <TabsList className={`grid w-full h-auto ${isAdmin ? 'grid-rows-6' : 'grid-rows-4'} gap-1`}>
                     {isAdmin && (
                       <TabsTrigger 
                         value="organization" 
@@ -606,6 +863,14 @@ export default function Settings() {
                         <span className="sm:hidden">Org</span>
                       </TabsTrigger>
                     )}
+                    <TabsTrigger 
+                      value="customization" 
+                      className="justify-start px-2 md:px-3 py-2 text-sm"
+                    >
+                      <SettingsIcon className="w-4 h-4 mr-1 md:mr-2" />
+                      <span className="hidden sm:inline">Customization</span>
+                      <span className="sm:hidden">Custom</span>
+                    </TabsTrigger>
                     <TabsTrigger 
                       value="notifications" 
                       className="justify-start px-2 md:px-3 py-2 text-sm"
@@ -788,6 +1053,11 @@ export default function Settings() {
                 </Card>
                 </TabsContent>
               )}
+
+              {/* Customization */}
+              <TabsContent value="customization">
+                <CustomizationTab organizationId={currentOrganization.id} />
+              </TabsContent>
 
               {/* Notifications Settings */}
               <TabsContent value="notifications">

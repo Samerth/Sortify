@@ -1303,6 +1303,74 @@ export default function Settings() {
                           />
                         </div>
 
+                        {/* Change Password Section */}
+                        <div className="border-t pt-6">
+                          <h4 className="font-medium text-gray-900 mb-4">Change Password</h4>
+                          <div className="space-y-4">
+                            <FormField
+                              control={accountForm.control}
+                              name="currentPassword"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Current Password</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="password"
+                                      placeholder="Enter current password"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={accountForm.control}
+                              name="newPassword"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>New Password</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="password"
+                                      placeholder="Enter new password"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={accountForm.control}
+                              name="confirmPassword"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Confirm New Password</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="password"
+                                      placeholder="Confirm new password"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <Button 
+                              type="button"
+                              variant="outline" 
+                              className="w-full"
+                              onClick={handlePasswordChange}
+                              disabled={changePasswordMutation.isPending}
+                            >
+                              <Shield className="w-4 h-4 mr-2" />
+                              {changePasswordMutation.isPending ? "Changing Password..." : "Change Password"}
+                            </Button>
+                          </div>
+                        </div>
+
                         {/* Save Button */}
                         <div className="flex justify-end">
                           <Button type="submit" disabled={updateAccountMutation.isPending}>
@@ -1355,73 +1423,7 @@ export default function Settings() {
                         </div>
                       </div>
 
-                      {/* Change Password Section */}
-                      <div className="border-t pt-6">
-                        <h4 className="font-medium text-gray-900 mb-4">Change Password</h4>
-                        <div className="space-y-4">
-                          <FormField
-                            control={accountForm.control}
-                            name="currentPassword"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Current Password</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="password"
-                                    placeholder="Enter current password"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={accountForm.control}
-                            name="newPassword"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>New Password</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="password"
-                                    placeholder="Enter new password"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={accountForm.control}
-                            name="confirmPassword"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Confirm New Password</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="password"
-                                    placeholder="Confirm new password"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <Button 
-                            type="button"
-                            variant="outline" 
-                            className="w-full"
-                            onClick={handlePasswordChange}
-                            disabled={changePasswordMutation.isPending}
-                          >
-                            <Shield className="w-4 h-4 mr-2" />
-                            {changePasswordMutation.isPending ? "Changing Password..." : "Change Password"}
-                          </Button>
-                        </div>
-                      </div>
+
 
                       {/* Privacy Notice */}
                       <div className="bg-blue-50 p-4 rounded-lg">

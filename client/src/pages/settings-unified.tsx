@@ -185,22 +185,21 @@ export default function SettingsUnified() {
     },
   });
 
-  const { data: organization, isLoading: isLoadingOrg } = useQuery<Organization>({
-    queryKey: ['/api/organizations', currentOrganization?.id],
-    enabled: !!currentOrganization?.id,
-    queryFn: async () => {
-      const response = await fetch(`/api/organizations/${currentOrganization!.id}`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to fetch organization");
-      return response.json();
-    },
-  });
+  // Use current organization data directly instead of fetching separately
+  const organization = currentOrganization;
+  const isLoadingOrg = false;
 
   // Update form when organization data loads
   useEffect(() => {
     if (organization) {
-      setOrganizationForm(organization);
+      setOrganizationForm({
+        name: organization.name,
+        address: organization.address || "",
+        contactName: organization.contactName || "",
+        contactEmail: organization.contactEmail || "",
+        contactPhone: organization.contactPhone || "",
+        logoUrl: organization.logoUrl || "",
+      });
     }
   }, [organization]);
 
@@ -293,6 +292,8 @@ export default function SettingsUnified() {
   const onCreateStorageLocation = (data: StorageLocationFormData) => {
     createStorageLocationMutation.mutate(data);
   };
+
+
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: Partial<OrganizationSettings>) => {

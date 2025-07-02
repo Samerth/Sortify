@@ -74,6 +74,10 @@ interface Organization {
   contactEmail?: string;
   contactPhone?: string;
   logoUrl?: string;
+  maxUsers?: number;
+  maxPackagesPerMonth?: number;
+  planType?: string;
+  subscriptionStatus?: string;
 }
 
 interface MailroomLocation {
@@ -107,7 +111,16 @@ export default function Settings() {
     enabled: !!currentOrganization?.id,
   });
 
+  // Fetch complete organization data with all fields including maxUsers
+  const { data: fullOrganizationData } = useQuery<Organization>({
+    queryKey: [`/api/organizations/${currentOrganization?.id}`],
+    enabled: !!currentOrganization?.id,
+  });
+
   const memberCount = Array.isArray(organizationMembers) ? organizationMembers.length : 0;
+  
+  // Get the actual max users value with proper fallback
+  const actualMaxUsers = (fullOrganizationData as any)?.maxUsers || currentOrganization?.maxUsers || 0;
   
   // Get current user's role in the organization
   const currentUserMember = Array.isArray(organizationMembers) 
@@ -1184,7 +1197,7 @@ export default function Settings() {
                       <Card className="bg-green-50 border-green-200">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-green-600">{currentOrganization?.maxUsers || 5}</div>
+                            <div className="text-2xl font-bold text-green-600">{actualMaxUsers === -1 ? '∞' : actualMaxUsers || 'Loading...'}</div>
                             <div className="text-sm text-green-600">License Limit</div>
                           </div>
                         </CardContent>
@@ -1192,7 +1205,7 @@ export default function Settings() {
                       <Card className="bg-orange-50 border-orange-200">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-orange-600">{Math.max(0, (currentOrganization?.maxUsers || 5) - memberCount)}</div>
+                            <div className="text-2xl font-bold text-orange-600">{actualMaxUsers === -1 ? '∞' : Math.max(0, actualMaxUsers - memberCount)}</div>
                             <div className="text-sm text-orange-600">Available Seats</div>
                           </div>
                         </CardContent>
@@ -1495,7 +1508,7 @@ export default function Settings() {
             </div>
             <div className="bg-green-50 p-3 rounded-lg">
               <p className="text-sm text-green-700">
-                <strong>License Check:</strong> You have {Math.max(0, (currentOrganization?.maxUsers || 5) - memberCount)} available seats remaining ({memberCount}/{currentOrganization?.maxUsers || 5} used).
+                <strong>License Check:</strong> You have {actualMaxUsers === -1 ? '∞' : Math.max(0, actualMaxUsers - memberCount)} available seats remaining ({memberCount}/{actualMaxUsers === -1 ? '∞' : actualMaxUsers} used).
               </p>
             </div>
             <div className="flex gap-2 pt-4">

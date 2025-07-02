@@ -274,7 +274,7 @@ export default function Checkout() {
                     <PayPalButton
                       amount={monthlyTotal.toString()}
                       currency="USD"
-                      intent="capture"
+                      intent="CAPTURE"
                       planType={selectedPlan}
                       userCount={userCount}
                       onSuccess={async (orderData) => {

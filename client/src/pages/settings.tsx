@@ -31,6 +31,12 @@ import { apiRequest } from "@/lib/queryClient";
 const organizationFormSchema = insertOrganizationSchema.partial();
 type OrganizationFormData = z.infer<typeof organizationFormSchema>;
 
+const accountFormSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+});
+type AccountFormData = z.infer<typeof accountFormSchema>;
+
 const mailroomFormSchema = z.object({
   name: z.string().min(1, "Mailroom name is required"),
   description: z.string().optional(),
@@ -147,6 +153,14 @@ export default function Settings() {
     },
   });
 
+  const accountForm = useForm<AccountFormData>({
+    resolver: zodResolver(accountFormSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+    },
+  });
+
   const locationForm = useForm<LocationFormData>({
     resolver: zodResolver(locationFormSchema),
     defaultValues: {
@@ -218,6 +232,16 @@ export default function Settings() {
       });
     }
   }, [organization, form]);
+
+  // Update account form when user data is loaded
+  React.useEffect(() => {
+    if (user) {
+      accountForm.reset({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+      });
+    }
+  }, [user, accountForm]);
 
   // Fetch storage locations
   const { data: locations = [], refetch: refetchLocations } = useQuery<MailroomLocation[]>({
@@ -311,6 +335,26 @@ export default function Settings() {
       toast({
         title: "Error",
         description: error.message || "Failed to update organization settings.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateAccountMutation = useMutation({
+    mutationFn: async (data: AccountFormData) => {
+      return apiRequest("PATCH", "/api/auth/user", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Success",
+        description: "Account updated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update account.",
         variant: "destructive",
       });
     },
@@ -1147,31 +1191,50 @@ export default function Settings() {
                       </div>
                     </div>
 
-                    <div className="space-y-6">
-                      {/* User Profile Information */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            First Name
-                          </label>
-                          <Input
-                            value={user?.firstName || ""}
-                            readOnly
-                            className="bg-gray-50"
+                    <Form {...accountForm}>
+                      <form onSubmit={accountForm.handleSubmit((data) => updateAccountMutation.mutate(data))} className="space-y-6">
+                        {/* User Profile Information */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={accountForm.control}
+                            name="firstName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>First Name</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Enter your first name" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={accountForm.control}
+                            name="lastName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Last Name</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Enter your last name" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Last Name
-                          </label>
-                          <Input
-                            value={user?.lastName || ""}
-                            readOnly
-                            className="bg-gray-50"
-                          />
-                        </div>
-                      </div>
 
+                        {/* Save Button */}
+                        <div className="flex justify-end">
+                          <Button type="submit" disabled={updateAccountMutation.isPending}>
+                            <Save className="w-4 h-4 mr-2" />
+                            {updateAccountMutation.isPending ? "Saving..." : "Save Changes"}
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+
+                    <div className="space-y-6">
+                      {/* Email Address - Read Only */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Email Address

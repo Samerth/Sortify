@@ -1279,11 +1279,11 @@ export default function Settings() {
                       <div className="border-t pt-6">
                         <h4 className="font-medium text-gray-900 mb-4">Account Actions</h4>
                         <div className="space-y-3">
-                          <Button variant="outline" className="w-full justify-start">
-                            <User className="w-4 h-4 mr-2" />
-                            Update Profile Information
-                          </Button>
-                          <Button variant="outline" className="w-full justify-start">
+                          <Button 
+                            variant="outline" 
+                            className="w-full justify-start"
+                            onClick={() => window.location.href = '/forgot-password'}
+                          >
                             <Shield className="w-4 h-4 mr-2" />
                             Change Password
                           </Button>

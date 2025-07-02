@@ -20,6 +20,7 @@ import History from "@/pages/history";
 import Integrations from "@/pages/integrations";
 import Settings from "@/pages/settings";
 import OrganizationSettings from "@/pages/organization-settings";
+import SettingsCustomization from "@/pages/settings-customization";
 import Checkout from "@/pages/checkout";
 import SuperAdmin from "@/pages/super-admin";
 import Layout from "@/components/Layout";

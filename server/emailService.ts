@@ -25,7 +25,7 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
     
     const emailContent = {
       to: params.to,
-      from: 'signup@sortifyapp.com',
+      from: 'samerth.pathak@codsphere.ca',
       subject: `You're invited to join ${params.organizationName} on Sortify`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -78,13 +78,19 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
       `
     };
 
-    await mailService.send(emailContent);
+    const response = await mailService.send(emailContent);
     console.log(`Invitation email sent successfully to ${params.to}`);
+    console.log('SendGrid response:', response[0].statusCode, response[0].headers);
     return true;
   } catch (error: any) {
     console.error('SendGrid email error:', error);
+    console.error('Error status:', error.status || error.statusCode);
+    console.error('Error message:', error.message);
     if (error.response?.body?.errors) {
       console.error('SendGrid error details:', error.response.body.errors);
+    }
+    if (error.response?.body) {
+      console.error('Full SendGrid response body:', error.response.body);
     }
     return false;
   }
@@ -171,7 +177,7 @@ export async function sendMailNotificationEmail(params: MailNotificationParams):
   try {
     const emailContent = {
       to: params.to,
-      from: 'signup@sortifyapp.com',
+      from: 'samerth.pathak@codsphere.ca',
       subject: `Mail Notification - ${params.mailType} has arrived`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

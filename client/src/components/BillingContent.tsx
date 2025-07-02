@@ -89,7 +89,7 @@ export default function BillingContent() {
 
   const upgradePlanMutation = useMutation({
     mutationFn: async (data: { planType: string; userCount: number }) => {
-      return apiRequest(`/api/billing/upgrade-plan`, 'POST', data);
+      return apiRequest('POST', '/api/billing/upgrade', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/billing/info'] });

@@ -1266,7 +1266,13 @@ export default function Settings() {
                     </div>
 
                     <Form {...accountForm}>
-                      <form onSubmit={accountForm.handleSubmit((data) => updateAccountMutation.mutate(data))} className="space-y-6">
+                      <form onSubmit={accountForm.handleSubmit((data) => {
+                        // Only update profile information (firstName, lastName)
+                        updateAccountMutation.mutate({
+                          firstName: data.firstName,
+                          lastName: data.lastName
+                        });
+                      })} className="space-y-6">
                         {/* User Profile Information */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField

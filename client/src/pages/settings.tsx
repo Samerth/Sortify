@@ -34,6 +34,19 @@ type OrganizationFormData = z.infer<typeof organizationFormSchema>;
 const accountFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
+  currentPassword: z.string().optional(),
+  newPassword: z.string().optional(),
+  confirmPassword: z.string().optional(),
+}).refine((data) => {
+  if (data.currentPassword || data.newPassword || data.confirmPassword) {
+    if (!data.currentPassword) return false;
+    if (!data.newPassword || data.newPassword.length < 8) return false;
+    if (data.newPassword !== data.confirmPassword) return false;
+  }
+  return true;
+}, {
+  message: "Password requirements: current password required, new password must be at least 8 characters, passwords must match",
+  path: ["newPassword"],
 });
 type AccountFormData = z.infer<typeof accountFormSchema>;
 
@@ -158,6 +171,9 @@ export default function Settings() {
     defaultValues: {
       firstName: "",
       lastName: "",
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     },
   });
 
@@ -359,6 +375,64 @@ export default function Settings() {
       });
     },
   });
+
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      return apiRequest("POST", "/api/change-password", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Password changed successfully.",
+      });
+      // Clear password fields
+      accountForm.setValue("currentPassword", "");
+      accountForm.setValue("newPassword", "");
+      accountForm.setValue("confirmPassword", "");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to change password.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handlePasswordChange = () => {
+    const currentPassword = accountForm.getValues("currentPassword");
+    const newPassword = accountForm.getValues("newPassword");
+    const confirmPassword = accountForm.getValues("confirmPassword");
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all password fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast({
+        title: "Error",
+        description: "New password must be at least 8 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    changePasswordMutation.mutate({ currentPassword, newPassword });
+  };
 
   const updateMailroomMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: MailroomFormData }) => {
@@ -1275,17 +1349,70 @@ export default function Settings() {
                         </div>
                       </div>
 
-                      {/* Account Actions */}
+                      {/* Change Password Section */}
                       <div className="border-t pt-6">
-                        <h4 className="font-medium text-gray-900 mb-4">Account Actions</h4>
-                        <div className="space-y-3">
+                        <h4 className="font-medium text-gray-900 mb-4">Change Password</h4>
+                        <div className="space-y-4">
+                          <FormField
+                            control={accountForm.control}
+                            name="currentPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Current Password</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="password"
+                                    placeholder="Enter current password"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={accountForm.control}
+                            name="newPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>New Password</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="password"
+                                    placeholder="Enter new password"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={accountForm.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Confirm New Password</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="password"
+                                    placeholder="Confirm new password"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                           <Button 
+                            type="button"
                             variant="outline" 
-                            className="w-full justify-start"
-                            onClick={() => window.location.href = '/forgot-password'}
+                            className="w-full"
+                            onClick={handlePasswordChange}
+                            disabled={changePasswordMutation.isPending}
                           >
                             <Shield className="w-4 h-4 mr-2" />
-                            Change Password
+                            {changePasswordMutation.isPending ? "Changing Password..." : "Change Password"}
                           </Button>
                         </div>
                       </div>

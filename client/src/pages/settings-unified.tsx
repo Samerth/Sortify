@@ -173,11 +173,28 @@ export default function SettingsUnified() {
   const { data: settings, isLoading: isLoadingSettings } = useQuery<OrganizationSettings>({
     queryKey: ['/api/organization-settings', currentOrganization?.id],
     enabled: !!currentOrganization?.id,
+    queryFn: async () => {
+      const response = await fetch("/api/organization-settings", {
+        headers: {
+          "x-organization-id": currentOrganization!.id,
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch organization settings");
+      return response.json();
+    },
   });
 
   const { data: organization, isLoading: isLoadingOrg } = useQuery<Organization>({
     queryKey: ['/api/organizations', currentOrganization?.id],
     enabled: !!currentOrganization?.id,
+    queryFn: async () => {
+      const response = await fetch(`/api/organizations/${currentOrganization!.id}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch organization");
+      return response.json();
+    },
   });
 
   // Update form when organization data loads
@@ -279,14 +296,23 @@ export default function SettingsUnified() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: Partial<OrganizationSettings>) => {
-      const response = await apiRequest("PATCH", `/api/organization-settings`, data);
+      const response = await fetch("/api/organization-settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-organization-id": currentOrganization!.id,
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to update settings");
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/organization-settings'] });
       toast({
         title: "Settings Updated",
-        description: "Your customization settings have been saved.",
+        description: "Your preferences have been saved.",
       });
     },
     onError: (error: any) => {

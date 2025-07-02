@@ -26,9 +26,7 @@ const navigationItems = [
 
 const adminItems = [
   { path: "/integrations", label: "Integrations", icon: Plug },
-  { path: "/settings/customization", label: "Customization", icon: Settings },
-  { path: "/organization-settings", label: "Organization", icon: Settings },
-  { path: "/settings", label: "System Settings", icon: Settings },
+  { path: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function Sidebar() {

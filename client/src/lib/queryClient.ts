@@ -40,8 +40,17 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // Get organization ID from localStorage for organization-scoped requests
+    const currentOrgId = localStorage.getItem('selectedOrganizationId');
+    
+    const headers: Record<string, string> = {};
+    if (currentOrgId) {
+      headers["x-organization-id"] = currentOrgId;
+    }
+
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
+      headers,
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

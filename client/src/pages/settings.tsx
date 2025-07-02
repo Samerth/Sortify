@@ -1455,6 +1455,38 @@ export default function Settings() {
                 </Card>
               </TabsContent>
 
+              {/* Billing & Plans */}
+              {isAdmin && (
+                <TabsContent value="billing">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center mb-6">
+                        <Shield className="w-6 h-6 text-primary mr-3" />
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Billing & Plans</h3>
+                          <p className="text-gray-600">Manage your subscription and billing information</p>
+                        </div>
+                      </div>
+                      <div className="space-y-6">
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <p className="text-sm text-blue-700">
+                            <strong>Billing Management:</strong> Use the dedicated billing page for full subscription management, payment processing, and plan upgrades.
+                          </p>
+                        </div>
+                        <div className="flex justify-center">
+                          <Button 
+                            onClick={() => window.open('/settings-billing', '_blank')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Shield className="w-4 h-4 mr-2" />
+                            Open Billing Dashboard
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
 
             </Tabs>
           </div>

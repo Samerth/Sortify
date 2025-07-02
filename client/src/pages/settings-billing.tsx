@@ -339,7 +339,7 @@ export default function BillingSettings() {
             </div>
 
             {/* Usage Progress */}
-            {billingInfo?.trialInfo.usageLimits.maxPackagesPerMonth > 0 && (
+            {billingInfo?.trialInfo?.usageLimits?.maxPackagesPerMonth && billingInfo?.trialInfo?.usageLimits?.maxPackagesPerMonth > 0 && (
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Package Usage</Label>

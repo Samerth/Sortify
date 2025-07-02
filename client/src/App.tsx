@@ -18,7 +18,7 @@ import PendingPickups from "@/pages/pending-pickups";
 import Recipients from "@/pages/recipients";
 import History from "@/pages/history";
 import Integrations from "@/pages/integrations";
-import SettingsUnified from "@/pages/settings-unified";
+import SettingsUnified from "@/pages/settings";
 import Checkout from "@/pages/checkout";
 import SuperAdmin from "@/pages/super-admin";
 import Layout from "@/components/Layout";

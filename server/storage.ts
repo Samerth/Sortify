@@ -25,7 +25,7 @@ import {
   type InsertPasswordResetToken,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, count, sql, inArray } from "drizzle-orm";
+import { eq, and, desc, count, sql, inArray, ne, gte, asc, ilike } from "drizzle-orm";
 import * as crypto from "crypto";
 import {
   users,

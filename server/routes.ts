@@ -960,7 +960,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const organizationId = req.headers["x-organization-id"] as string;
       
       // Get organization with billing info
-      const organization = await storage.getOrganizationById(organizationId);
+      const organization = await storage.getOrganization(organizationId);
       if (!organization) {
         return res.status(404).json({ error: 'Organization not found' });
       }

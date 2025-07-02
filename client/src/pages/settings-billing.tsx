@@ -133,13 +133,16 @@ export default function BillingSettings() {
 
   const upgradePlanMutation = useMutation({
     mutationFn: async (data: { planType: string; userCount: number; billingCycle: string }) => {
-      return apiRequest("/api/billing/upgrade", {
+      const response = await fetch("/api/billing/upgrade", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "X-Organization-Id": currentOrganization!.id,
         },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error("Failed to initiate upgrade");
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -160,13 +163,16 @@ export default function BillingSettings() {
 
   const updateBillingInfoMutation = useMutation({
     mutationFn: async (data: { billingEmail: string }) => {
-      return apiRequest("/api/billing/update", {
+      const response = await fetch("/api/billing/update", {
         method: "PATCH",
         headers: {
+          "Content-Type": "application/json",
           "X-Organization-Id": currentOrganization!.id,
         },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error("Failed to update billing info");
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -205,7 +211,7 @@ export default function BillingSettings() {
   const isPaidUser = billingInfo?.organization.subscriptionStatus === "active";
   const isExpired = billingInfo?.trialInfo.isExpired;
 
-  const usagePercentage = billingInfo?.trialInfo.usageLimits.maxPackagesPerMonth > 0
+  const usagePercentage = billingInfo?.trialInfo?.usageLimits?.maxPackagesPerMonth && billingInfo.trialInfo.usageLimits.maxPackagesPerMonth > 0
     ? (billingInfo.trialInfo.usageLimits.currentPackages / billingInfo.trialInfo.usageLimits.maxPackagesPerMonth) * 100
     : 0;
 

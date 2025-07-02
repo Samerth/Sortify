@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { organizations } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { organizations, organizationMembers } from "@shared/schema";
+import { eq, sql } from "drizzle-orm";
 
 export interface TrialInfo {
   isTrialActive: boolean;
@@ -72,9 +72,9 @@ export class TrialManager {
     const canAddPackages = (org.currentMonthPackages || 0) < (org.maxPackagesPerMonth || 500);
 
     return {
-      isTrialActive,
+      isTrialActive: !!isTrialActive,
       daysRemaining,
-      isExpired,
+      isExpired: !!isExpired,
       planType: org.planType || "trial",
       subscriptionStatus: org.subscriptionStatus || "trial",
       usageLimits: {
@@ -114,11 +114,16 @@ export class TrialManager {
    * Increment package usage
    */
   static async incrementPackageUsage(organizationId: string): Promise<void> {
+    const [org] = await db
+      .select({ currentMonthPackages: organizations.currentMonthPackages })
+      .from(organizations)
+      .where(eq(organizations.id, organizationId));
+    
     await db
       .update(organizations)
       .set({
-        currentMonthPackages: db.raw("current_month_packages + 1"),
-      } as any)
+        currentMonthPackages: (org?.currentMonthPackages || 0) + 1,
+      })
       .where(eq(organizations.id, organizationId));
   }
 
@@ -139,13 +144,12 @@ export class TrialManager {
    * Get current user count for organization
    */
   private static async getCurrentUserCount(organizationId: string): Promise<number> {
-    const result = await db.raw(`
-      SELECT COUNT(*) as count 
-      FROM organization_members 
-      WHERE organization_id = $1
-    `, [organizationId]);
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(organizationMembers)
+      .where(eq(organizationMembers.organizationId, organizationId));
     
-    return parseInt(result.rows[0]?.count || "0");
+    return result?.count || 0;
   }
 
   /**

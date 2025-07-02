@@ -626,6 +626,16 @@ export default function Settings() {
                         <span className="sm:hidden">Users</span>
                       </TabsTrigger>
                     )}
+                    {isAdmin && (
+                      <TabsTrigger 
+                        value="billing" 
+                        className="justify-start px-2 md:px-3 py-2 text-sm"
+                      >
+                        <Shield className="w-4 h-4 mr-1 md:mr-2" />
+                        <span className="hidden sm:inline">Billing & Plans</span>
+                        <span className="sm:hidden">Billing</span>
+                      </TabsTrigger>
+                    )}
 
                   </TabsList>
                 </Tabs>

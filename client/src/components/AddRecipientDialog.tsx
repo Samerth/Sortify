@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useOrganization } from "@/components/OrganizationProvider";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,11 +27,12 @@ interface AddRecipientDialogProps {
 export function AddRecipientDialog({ isOpen, onClose, onRecipientAdded }: AddRecipientDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { currentOrganization } = useOrganization();
 
   const form = useForm<RecipientFormData>({
     resolver: zodResolver(recipientFormSchema),
     defaultValues: {
-      organizationId: "",
+      organizationId: currentOrganization?.id || "",
       firstName: "",
       lastName: "",
       email: "",
@@ -40,6 +43,13 @@ export function AddRecipientDialog({ isOpen, onClose, onRecipientAdded }: AddRec
       isActive: true,
     },
   });
+
+  // Update organizationId when dialog opens or organization changes
+  useEffect(() => {
+    if (isOpen && currentOrganization?.id) {
+      form.setValue("organizationId", currentOrganization.id);
+    }
+  }, [isOpen, currentOrganization?.id, form]);
 
   const addRecipientMutation = useMutation({
     mutationFn: async (data: RecipientFormData) => {

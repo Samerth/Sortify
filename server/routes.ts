@@ -1120,26 +1120,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let clientSecret = null;
       if (subscription.latest_invoice && typeof subscription.latest_invoice === 'object') {
         const invoice = subscription.latest_invoice as any;
+        
+        // Check if payment intent exists
         if (invoice.payment_intent && typeof invoice.payment_intent === 'object') {
           clientSecret = invoice.payment_intent.client_secret;
+        } else if (invoice.payment_intent && typeof invoice.payment_intent === 'string') {
+          // Payment intent ID only, need to retrieve it
+          const paymentIntent = await stripe.paymentIntents.retrieve(invoice.payment_intent);
+          clientSecret = paymentIntent.client_secret;
         } else {
-          // If no payment intent exists yet, retrieve the invoice and get the payment intent
-          const fullInvoice = await stripe.invoices.retrieve(invoice.id, {
-            expand: ['payment_intent'],
-          });
-          if (fullInvoice.payment_intent && typeof fullInvoice.payment_intent === 'object') {
-            clientSecret = fullInvoice.payment_intent.client_secret;
+          // No payment intent exists, need to create one manually
+          console.log('Creating manual payment intent for invoice:', invoice.id);
+          
+          try {
+            // Finalize the invoice to create a payment intent
+            await stripe.invoices.finalizeInvoice(invoice.id);
+            
+            // Now retrieve the invoice with payment intent expanded
+            const updatedInvoice = await stripe.invoices.retrieve(invoice.id, {
+              expand: ['payment_intent'],
+            });
+            
+            if (updatedInvoice.payment_intent && typeof updatedInvoice.payment_intent === 'object') {
+              clientSecret = updatedInvoice.payment_intent.client_secret;
+            }
+          } catch (error) {
+            console.error('Error finalizing invoice:', error);
           }
         }
       }
 
       // If we still don't have a client secret, there might be an issue
       if (!clientSecret) {
-        console.log('No client secret found, subscription details:', {
+        console.log('No client secret found after all attempts, subscription details:', {
           subscriptionId: subscription.id,
           status: subscription.status,
           latest_invoice: subscription.latest_invoice,
         });
+      } else {
+        console.log('Client secret successfully generated:', clientSecret ? 'YES' : 'NO');
       }
 
       res.json({

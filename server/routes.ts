@@ -1075,7 +1075,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Create Stripe Subscription
+      // Create Stripe Subscription with proper payment intent
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{
@@ -1122,7 +1122,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const invoice = subscription.latest_invoice as any;
         if (invoice.payment_intent && typeof invoice.payment_intent === 'object') {
           clientSecret = invoice.payment_intent.client_secret;
+        } else {
+          // If no payment intent exists yet, retrieve the invoice and get the payment intent
+          const fullInvoice = await stripe.invoices.retrieve(invoice.id, {
+            expand: ['payment_intent'],
+          });
+          if (fullInvoice.payment_intent && typeof fullInvoice.payment_intent === 'object') {
+            clientSecret = fullInvoice.payment_intent.client_secret;
+          }
         }
+      }
+
+      // If we still don't have a client secret, there might be an issue
+      if (!clientSecret) {
+        console.log('No client secret found, subscription details:', {
+          subscriptionId: subscription.id,
+          status: subscription.status,
+          latest_invoice: subscription.latest_invoice,
+        });
       }
 
       res.json({

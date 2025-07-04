@@ -159,9 +159,6 @@ export interface IStorage {
   getOrganizationSettings(organizationId: string): Promise<OrganizationSettings | undefined>;
   upsertOrganizationSettings(data: InsertOrganizationSettings): Promise<OrganizationSettings>;
   updateOrganizationSettings(organizationId: string, data: Partial<InsertOrganizationSettings>): Promise<OrganizationSettings>;
-  
-  // Stripe-related operations
-  getOrganizationByStripeCustomerId(customerId: string): Promise<Organization | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -968,14 +965,6 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedSettings;
-  }
-
-  async getOrganizationByStripeCustomerId(customerId: string): Promise<Organization | undefined> {
-    const [organization] = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.stripeCustomerId, customerId));
-    return organization || undefined;
   }
 
   // Super Admin operations

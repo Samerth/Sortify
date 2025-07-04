@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./simpleAuth";
@@ -1027,146 +1026,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid plan type' });
       }
 
+      // Calculate total amount in cents for Stripe
+      const totalAmount = selectedPlan.pricePerUser * userCount * 100; // Convert to cents
+      
       // Initialize Stripe
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-      // Get or create Stripe customer
-      const organization = await storage.getOrganization(organizationId);
-      let customerId = organization?.stripeCustomerId;
-      
-      if (!customerId) {
-        const customer = await stripe.customers.create({
-          email: req.user?.email || '',
-          name: organization?.name || `${req.user?.firstName || ''} ${req.user?.lastName || ''}`,
-          metadata: {
-            organizationId,
-            userId: req.user?.id || '',
-          },
-        });
-        customerId = customer.id;
-        
-        // Update organization with Stripe customer ID
-        await storage.updateOrganization(organizationId, {
-          stripeCustomerId: customerId,
-        });
-      }
-
-      // Create or get product
-      let product;
-      try {
-        // Try to find existing product
-        const products = await stripe.products.list({
-          limit: 100,
-          active: true,
-        });
-        product = products.data.find(p => p.name === `Sortify ${planType} Plan`);
-        
-        if (!product) {
-          product = await stripe.products.create({
-            name: `Sortify ${planType} Plan`,
-            description: `${selectedPlan.name} - ${userCount} users`,
-          });
-        }
-      } catch (error) {
-        console.error('Error creating product:', error);
-        product = await stripe.products.create({
-          name: `Sortify ${planType} Plan`,
-          description: `${selectedPlan.name} - ${userCount} users`,
-        });
-      }
-
-      // Create Stripe Subscription with proper payment intent
-      const subscription = await stripe.subscriptions.create({
-        customer: customerId,
-        items: [{
-          price_data: {
-            currency: 'usd',
-            product: product.id,
-            unit_amount: selectedPlan.pricePerUser * 100, // Convert to cents
-            recurring: {
-              interval: billingCycle === 'annual' ? 'year' : 'month',
-            },
-          },
-          quantity: userCount,
-        }],
-        payment_behavior: 'default_incomplete',
-        payment_settings: {
-          save_default_payment_method: 'on_subscription',
+      // Create Stripe Payment Intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(totalAmount),
+        currency: "usd",
+        automatic_payment_methods: {
+          enabled: true,
         },
-        expand: ['latest_invoice.payment_intent'],
         metadata: {
           planType,
           userCount: userCount.toString(),
           organizationId,
           billingCycle,
         },
+        description: `Sortify ${planType} Plan - ${userCount} users`,
       });
 
-      console.log('Stripe Subscription Created:', {
-        subscriptionId: subscription.id,
-        customerId,
-        status: subscription.status,
-        amount: selectedPlan.pricePerUser * userCount,
+      console.log('Stripe Payment Intent Created:', {
+        paymentIntentId: paymentIntent.id,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency,
+        status: paymentIntent.status,
       });
-
-      // Update organization with subscription info
-      await storage.updateOrganization(organizationId, {
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscription.id,
-        subscriptionStatus: subscription.status,
-      });
-
-      // Get client secret from the subscription's latest invoice
-      let clientSecret = null;
-      if (subscription.latest_invoice && typeof subscription.latest_invoice === 'object') {
-        const invoice = subscription.latest_invoice as any;
-        
-        // Check if payment intent exists
-        if (invoice.payment_intent && typeof invoice.payment_intent === 'object') {
-          clientSecret = invoice.payment_intent.client_secret;
-        } else if (invoice.payment_intent && typeof invoice.payment_intent === 'string') {
-          // Payment intent ID only, need to retrieve it
-          const paymentIntent = await stripe.paymentIntents.retrieve(invoice.payment_intent);
-          clientSecret = paymentIntent.client_secret;
-        } else {
-          // No payment intent exists, need to create one manually
-          console.log('Creating manual payment intent for invoice:', invoice.id);
-          
-          try {
-            // Finalize the invoice to create a payment intent
-            await stripe.invoices.finalizeInvoice(invoice.id);
-            
-            // Now retrieve the invoice with payment intent expanded
-            const updatedInvoice = await stripe.invoices.retrieve(invoice.id, {
-              expand: ['payment_intent'],
-            });
-            
-            if (updatedInvoice.payment_intent && typeof updatedInvoice.payment_intent === 'object') {
-              clientSecret = updatedInvoice.payment_intent.client_secret;
-            }
-          } catch (error) {
-            console.error('Error finalizing invoice:', error);
-          }
-        }
-      }
-
-      // If we still don't have a client secret, there might be an issue
-      if (!clientSecret) {
-        console.log('No client secret found after all attempts, subscription details:', {
-          subscriptionId: subscription.id,
-          status: subscription.status,
-          latest_invoice: subscription.latest_invoice,
-        });
-      } else {
-        console.log('Client secret successfully generated:', clientSecret ? 'YES' : 'NO');
-      }
 
       res.json({
-        clientSecret,
-        subscriptionId: subscription.id,
-        customerId,
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
         plan: selectedPlan,
-        totalAmount: selectedPlan.pricePerUser * userCount,
+        totalAmount: totalAmount / 100, // Convert back to dollars for display
         billingCycle,
         planType,
         userCount,
@@ -1174,50 +1067,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
     } catch (error) {
-      console.error('Stripe Subscription creation error:', error);
+      console.error('Stripe Payment Intent creation error:', error);
       res.status(500).json({ error: 'Failed to process upgrade request' });
     }
   });
 
-  // Handle successful Stripe subscription
+  // Handle successful Stripe payment
   app.post("/api/billing/confirm-payment", isAuthenticated, withOrganization, async (req, res) => {
     try {
       const organizationId = req.headers["x-organization-id"] as string;
-      const { subscriptionId } = req.body;
+      const { paymentIntentId } = req.body;
 
-      if (!subscriptionId) {
-        return res.status(400).json({ error: 'Subscription ID is required' });
+      if (!paymentIntentId) {
+        return res.status(400).json({ error: 'Payment Intent ID is required' });
       }
 
-      // Initialize Stripe to verify subscription
+      // Initialize Stripe to verify payment
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-      // Retrieve subscription to confirm success
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      // Retrieve payment intent to confirm success
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-      if (subscription.status === 'active' || subscription.status === 'trialing') {
-        const { planType, userCount, billingCycle } = subscription.metadata;
-
-        // Calculate subscription end date based on billing cycle
-        const subscriptionData = subscription as any;
-        const subscriptionEndDate = new Date(subscriptionData.current_period_end * 1000);
+      if (paymentIntent.status === 'succeeded') {
+        const { planType, userCount, billingCycle } = paymentIntent.metadata;
 
         // Update organization with new plan details
         await storage.updateOrganizationBilling(organizationId, {
           planType,
           maxUsers: parseInt(userCount),
-          subscriptionStatus: subscription.status,
+          subscriptionStatus: 'active',
           billingCycle,
-          stripePaymentIntentId: subscriptionId, // Using this field for subscription ID
-          subscriptionStartDate: new Date(subscriptionData.current_period_start * 1000),
-          subscriptionEndDate
+          stripePaymentIntentId: paymentIntentId,
+          subscriptionStartDate: new Date(),
+          subscriptionEndDate: new Date(Date.now() + (billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000)
         });
 
         console.log('Organization billing updated:', {
           organizationId,
           planType,
           userCount,
-          subscriptionId
+          paymentIntentId
         });
 
         res.json({
@@ -1307,92 +1196,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Organization upgrade error:', error);
       res.status(500).json({ error: 'Failed to upgrade organization' });
-    }
-  });
-
-  // Stripe webhook endpoint for handling subscription events
-  app.post("/api/webhooks/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
-    const sig = req.headers['stripe-signature'];
-    let event;
-
-    try {
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-      event = stripe.webhooks.constructEvent(req.body, sig as string, process.env.STRIPE_WEBHOOK_SECRET!);
-    } catch (err: any) {
-      console.log(`Webhook signature verification failed: ${err.message}`);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    console.log('Received Stripe webhook event:', event.type);
-
-    try {
-      switch (event.type) {
-        case 'customer.subscription.updated':
-        case 'customer.subscription.deleted':
-        case 'invoice.payment_succeeded':
-        case 'invoice.payment_failed':
-          const subscription = event.data.object as any;
-          const customerId = subscription.customer;
-
-          // Find organization by customer ID
-          const organization = await storage.getOrganizationByStripeCustomerId(customerId);
-          if (!organization) {
-            console.log('Organization not found for customer:', customerId);
-            break;
-          }
-
-          // Update subscription status
-          let subscriptionStatus = 'active';
-          if (event.type === 'customer.subscription.deleted') {
-            subscriptionStatus = 'canceled';
-          } else if (event.type === 'invoice.payment_failed') {
-            subscriptionStatus = 'past_due';
-          }
-
-          await storage.updateOrganization(organization.id, {
-            subscriptionStatus,
-            stripeSubscriptionId: subscription.id,
-          });
-
-          console.log(`Updated organization ${organization.id} subscription status to ${subscriptionStatus}`);
-          break;
-
-        default:
-          console.log(`Unhandled event type: ${event.type}`);
-      }
-
-      res.json({ received: true });
-    } catch (error) {
-      console.error('Error processing webhook:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  });
-
-  // Cancel subscription endpoint
-  app.post("/api/billing/cancel-subscription", isAuthenticated, withOrganization, async (req, res) => {
-    try {
-      const organizationId = req.headers["x-organization-id"] as string;
-      const organization = await storage.getOrganization(organizationId);
-
-      if (!organization?.stripeSubscriptionId) {
-        return res.status(404).json({ error: 'No active subscription found' });
-      }
-
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-      
-      // Cancel the subscription at the end of the current period
-      await stripe.subscriptions.update(organization.stripeSubscriptionId, {
-        cancel_at_period_end: true,
-      });
-
-      await storage.updateOrganization(organizationId, {
-        subscriptionStatus: 'canceled',
-      });
-
-      res.json({ success: true, message: 'Subscription will be canceled at the end of the current billing period' });
-    } catch (error) {
-      console.error('Error canceling subscription:', error);
-      res.status(500).json({ error: 'Failed to cancel subscription' });
     }
   });
 

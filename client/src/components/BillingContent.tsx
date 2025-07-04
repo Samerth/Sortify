@@ -526,14 +526,14 @@ export default function BillingContent() {
                 planType={stripePaymentData.planType}
                 userCount={stripePaymentData.userCount}
                 totalAmount={stripePaymentData.totalAmount}
-                subscriptionId={stripePaymentData.subscriptionId}
+                paymentIntentId={stripePaymentData.paymentIntentId}
                 organizationId={currentOrganization?.id || ''}
                 onSuccess={() => {
                   setShowStripeCheckout(false);
                   queryClient.invalidateQueries({ queryKey: ['/api/billing/info'] });
                   toast({
-                    title: "Subscription Activated",
-                    description: "Your subscription has been activated! You'll be automatically billed monthly.",
+                    title: "Payment Successful",
+                    description: "Your subscription has been upgraded successfully!",
                   });
                 }}
                 onCancel={() => setShowStripeCheckout(false)}

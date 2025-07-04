@@ -111,6 +111,22 @@ export default function MailIntake() {
     },
   });
 
+  // Fetch organization settings for dynamic dropdown values
+  const { data: orgSettings } = useQuery({
+    queryKey: ["/api/organization-settings", currentOrganization?.id],
+    enabled: !!currentOrganization?.id,
+    queryFn: async () => {
+      const response = await fetch(`/api/organization-settings/${currentOrganization!.id}`, {
+        headers: {
+          "X-Organization-Id": currentOrganization!.id,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error("Failed to fetch organization settings");
+      return response.json();
+    },
+  });
+
   const createMailItemMutation = useMutation({
     mutationFn: async (data: MailItemFormData) => {
       return apiRequest("POST", "/api/mail-items", {
@@ -238,10 +254,18 @@ export default function MailIntake() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="package">Package</SelectItem>
-                              <SelectItem value="letter">Letter</SelectItem>
-                              <SelectItem value="certified_mail">Certified Mail</SelectItem>
-                              <SelectItem value="express">Express Mail</SelectItem>
+                              {orgSettings?.packageTypes?.map((type: string) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </SelectItem>
+                              )) || (
+                                <>
+                                  <SelectItem value="package">Package</SelectItem>
+                                  <SelectItem value="letter">Letter</SelectItem>
+                                  <SelectItem value="certified_mail">Certified Mail</SelectItem>
+                                  <SelectItem value="express">Express Mail</SelectItem>
+                                </>
+                              )}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -356,9 +380,17 @@ export default function MailIntake() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Types</SelectItem>
-                    <SelectItem value="package">Package</SelectItem>
-                    <SelectItem value="letter">Letter</SelectItem>
-                    <SelectItem value="certified_mail">Certified Mail</SelectItem>
+                    {orgSettings?.packageTypes?.map((type: string) => (
+                      <SelectItem key={type} value={type}>
+                        {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </SelectItem>
+                    )) || (
+                      <>
+                        <SelectItem value="package">Package</SelectItem>
+                        <SelectItem value="letter">Letter</SelectItem>
+                        <SelectItem value="certified_mail">Certified Mail</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

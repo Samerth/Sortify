@@ -136,6 +136,22 @@ export default function MailIntake() {
     },
   });
 
+  // Fetch organization settings for dynamic dropdown values
+  const { data: orgSettings } = useQuery({
+    queryKey: ["/api/organization-settings", currentOrganization?.id],
+    enabled: !!currentOrganization?.id,
+    queryFn: async () => {
+      const response = await fetch(`/api/organization-settings/${currentOrganization!.id}`, {
+        headers: {
+          "x-organization-id": currentOrganization!.id,
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch organization settings");
+      return response.json();
+    },
+  });
+
   const createMailItemMutation = useMutation({
     mutationFn: async (data: any) => {
       // Clean up data - convert empty strings to null for optional UUID fields
@@ -356,10 +372,18 @@ export default function MailIntake() {
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="package">Package</option>
-                  <option value="letter">Letter</option>
-                  <option value="certified_mail">Certified Mail</option>
-                  <option value="express">Express Mail</option>
+                  {orgSettings?.packageTypes?.map((type: string) => (
+                    <option key={type} value={type}>
+                      {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </option>
+                  )) || (
+                    <>
+                      <option value="package">Package</option>
+                      <option value="letter">Letter</option>
+                      <option value="certified_mail">Certified Mail</option>
+                      <option value="express">Express Mail</option>
+                    </>
+                  )}
                 </select>
               </div>
 

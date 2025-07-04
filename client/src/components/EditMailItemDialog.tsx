@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useOrganization } from "@/components/OrganizationProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -47,9 +48,23 @@ export function EditMailItemDialog({ mailItem, isOpen, onClose }: EditMailItemDi
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Get current organization from context
+  const { currentOrganization } = useOrganization();
+
   // Fetch organization settings for package types
   const { data: settings } = useQuery({
-    queryKey: ['/api/organization-settings'],
+    queryKey: ['/api/organization-settings', currentOrganization?.id],
+    enabled: !!currentOrganization?.id,
+    queryFn: async () => {
+      const response = await fetch(`/api/organization-settings/${currentOrganization!.id}`, {
+        headers: {
+          "X-Organization-Id": currentOrganization!.id,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error("Failed to fetch organization settings");
+      return response.json();
+    },
   });
 
   // Get recipients for the select dropdown
@@ -96,7 +111,10 @@ export function EditMailItemDialog({ mailItem, isOpen, onClose }: EditMailItemDi
     editMutation.mutate(data);
   };
 
-  const packageTypes = settings?.packageTypes || [
+  const packageTypes = settings?.packageTypes?.map((type: string) => ({
+    value: type,
+    label: type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+  })) || [
     { value: "letter", label: "Letter" },
     { value: "package", label: "Package" },
     { value: "certified", label: "Certified Mail" },

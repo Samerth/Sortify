@@ -335,7 +335,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Organization Settings routes
   app.get('/api/organization-settings/:organizationId', isAuthenticated, withOrganization, async (req: any, res) => {
     try {
-      const settings = await storage.getOrganizationSettings(req.params.organizationId);
+      let settings = await storage.getOrganizationSettings(req.params.organizationId);
+      
+      // If no settings exist, create default ones
+      if (!settings) {
+        const defaultSettings = {
+          organizationId: req.params.organizationId,
+          packageTypes: ["package", "letter", "certified_mail", "express", "fragile"],
+          packageSizes: ["small", "medium", "large", "extra_large"],
+          courierCompanies: ["FedEx", "UPS", "DHL", "USPS", "Amazon", "Other"],
+          customStatuses: ["pending", "notified", "delivered", "returned"],
+          allowEditAfterDelivery: false,
+          requirePhotoUpload: false,
+          autoNotifyRecipients: true,
+        };
+        settings = await storage.upsertOrganizationSettings(defaultSettings);
+      }
+      
       res.json(settings);
     } catch (error) {
       console.error("Error fetching organization settings:", error);

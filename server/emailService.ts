@@ -23,9 +23,9 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
     const baseUrl = params.appUrl.includes('replit.dev') ? 'https://sortifyapp.com' : params.appUrl;
     const invitationUrl = `${baseUrl}/auth?invitation=${params.invitationToken}`;
     
+    // Let SendGrid use its configured default sender instead of hardcoding
     const emailContent = {
       to: params.to,
-      from: 'samerth.pathak@codsphere.ca',
       subject: `You're invited to join ${params.organizationName} on Sortify`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

@@ -166,12 +166,23 @@ export default function Recipients() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingRecipient(null);
-    form.reset();
+    form.reset({
+      organizationId: currentOrganization?.id || "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      unit: "",
+      department: "",
+      recipientType: "guest",
+      isActive: true,
+    });
   };
 
   const handleEditRecipient = (recipient: Recipient) => {
     setEditingRecipient(recipient);
     form.reset({
+      organizationId: currentOrganization?.id || "",
       firstName: recipient.firstName,
       lastName: recipient.lastName,
       email: recipient.email || "",

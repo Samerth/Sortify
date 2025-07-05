@@ -9,6 +9,13 @@ console.log('🔑 SendGrid API Key loaded:', process.env.SENDGRID_API_KEY?.subst
 const mailService = new MailService();
 mailService.setApiKey(process.env.SENDGRID_API_KEY);
 
+// Use verified sender address or fall back to a default
+const VERIFIED_SENDER = process.env.SENDGRID_VERIFIED_SENDER || 'samerth.pathak@codsphere.ca';
+
+console.log('📧 Email service initialized with sender:', VERIFIED_SENDER);
+console.log('💡 To fix sender verification issues, ensure this email is verified in SendGrid dashboard');
+console.log('🔗 Verify sender at: https://app.sendgrid.com/settings/sender_auth');
+
 interface InvitationEmailParams {
   to: string;
   organizationName: string;
@@ -25,7 +32,7 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
     
     const emailContent = {
       to: params.to,
-      from: 'samerth.pathak@codsphere.ca',
+      from: VERIFIED_SENDER,
       subject: `You're invited to join ${params.organizationName} on Sortify`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -88,6 +95,16 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
     console.error('Error message:', error.message);
     if (error.response?.body?.errors) {
       console.error('SendGrid error details:', error.response.body.errors);
+      
+      // Check for sender verification issues
+      const senderErrors = error.response.body.errors.filter((err: any) => 
+        err.field === 'from' || err.message?.includes('Sender Identity')
+      );
+      if (senderErrors.length > 0) {
+        console.error('⚠️ SENDER VERIFICATION ISSUE: The sender address may not be verified in SendGrid');
+        console.error('📧 Current sender:', VERIFIED_SENDER);
+        console.error('💡 Check SendGrid dashboard for verified senders at: https://app.sendgrid.com/settings/sender_auth');
+      }
     }
     if (error.response?.body) {
       console.error('Full SendGrid response body:', error.response.body);
@@ -100,7 +117,7 @@ export async function sendWelcomeEmail(email: string, name: string, organization
   try {
     const emailContent = {
       to: email,
-      from: 'samerth.pathak@codsphere.ca',
+      from: VERIFIED_SENDER,
       subject: `Welcome to ${organizationName} on Sortify!`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -177,7 +194,7 @@ export async function sendMailNotificationEmail(params: MailNotificationParams):
   try {
     const emailContent = {
       to: params.to,
-      from: 'samerth.pathak@codsphere.ca',
+      from: VERIFIED_SENDER,
       subject: `Mail Notification - ${params.mailType} has arrived`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -264,7 +281,7 @@ export async function sendPasswordResetEmail(params: PasswordResetEmailParams): 
   try {
     const emailContent = {
       to,
-      from: 'noreply@sortifyapp.com',
+      from: VERIFIED_SENDER,
       subject: '🔑 Reset Your Sortify Password',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

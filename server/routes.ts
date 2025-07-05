@@ -312,10 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!emailSent) {
         // If email fails, clean up the invitation
         await storage.deleteInvitation(invitation.id);
-        return res.status(500).json({ 
-          message: 'Failed to send invitation email. This may be due to email service configuration. Please contact your administrator.',
-          details: 'Check SendGrid sender verification settings.'
-        });
+        return res.status(500).json({ message: 'Failed to send invitation email. Please try again.' });
       }
 
       res.status(200).json({ 

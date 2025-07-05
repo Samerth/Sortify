@@ -23,9 +23,9 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
     const baseUrl = params.appUrl.includes('replit.dev') ? 'https://sortifyapp.com' : params.appUrl;
     const invitationUrl = `${baseUrl}/auth?invitation=${params.invitationToken}`;
     
-    // Let SendGrid use its configured default sender instead of hardcoding
     const emailContent = {
       to: params.to,
+      from: 'signup@sortifyapp.com',
       subject: `You're invited to join ${params.organizationName} on Sortify`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -101,7 +101,7 @@ export async function sendWelcomeEmail(email: string, name: string, organization
   try {
     const emailContent = {
       to: email,
-      from: 'samerth.pathak@codsphere.ca',
+      from: 'signup@sortifyapp.com',
       subject: `Welcome to ${organizationName} on Sortify!`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -178,7 +178,7 @@ export async function sendMailNotificationEmail(params: MailNotificationParams):
   try {
     const emailContent = {
       to: params.to,
-      from: 'samerth.pathak@codsphere.ca',
+      from: 'signup@sortifyapp.com',
       subject: `Mail Notification - ${params.mailType} has arrived`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -265,7 +265,7 @@ export async function sendPasswordResetEmail(params: PasswordResetEmailParams): 
   try {
     const emailContent = {
       to,
-      from: 'samerth.pathak@codsphere.ca',
+      from: 'signup@sortifyapp.com',
       subject: '🔑 Reset Your Sortify Password',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

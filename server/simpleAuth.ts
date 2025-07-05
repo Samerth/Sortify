@@ -112,6 +112,12 @@ export async function setupAuth(app: Express) {
         return res.status(400).json({ message: "Username already exists" });
       }
 
+      // Check if email already exists
+      const existingEmailUser = await storage.getUserByEmail(email);
+      if (existingEmailUser) {
+        return res.status(400).json({ message: "Email address is already registered with an organization. Please use a different email or contact your administrator." });
+      }
+
       // Check if there's an invitation token
       let invitation = null;
       if (invitationToken) {

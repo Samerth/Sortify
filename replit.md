@@ -146,6 +146,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 5, 2025 - Email & User Experience Fixes
+- **Team Member Invitation Emails Fixed**: Updated all email functions to use correct verified SendGrid sender address (`signup@sortifyapp.com`)
+- **Edit Recipient Dialog Fixed**: Resolved form validation issue by ensuring organizationId is properly included when editing recipients
+- **Improved Registration Error Messages**: Added specific error handling for existing email addresses during registration, providing clear guidance instead of generic "registration failed" message
+
 ### January 2, 2025 - Complete User Limit Synchronization & Billing System Finalization
 - **Complete Stripe Integration**: Fully implemented Stripe Payment Intents for subscription billing
 - **Final Pricing Structure**: Revised all billing components with simplified user limits:

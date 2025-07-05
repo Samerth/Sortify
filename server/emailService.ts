@@ -78,6 +78,7 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
       `
     };
 
+    console.log('📧 DEBUG: Email content being sent:', JSON.stringify(emailContent, null, 2));
     const response = await mailService.send(emailContent);
     console.log(`Invitation email sent successfully to ${params.to}`);
     console.log('SendGrid response:', response[0].statusCode, response[0].headers);
@@ -264,7 +265,7 @@ export async function sendPasswordResetEmail(params: PasswordResetEmailParams): 
   try {
     const emailContent = {
       to,
-      from: 'noreply@sortifyapp.com',
+      from: 'samerth.pathak@codsphere.ca',
       subject: '🔑 Reset Your Sortify Password',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

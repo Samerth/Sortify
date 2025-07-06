@@ -298,6 +298,30 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userInvitations.id, id));
   }
 
+  async getPendingInvitations(organizationId: string): Promise<UserInvitation[]> {
+    const invitations = await db
+      .select()
+      .from(userInvitations)
+      .where(
+        and(
+          eq(userInvitations.organizationId, organizationId),
+          sql`${userInvitations.usedAt} IS NULL`,
+          sql`${userInvitations.expiresAt} > NOW()`
+        )
+      )
+      .orderBy(userInvitations.createdAt);
+    return invitations;
+  }
+
+  async updateInvitationToken(id: string, token: string, expiresAt: Date): Promise<UserInvitation> {
+    const [invitation] = await db
+      .update(userInvitations)
+      .set({ token, expiresAt })
+      .where(eq(userInvitations.id, id))
+      .returning();
+    return invitation;
+  }
+
   // Organization operations
   async createOrganization(data: InsertOrganization): Promise<Organization> {
     const [organization] = await db

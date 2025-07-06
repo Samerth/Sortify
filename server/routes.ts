@@ -332,6 +332,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get pending invitations for organization
+  app.get('/api/user-invitations', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const organizationId = req.organizationId;
+      const userId = req.user.id;
+      
+      // Check if user has admin role
+      const member = await storage.getOrganizationMember(organizationId, userId);
+      if (!member || member.role !== 'admin') {
+        return res.status(403).json({ message: 'Only admins can view invitations' });
+      }
+      
+      const invitations = await storage.getPendingInvitations(organizationId);
+      res.json(invitations);
+    } catch (error) {
+      console.error('Error fetching invitations:', error);
+      res.status(500).json({ message: 'Failed to fetch invitations' });
+    }
+  });
+
+  // Resend invitation
+  app.post('/api/user-invitations/:id/resend', isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const invitationId = req.params.id;
+      const organizationId = req.organizationId;
+      const userId = req.user.id;
+      
+      // Check if user has admin role
+      const member = await storage.getOrganizationMember(organizationId, userId);
+      if (!member || member.role !== 'admin') {
+        return res.status(403).json({ message: 'Only admins can resend invitations' });
+      }
+      
+      // Get the existing invitation
+      const invitations = await storage.getPendingInvitations(organizationId);
+      const invitation = invitations.find(inv => inv.id === invitationId);
+      
+      if (!invitation) {
+        return res.status(404).json({ message: 'Invitation not found or already used' });
+      }
+      
+      // Generate new token and extend expiration
+      const newToken = crypto.randomUUID();
+      const newExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      
+      // Update invitation with new token
+      const updatedInvitation = await storage.updateInvitationToken(invitationId, newToken, newExpiresAt);
+      
+      // Get organization and inviter details for email
+      const organization = await storage.getOrganization(organizationId);
+      const inviter = await storage.getUser(userId);
+      
+      // Send invitation email
+      const appUrl = req.headers.host?.includes('replit.dev') 
+        ? `https://${req.headers.host}` 
+        : 'https://sortifyapp.com';
+      
+      const emailSent = await sendInvitationEmail({
+        to: invitation.email,
+        organizationName: organization?.name || 'Unknown Organization',
+        inviterName: inviter?.email?.split('@')[0] || 'Team Member',
+        invitationToken: newToken,
+        appUrl
+      });
+      
+      if (!emailSent) {
+        return res.status(500).json({ message: 'Failed to resend invitation email. Please try again.' });
+      }
+      
+      res.json({ 
+        success: true,
+        message: 'Invitation resent successfully',
+        invitation: {
+          id: updatedInvitation.id,
+          email: updatedInvitation.email,
+          role: updatedInvitation.role,
+          expiresAt: updatedInvitation.expiresAt
+        }
+      });
+    } catch (error) {
+      console.error('Error resending invitation:', error);
+      res.status(500).json({ message: 'Failed to resend invitation' });
+    }
+  });
+
   // Organization Settings routes
   app.get('/api/organization-settings/:organizationId', isAuthenticated, withOrganization, async (req: any, res) => {
     try {

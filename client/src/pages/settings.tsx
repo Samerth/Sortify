@@ -386,6 +386,12 @@ export default function Settings() {
   const userRole = currentUserMember?.role || 'member';
   const isAdmin = userRole === 'admin';
 
+  // Fetch pending invitations
+  const { data: pendingInvitations = [] } = useQuery({
+    queryKey: ['/api/user-invitations'],
+    enabled: !!currentOrganization?.id && isAdmin,
+  });
+
   // Set default tab based on user role
   React.useEffect(() => {
     if (!isAdmin && activeTab === "organization") {
@@ -419,6 +425,28 @@ export default function Settings() {
     onError: (error: any) => {
       toast({
         title: "Failed to send invitation",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Resend invitation mutation
+  const resendInvitationMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      const response = await apiRequest("POST", `/api/user-invitations/${invitationId}/resend`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Invitation resent!",
+        description: "A new invitation email has been sent.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/user-invitations'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to resend invitation",
         description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
@@ -1530,6 +1558,54 @@ export default function Settings() {
                       </div>
                     </div>
 
+                    {/* Pending Invitations Section */}
+                    {isAdmin && Array.isArray(pendingInvitations) && pendingInvitations.length > 0 && (
+                      <div className="mt-8">
+                        <h4 className="text-base font-medium text-gray-900 mb-4">Pending Invitations</h4>
+                        <div className="border rounded-lg">
+                          <div className="border-b bg-gray-50">
+                            <div className="px-4 py-3">
+                              <div className="grid grid-cols-4 text-sm font-medium text-gray-700">
+                                <div>Email</div>
+                                <div>Role</div>
+                                <div>Expires</div>
+                                <div>Actions</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="divide-y">
+                            {pendingInvitations.map((invitation: any) => (
+                              <div key={invitation.id} className="px-4 py-3">
+                                <div className="grid grid-cols-4 text-sm">
+                                  <div className="font-medium text-gray-900">{invitation.email}</div>
+                                  <div>
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                      invitation.role === 'admin' 
+                                        ? 'bg-blue-100 text-blue-800' 
+                                        : 'bg-gray-100 text-gray-800'
+                                    }`}>
+                                      {invitation.role === 'admin' ? 'Admin' : 'Member'}
+                                    </span>
+                                  </div>
+                                  <div className="text-gray-600 text-xs">
+                                    {new Date(invitation.expiresAt).toLocaleDateString()}
+                                  </div>
+                                  <div>
+                                    <button 
+                                      onClick={() => resendInvitationMutation.mutate(invitation.id)}
+                                      disabled={resendInvitationMutation.isPending}
+                                      className="text-blue-600 text-xs hover:text-blue-800 disabled:opacity-50"
+                                    >
+                                      {resendInvitationMutation.isPending ? 'Sending...' : 'Resend'}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                   </CardContent>
                 </Card>

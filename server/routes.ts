@@ -1109,10 +1109,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (paymentIntent.status === 'succeeded') {
         const { planType, userCount, billingCycle } = paymentIntent.metadata;
 
-        // Update organization with new plan details
+        // Get plan pricing to set correct limits
+        const pricing = TrialManager.getPlanPricing();
+        const selectedPlan = pricing[planType as keyof typeof pricing];
+
+        if (!selectedPlan) {
+          return res.status(400).json({ error: 'Invalid plan type' });
+        }
+
+        // Update organization with new plan details using correct plan limits
         await storage.updateOrganizationBilling(organizationId, {
           planType,
-          maxUsers: parseInt(userCount),
+          maxUsers: selectedPlan.maxUsers,
           subscriptionStatus: 'active',
           billingCycle,
           stripePaymentIntentId: paymentIntentId,
@@ -1120,10 +1128,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           subscriptionEndDate: new Date(Date.now() + (billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000)
         });
 
+        // Also update package limits separately
+        await storage.updateOrganization(organizationId, {
+          maxPackagesPerMonth: selectedPlan.maxPackages
+        });
+
         console.log('Organization billing updated:', {
           organizationId,
           planType,
           userCount,
+          maxUsers: selectedPlan.maxUsers,
+          maxPackagesPerMonth: selectedPlan.maxPackages,
           paymentIntentId
         });
 

@@ -16,6 +16,7 @@ export default function AuthPage() {
   const [location] = useLocation();
   const [invitationToken, setInvitationToken] = useState<string | null>(null);
   const [invitationData, setInvitationData] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<string>("login");
   
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [registerForm, setRegisterForm] = useState({
@@ -26,12 +27,13 @@ export default function AuthPage() {
     lastName: "",
   });
 
-  // Extract invitation token from URL
+  // Extract invitation token from URL and set active tab
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('invitation') || urlParams.get('token');
     if (token) {
       setInvitationToken(token);
+      setActiveTab("register"); // Automatically switch to register tab for invitations
     }
   }, [location]);
 
@@ -201,7 +203,7 @@ export default function AuthPage() {
               )}
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue={invitationToken ? "register" : "login"} className="w-full">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Login</TabsTrigger>
                   <TabsTrigger value="register">Register</TabsTrigger>
@@ -251,10 +253,7 @@ export default function AuthPage() {
                         Don't have an account?{" "}
                         <button
                           type="button"
-                          onClick={() => {
-                            const registerTab = document.querySelector('[value="register"]') as HTMLElement;
-                            registerTab?.click();
-                          }}
+                          onClick={() => setActiveTab("register")}
                           className="text-blue-600 hover:text-blue-800 hover:underline"
                         >
                           Create one now

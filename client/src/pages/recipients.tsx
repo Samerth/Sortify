@@ -269,6 +269,18 @@ export default function Recipients() {
                   className="bg-primary hover:bg-primary-dark"
                   onClick={() => {
                     console.log("Dialog trigger clicked! Opening dialog...");
+                    setEditingRecipient(null);
+                    form.reset({
+                      organizationId: currentOrganization?.id || "",
+                      firstName: "",
+                      lastName: "",
+                      email: "",
+                      phone: "",
+                      unit: "",
+                      department: "",
+                      recipientType: "guest",
+                      isActive: true,
+                    });
                     setIsDialogOpen(true);
                   }}
                 >

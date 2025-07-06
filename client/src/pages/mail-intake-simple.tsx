@@ -495,12 +495,22 @@ export default function MailIntake() {
                   className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Select courier</option>
-                  <option value="fedex">FedEx</option>
-                  <option value="ups">UPS</option>
-                  <option value="dhl">DHL</option>
-                  <option value="usps">USPS</option>
-                  <option value="amazon">Amazon Delivery</option>
-                  <option value="other">Other</option>
+                  {orgSettings?.courierCompanies?.length > 0 ? (
+                    orgSettings.courierCompanies.map((courier: string) => (
+                      <option key={courier} value={courier}>
+                        {courier}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="fedex">FedEx</option>
+                      <option value="ups">UPS</option>
+                      <option value="dhl">DHL</option>
+                      <option value="usps">USPS</option>
+                      <option value="amazon">Amazon Delivery</option>
+                      <option value="other">Other</option>
+                    </>
+                  )}
                 </select>
               </div>
 

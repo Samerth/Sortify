@@ -85,7 +85,9 @@ export default function SettingsCustomization() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate all related queries to ensure UI updates everywhere
       queryClient.invalidateQueries({ queryKey: ['/api/organization-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/organization-settings', currentOrganization!.id] });
       toast({
         title: "Settings Updated",
         description: "Your customization settings have been saved.",

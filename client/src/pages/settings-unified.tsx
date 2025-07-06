@@ -310,7 +310,9 @@ export default function SettingsUnified() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate all related queries to ensure UI updates everywhere
       queryClient.invalidateQueries({ queryKey: ['/api/organization-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/organization-settings', currentOrganization!.id] });
       toast({
         title: "Settings Updated",
         description: "Your preferences have been saved.",

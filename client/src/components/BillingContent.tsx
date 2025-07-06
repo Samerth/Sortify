@@ -383,7 +383,11 @@ export default function BillingContent() {
                       variant={key === 'professional' ? 'default' : 'outline'}
                       onClick={() => {
                         setSelectedPlan(key);
-                        setSelectedUsers(plan.minUsers);
+                        // Default to a sensible number for each plan
+                        const defaultUsers = key === 'starter' ? 3 : 
+                                            key === 'professional' ? 5 : 
+                                            key === 'enterprise' ? 10 : plan.minUsers;
+                        setSelectedUsers(defaultUsers);
                         setShowUpgradeDialog(true);
                       }}
                       disabled={billingInfo.organization.planType === key}

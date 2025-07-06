@@ -150,6 +150,9 @@ Preferred communication style: Simple, everyday language.
 - **Team Member Invitation Emails Fixed**: Updated all email functions to use correct verified SendGrid sender address (`signup@sortifyapp.com`)
 - **Edit Recipient Dialog Fixed**: Resolved form validation issue by ensuring organizationId is properly included when editing recipients
 - **Improved Registration Error Messages**: Added specific error handling for existing email addresses during registration, providing clear guidance instead of generic "registration failed" message
+- **Fixed Password Reset HTTPS URLs**: Updated password reset emails to generate proper HTTPS links for Replit domains, resolving "connection is not private" errors
+- **Fixed License Limit Synchronization**: Corrected billing confirmation to set organization maxUsers to plan limits instead of user count (Starter: 3 users, Professional: 10 users, Enterprise: unlimited)
+- **Fixed Plan Selection Defaults**: Updated billing interface to show appropriate default user counts when selecting plans (Starter defaults to 3 users instead of 1)
 
 ### January 2, 2025 - Complete User Limit Synchronization & Billing System Finalization
 - **Complete Stripe Integration**: Fully implemented Stripe Payment Intents for subscription billing

@@ -881,8 +881,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const user = await storage.getUserByEmail(email);
       if (!user) {
-        // Don't reveal if user exists or not for security
-        return res.json({ message: 'If an account exists with this email, you will receive a password reset link.' });
+        // Return specific error for non-registered emails
+        return res.status(400).json({ message: 'No account found with this email address. Please check your email or register for a new account.' });
       }
 
       // Clean up expired tokens first
@@ -900,7 +900,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Send password reset email
-      const appUrl = req.protocol + '://' + req.get('host');
+      // Use HTTPS for Replit deployment - Replit always uses HTTPS for external access
+      const host = req.get('host');
+      const appUrl = host?.includes('replit.') ? `https://${host}` : `${req.protocol}://${host}`;
       const emailSent = await sendPasswordResetEmail({
         to: email,
         name: user.firstName || user.id,

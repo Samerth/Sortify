@@ -172,6 +172,19 @@ Preferred communication style: Simple, everyday language.
 - **Payment Architecture**: Using Stripe Payment Intents (one-time payments) for full billing control
 - **Database Consistency**: All organization records now have correct maxUsers and package limits
 
+### January 7, 2025 - Invitation Management & Email Fixes
+- **Enhanced Invitation System**: Added comprehensive pending invitation management:
+  - View pending invitations in Members & Licenses tab (admin only)
+  - Resend invitation functionality with new tokens and extended expiration
+  - Proper duplicate invitation prevention with clear error messages
+  - Backend APIs for fetching and resending invitations
+- **Fixed Email URL Issues**: Resolved SendGrid redirect problems:
+  - Disabled click tracking to prevent external redirect URLs
+  - Password reset emails now use direct application URLs
+  - All email types (invitations, password resets, notifications) use production domain
+  - Fixed "connection is not private" errors from wrapped tracking URLs
+- **Improved User Experience**: Enhanced invitation workflow with real-time updates and proper admin controls
+
 ### January 2, 2025 - Enhanced Unified Settings System
 - **Expanded Settings Interface**: Added comprehensive 6-tab settings system:
   - Organization: Company profile and contact information

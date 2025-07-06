@@ -27,6 +27,12 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
       to: params.to,
       from: 'signup@sortifyapp.com',
       subject: `You're invited to join ${params.organizationName} on Sortify`,
+      // Disable click tracking to prevent SendGrid redirect URLs
+      trackingSettings: {
+        clickTracking: {
+          enable: false,
+        },
+      },
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -103,6 +109,12 @@ export async function sendWelcomeEmail(email: string, name: string, organization
       to: email,
       from: 'signup@sortifyapp.com',
       subject: `Welcome to ${organizationName} on Sortify!`,
+      // Disable click tracking to prevent SendGrid redirect URLs
+      trackingSettings: {
+        clickTracking: {
+          enable: false,
+        },
+      },
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -180,6 +192,12 @@ export async function sendMailNotificationEmail(params: MailNotificationParams):
       to: params.to,
       from: 'signup@sortifyapp.com',
       subject: `Mail Notification - ${params.mailType} has arrived`,
+      // Disable click tracking to prevent SendGrid redirect URLs
+      trackingSettings: {
+        clickTracking: {
+          enable: false,
+        },
+      },
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -260,13 +278,21 @@ interface PasswordResetEmailParams {
 
 export async function sendPasswordResetEmail(params: PasswordResetEmailParams): Promise<boolean> {
   const { to, name, resetToken, appUrl } = params;
-  const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
+  // Always use the production domain for password resets to avoid redirect issues
+  const baseUrl = appUrl.includes('replit.dev') ? 'https://sortifyapp.com' : appUrl;
+  const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
   try {
     const emailContent = {
       to,
       from: 'signup@sortifyapp.com',
       subject: '🔑 Reset Your Sortify Password',
+      // Disable click tracking to prevent SendGrid redirect URLs
+      trackingSettings: {
+        clickTracking: {
+          enable: false,
+        },
+      },
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">

@@ -26,6 +26,7 @@ const navigationItems = [
 
 const adminItems = [
   { path: "/settings", label: "Settings", icon: Settings },
+  { path: "/subscription-management", label: "Subscription Management", icon: Building },
 ];
 
 export default function Sidebar() {

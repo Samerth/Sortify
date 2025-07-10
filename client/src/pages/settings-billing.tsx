@@ -106,11 +106,19 @@ export default function BillingSettings() {
                 onClick={() => {
                   fetch('/api/billing/create-portal-session', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ customerId: currentOrganization.stripeCustomerId })
+                    headers: { 
+                      'Content-Type': 'application/json',
+                      'x-organization-id': currentOrganization.id 
+                    }
                   })
                   .then(res => res.json())
-                  .then(data => window.open(data.url, '_blank'))
+                  .then(data => {
+                    if (data.url) {
+                      window.open(data.url, '_blank');
+                    } else {
+                      console.error('No portal URL received');
+                    }
+                  })
                   .catch(error => console.error('Error:', error));
                 }}
               >

@@ -1311,6 +1311,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       switch (event.type) {
+        case 'checkout.session.completed':
+          await handleCheckoutSessionCompleted(event.data.object);
+          break;
         case 'customer.subscription.created':
         case 'customer.subscription.updated':
           await handleSubscriptionUpdate(event.data.object);
@@ -1336,14 +1339,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Helper functions for webhook handling
+  async function handleCheckoutSessionCompleted(session: any) {
+    console.log('Processing checkout session completed:', session.id);
+    
+    const organizationId = session.client_reference_id || session.metadata?.organizationId;
+    if (!organizationId) {
+      console.error('No organization ID found in checkout session:', session.id);
+      return;
+    }
+
+    // Update organization with Stripe customer ID
+    try {
+      await storage.updateOrganizationBilling(organizationId, {
+        stripeCustomerId: session.customer,
+      });
+      
+      console.log('Updated organization', organizationId, 'with customer ID:', session.customer);
+    } catch (error) {
+      console.error('Error updating organization with customer ID:', error);
+    }
+  }
+
   async function handleSubscriptionUpdate(subscription: any) {
     console.log('Processing subscription update:', subscription.id);
     
     // Find organization by Stripe customer ID
-    const organization = await storage.findOrganizationByStripeCustomerId(subscription.customer);
+    let organization = await storage.findOrganizationByStripeCustomerId(subscription.customer);
     if (!organization) {
       console.error('Organization not found for customer:', subscription.customer);
-      return;
+      // Try to find by subscription metadata
+      const organizationId = subscription.metadata?.organizationId;
+      if (organizationId) {
+        try {
+          organization = await storage.getOrganization(organizationId);
+          if (organization) {
+            // Update organization with customer ID
+            await storage.updateOrganizationBilling(organizationId, {
+              stripeCustomerId: subscription.customer,
+            });
+            console.log('Updated organization', organizationId, 'with customer ID from subscription metadata');
+          }
+        } catch (error) {
+          console.error('Error finding organization by metadata:', error);
+        }
+      }
+      
+      if (!organization) {
+        console.error('Could not find organization for subscription:', subscription.id);
+        return;
+      }
     }
 
     // Extract license quantity from subscription items

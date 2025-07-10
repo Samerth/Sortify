@@ -127,10 +127,10 @@ export default function BillingSettings() {
                   .then(data => {
                     if (data.url) {
                       window.open(data.url, '_blank');
-                    } else if (data.message) {
-                      alert(data.message);
                     } else {
-                      alert(data.error || 'Unable to open customer portal.');
+                      // Show the appropriate message for test environment
+                      const message = data.message || data.error || 'Unable to open customer portal.';
+                      alert(message);
                     }
                   })
                   .catch(error => {

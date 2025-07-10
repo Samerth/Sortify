@@ -284,17 +284,33 @@ export default function BillingContent() {
             and view billing history through Stripe's customer portal.
           </p>
           
-          <Button 
-            variant="outline" 
-            onClick={handleManageSubscription}
-            disabled={isManaging}
-          >
-            {isManaging ? "Loading..." : "Manage Subscription"}
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={handleManageSubscription}
+              disabled={isManaging}
+            >
+              {isManaging ? "Loading..." : "Manage Subscription"}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={handleManageSubscription}
+              disabled={isManaging}
+            >
+              View Invoices
+            </Button>
+          </div>
           
-          <div className="flex items-center gap-2 text-sm text-blue-600">
-            <Star className="w-4 h-4" />
-            <span>All plans include automated recurring billing and instant activation</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-blue-600">
+              <Star className="w-4 h-4" />
+              <span>All plans include automated recurring billing and instant activation</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-green-600">
+              <CheckCircle className="w-4 h-4" />
+              <span>Invoices are automatically sent to your email after each payment</span>
+            </div>
           </div>
         </CardContent>
       </Card>

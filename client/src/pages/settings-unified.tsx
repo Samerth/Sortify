@@ -37,6 +37,7 @@ import {
   MapPin
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { Link } from "wouter";
 import { 
   Dialog,
   DialogContent,
@@ -986,6 +987,54 @@ export default function SettingsUnified() {
               </CardContent>
             </Card>
 
+            {/* License Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="w-4 h-4" />
+                  License Information
+                </CardTitle>
+                <p className="text-sm text-gray-600">Current subscription and license details</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-blue-600 font-medium">Current Plan</p>
+                      <p className="text-lg font-bold text-blue-900">
+                        {organization?.planType || 'No Plan'}
+                      </p>
+                    </div>
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <p className="text-sm text-green-600 font-medium">Active Licenses</p>
+                      <p className="text-lg font-bold text-green-900">
+                        {organization?.maxUsers || 0}
+                      </p>
+                    </div>
+                    <div className="text-center p-4 bg-purple-50 rounded-lg">
+                      <p className="text-sm text-purple-600 font-medium">Team Members</p>
+                      <p className="text-lg font-bold text-purple-900">
+                        {organizationMembers.length}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <Link href="/settings-billing">
+                      <Button variant="default" className="flex-1">
+                        Manage Subscription
+                      </Button>
+                    </Link>
+                    <Link href="/settings-billing">
+                      <Button variant="outline" className="flex-1">
+                        Upgrade Plan
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Team Members */}
             <Card>
               <CardHeader>
@@ -993,13 +1042,13 @@ export default function SettingsUnified() {
                   <Users className="w-4 h-4" />
                   Team Members
                 </CardTitle>
-                <p className="text-sm text-gray-600">Manage team members and their roles</p>
+                <p className="text-sm text-gray-600">Unlimited users per license - manage team members and roles</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">
-                      License-based pricing: Unlimited users per license
+                      Add unlimited team members with your current licenses
                     </p>
                     <Button className="flex items-center gap-2">
                       <UserPlus className="w-4 h-4" />

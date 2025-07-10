@@ -9,6 +9,7 @@ import OrganizationSetup from "@/components/OrganizationSetup";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import Landing from "@/pages/landing";
+import Homepage from "@/pages/homepage";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import ForgotPasswordPage from "@/pages/forgot-password";
@@ -92,6 +93,7 @@ function Router() {
           <Route path="/register" component={Register} />
           <Route path="/forgot-password" component={ForgotPasswordPage} />
           <Route path="/reset-password" component={ResetPasswordPage} />
+          <Route path="/homepage" component={Homepage} />
           <Route path="/" component={Landing} />
         </>
       )}

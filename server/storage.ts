@@ -350,24 +350,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserOrganizations(userId: string): Promise<(Organization & { role: string })[]> {
+    // Use a simplified approach - select all organization fields and join role
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        address: organizations.address,
-        contactName: organizations.contactName,
-        contactEmail: organizations.contactEmail,
-        contactPhone: organizations.contactPhone,
-        logoUrl: organizations.logoUrl,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-        role: organizationMembers.role,
-      })
+      .select()
       .from(organizations)
       .innerJoin(organizationMembers, eq(organizations.id, organizationMembers.organizationId))
       .where(eq(organizationMembers.userId, userId));
     
-    return result;
+    // Transform the result to include role at the top level
+    return result.map(row => ({
+      ...row.organizations,
+      role: row.organization_members.role
+    }));
   }
 
   async updateOrganization(id: string, data: Partial<InsertOrganization>): Promise<Organization> {

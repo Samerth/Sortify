@@ -35,19 +35,13 @@ function StripePricingTableComponent() {
 export default function BillingSettings() {
   const { currentOrganization } = useOrganization();
   
-  // Force refresh organization data to get latest subscription status
-  const { data: refreshedOrg, isLoading } = useQuery({
-    queryKey: [`/api/organizations/${currentOrganization?.id}`],
-    enabled: !!currentOrganization?.id,
-  });
-
-  // Use refreshed organization data if available, otherwise fallback to context
-  const organization = refreshedOrg || currentOrganization;
+  // Use the organization from context - it should include all subscription data
+  const organization = currentOrganization;
   
   console.log('Billing Debug - currentOrganization:', currentOrganization);
-  console.log('Billing Debug - refreshedOrg:', refreshedOrg);
-  console.log('Billing Debug - final organization:', organization);
-  console.log('Billing Debug - has subscription ID:', !!organization?.stripeSubscriptionId);
+  console.log('Billing Debug - stripeSubscriptionId:', organization?.stripeSubscriptionId);
+  console.log('Billing Debug - planType:', organization?.planType);
+  console.log('Billing Debug - subscriptionStatus:', organization?.subscriptionStatus);
 
   return (
     <div className="space-y-6">

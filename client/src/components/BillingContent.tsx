@@ -16,7 +16,7 @@ const planFeatures = {
     description: "Perfect for small teams",
     maxPackages: 1000,
     features: [
-      "Pay per license (unlimited users)",
+      "One license per user",
       "1,000 packages/month",
       "Email notifications",
       "Basic analytics",
@@ -30,7 +30,7 @@ const planFeatures = {
     description: "Great for growing organizations",
     maxPackages: "Unlimited",
     features: [
-      "Pay per license (unlimited users)",
+      "One license per user",
       "Unlimited packages",
       "Email & SMS notifications",
       "Advanced analytics",
@@ -45,7 +45,7 @@ const planFeatures = {
     description: "For large organizations",
     maxPackages: "Unlimited",
     features: [
-      "Pay per license (unlimited users)",
+      "One license per user",
       "Unlimited packages",
       "White-label branding",
       "Custom integrations",
@@ -159,7 +159,7 @@ function CustomPricingButtons() {
                   </Button>
                 </div>
                 <span className="text-sm text-gray-600">
-                  (Unlimited users per license)
+                  (One license per user)
                 </span>
               </div>
               
@@ -218,7 +218,7 @@ export default function BillingContent() {
         <div>
           <h2 className="text-2xl font-bold">Billing & Subscriptions</h2>
           <p className="text-gray-600">
-            License-based pricing with unlimited users per license
+            License-based pricing - one license per user
           </p>
         </div>
         {currentOrganization?.planType && (
@@ -266,7 +266,7 @@ export default function BillingContent() {
         <CardHeader>
           <CardTitle>Subscribe to Your Plan</CardTitle>
           <p className="text-sm text-gray-600">
-            Choose your license plan below. Each plan includes unlimited users per license with automated monthly billing.
+            Choose your license plan below. Each license supports one user with automated monthly billing.
           </p>
         </CardHeader>
         <CardContent>

@@ -84,7 +84,7 @@ const PRICING_PLANS = [
     price: 25,
     description: 'Perfect for small teams',
     features: [
-      'Unlimited users per license',
+      'One license per user',
       '1,000 packages/month',
       'Basic reporting',
       'Email notifications',
@@ -98,7 +98,7 @@ const PRICING_PLANS = [
     price: 35,
     description: 'Best for growing businesses',
     features: [
-      'Unlimited users per license',
+      'One license per user',
       'Unlimited packages',
       'Advanced reporting & analytics',
       'Email & SMS notifications', 
@@ -113,7 +113,7 @@ const PRICING_PLANS = [
     price: 45,
     description: 'For large organizations',
     features: [
-      'Unlimited users per license',
+      'One license per user',
       'Unlimited packages',
       'Advanced reporting & analytics',
       'Full API access',
@@ -185,7 +185,7 @@ function StripePricingTableComponent() {
     <div className="space-y-4">
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-900">Choose Your License Plan</h3>
-        <p className="text-sm text-gray-600">License-based pricing with unlimited users per license</p>
+        <p className="text-sm text-gray-600">License-based pricing - one license per user</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1042,13 +1042,13 @@ export default function SettingsUnified() {
                   <Users className="w-4 h-4" />
                   Team Members
                 </CardTitle>
-                <p className="text-sm text-gray-600">Unlimited users per license - manage team members and roles</p>
+                <p className="text-sm text-gray-600">One license per user - manage team members and roles</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">
-                      Add unlimited team members with your current licenses
+                      Each team member requires one license
                     </p>
                     <Button className="flex items-center gap-2">
                       <UserPlus className="w-4 h-4" />

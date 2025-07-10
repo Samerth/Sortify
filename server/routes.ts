@@ -256,7 +256,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.log('✅ Admin check passed');
       
-      // License limit checking is now handled by trial middleware
+      // Enforce license limits (one user per license)
+      const organization = await storage.getOrganization(organizationId);
+      const currentMemberCount = await storage.getOrganizationMemberCount(organizationId);
+      const pendingInvitations = await storage.getPendingInvitations(organizationId);
+      
+      const totalPendingUsers = currentMemberCount + pendingInvitations.length;
+      const maxUsers = organization?.maxUsers || 1;
+      
+      console.log('🎫 License check:', { 
+        currentMembers: currentMemberCount, 
+        pendingInvitations: pendingInvitations.length, 
+        totalPending: totalPendingUsers, 
+        maxUsers, 
+        planType: organization?.planType 
+      });
+      
+      if (totalPendingUsers >= maxUsers) {
+        return res.status(400).json({ 
+          message: `License limit reached. You have ${maxUsers} ${maxUsers === 1 ? 'license' : 'licenses'} and ${totalPendingUsers} users (including pending invitations). Purchase additional licenses to invite more users.` 
+        });
+      }
       
       // Check if user already exists or has pending invitation
       const existingUser = await storage.getUserByEmail(email);
@@ -289,7 +309,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send invitation email
       const inviter = await storage.getUser(userId);
-      const organization = await storage.getOrganization(organizationId);
       
       // Use the production domain for invitations
       const appUrl = 'https://sortifyapp.com';
@@ -1327,16 +1346,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return;
     }
 
-    // Update organization with subscription details
+    // Extract license quantity from subscription items
+    const subscriptionItem = subscription.items.data[0];
+    const licenseQuantity = subscriptionItem?.quantity || 1;
+    
+    console.log(`Setting user limit to ${licenseQuantity} based on license quantity (one user per license)`);
+
+    // Update organization with subscription details and enforce license limits
     await storage.updateOrganizationBilling(organization.id, {
       stripeSubscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       subscriptionStartDate: new Date(subscription.current_period_start * 1000),
       subscriptionEndDate: new Date(subscription.current_period_end * 1000),
       planType: subscription.items.data[0]?.price?.lookup_key || 'starter',
+      maxUsers: licenseQuantity, // Enforce one user per license
     });
 
-    console.log('Subscription updated for organization:', organization.id);
+    console.log('Subscription updated for organization:', organization.id, 'with user limit:', licenseQuantity);
   }
 
   async function handleSubscriptionCancellation(subscription: any) {

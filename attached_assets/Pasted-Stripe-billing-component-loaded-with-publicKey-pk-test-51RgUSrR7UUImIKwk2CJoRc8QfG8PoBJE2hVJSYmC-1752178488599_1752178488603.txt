@@ -1,0 +1,24 @@
+Stripe billing component loaded with: {publicKey: 'pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCu…woN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf', userEmail: 'samerth.pathak+new@codsphere.com', orgId: 'e8919fc2-4e36-4379-911f-3eed3a6e78a2'}
+Console.js:61 Stripe pricing table script already loaded
+pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1 Unsafe attempt to initiate navigation for frame with origin 'https://replit.com' from frame with URL 'https://js.stripe.com/v3/pricing-table-app-680854f2773d0eb9e308b584fb6a288353c59648.html?prctbl_id=prctbl_1RjMwbR7UUImIKwkhPMOGqOE&pk=pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf&uuid=e2fc7ad3cd628&lo=undefined&customerEmail=samerth.pathak%2Bnew%40codsphere.com&date=1752178477603&clientReferenceId=e8919fc2-4e36-4379-911f-3eed3a6e78a2&clientSecret=undefined'. The frame attempting navigation of the top-level window is sandboxed, but the flag of 'allow-top-navigation' or 'allow-top-navigation-by-user-activation' is not set.
+
+(anonymous) @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+onClick @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+a @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+u @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+(anonymous) @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+l @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+f @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+c @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+d @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+Ee @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+eo @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+Pe @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+Ie @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+Oe @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+t.unstable_runWithPriority @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+Pt @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+w @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+xe @ pricing-table-app-214b7ceb6455295d93645c987dbf375d.js:1
+s @ 8433-23d21b077308410222b8e754db0b2b3c.js:1Understand this error
+[Violation] Potential permissions policy violation: payment is not allowed in this document.Understand this error

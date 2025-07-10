@@ -1,8 +1,11 @@
-import { useEffect } from "react";
+import { useState } from "react";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { CheckCircle, Users, Package, Zap, Crown, Star } from "lucide-react";
 
 // Plan details to help users understand differences
@@ -53,41 +56,100 @@ const planFeatures = {
   }
 };
 
+// Custom Pricing Component that bypasses iframe issues
+function CustomPricingButtons() {
+  const { user } = useAuth();
+  const { currentOrganization } = useOrganization();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState<string | null>(null);
 
+  const handleSubscribe = async (planId: string) => {
+    if (!currentOrganization?.id) {
+      toast({
+        title: "Error",
+        description: "Please select an organization first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(planId);
+    
+    try {
+      const response = await apiRequest("POST", "/api/billing/create-checkout-session", {
+        planId,
+        customerEmail: user?.email || '',
+      });
+      
+      const { url } = await response.json();
+      window.open(url, '_blank');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create checkout session.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
+  const plans = [
+    { id: 'starter', name: 'Starter - $25/month', recommended: false },
+    { id: 'professional', name: 'Professional - $35/month', recommended: true },
+    { id: 'enterprise', name: 'Enterprise - $45/month', recommended: false }
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {plans.map((plan) => (
+        <Button
+          key={plan.id}
+          variant={plan.recommended ? "default" : "outline"}
+          onClick={() => handleSubscribe(plan.id)}
+          disabled={isLoading !== null}
+          className={`h-16 ${plan.recommended ? 'ring-2 ring-primary' : ''}`}
+        >
+          {isLoading === plan.id ? "Processing..." : `Subscribe to ${plan.name}`}
+          {plan.recommended && <Badge className="ml-2">Popular</Badge>}
+        </Button>
+      ))}
+    </div>
+  );
+}
 
 export default function BillingContent() {
   const { currentOrganization } = useOrganization();
-  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isManaging, setIsManaging] = useState(false);
 
-  useEffect(() => {
-    console.log('Stripe billing component loaded with:', {
-      publicKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY,
-      userEmail: user?.email,
-      orgId: currentOrganization?.id
-    });
+  const handleManageSubscription = async () => {
+    if (!currentOrganization?.stripeCustomerId) {
+      toast({
+        title: "No Active Subscription",
+        description: "Subscribe to a plan first to manage your subscription.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Ensure Stripe script is loaded
-    const loadStripeScript = () => {
-      const existingScript = document.querySelector('script[src="https://js.stripe.com/v3/pricing-table.js"]');
-      if (!existingScript) {
-        console.log('Loading Stripe pricing table script...');
-        const script = document.createElement('script');
-        script.src = 'https://js.stripe.com/v3/pricing-table.js';
-        script.async = true;
-        script.onload = () => {
-          console.log('Stripe pricing table script loaded successfully');
-        };
-        script.onerror = (error) => {
-          console.error('Failed to load Stripe pricing table script:', error);
-        };
-        document.head.appendChild(script);
-      } else {
-        console.log('Stripe pricing table script already loaded');
-      }
-    };
-
-    loadStripeScript();
-  }, [user?.email, currentOrganization?.id]);
+    setIsManaging(true);
+    try {
+      const response = await apiRequest("POST", "/api/billing/create-portal-session", {
+        customerId: currentOrganization.stripeCustomerId,
+      });
+      const { url } = await response.json();
+      window.open(url, '_blank');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to open subscription management portal.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsManaging(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -95,7 +157,7 @@ export default function BillingContent() {
         <div>
           <h2 className="text-2xl font-bold">Billing & Subscriptions</h2>
           <p className="text-gray-600">
-            Choose the plan that fits your organization's needs
+            License-based pricing with unlimited users per license
           </p>
         </div>
         {currentOrganization?.planType && (
@@ -143,21 +205,11 @@ export default function BillingContent() {
         <CardHeader>
           <CardTitle>Subscribe to Your Plan</CardTitle>
           <p className="text-sm text-gray-600">
-            Click the subscribe button below to start your subscription. All plans include a 7-day free trial.
+            Choose your license plan below. Each plan includes unlimited users per license with automated monthly billing.
           </p>
         </CardHeader>
         <CardContent>
-          <div className="w-full">
-            {/* Standard Stripe pricing table approach */}
-            <div className="stripe-pricing-table-container">
-              <stripe-pricing-table
-                pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-                publishable-key={import.meta.env.VITE_STRIPE_PUBLIC_KEY}
-                customer-email={user?.email || ""}
-                client-reference-id={currentOrganization?.id || ""}
-              />
-            </div>
-          </div>
+          <CustomPricingButtons />
         </CardContent>
       </Card>
 
@@ -167,9 +219,17 @@ export default function BillingContent() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-gray-600">
-            After subscribing, you can manage your subscription, update payment methods, 
+            After subscribing, manage your subscription, update payment methods, 
             and view billing history through Stripe's customer portal.
           </p>
+          
+          <Button 
+            variant="outline" 
+            onClick={handleManageSubscription}
+            disabled={isManaging}
+          >
+            {isManaging ? "Loading..." : "Manage Subscription"}
+          </Button>
           
           <div className="flex items-center gap-2 text-sm text-blue-600">
             <Star className="w-4 h-4" />

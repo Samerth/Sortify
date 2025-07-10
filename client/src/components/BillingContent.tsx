@@ -101,18 +101,22 @@ function CustomPricingButtons() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="space-y-4">
       {plans.map((plan) => (
-        <Button
-          key={plan.id}
-          variant={plan.recommended ? "default" : "outline"}
-          onClick={() => handleSubscribe(plan.id)}
-          disabled={isLoading !== null}
-          className={`h-16 ${plan.recommended ? 'ring-2 ring-primary' : ''}`}
-        >
-          {isLoading === plan.id ? "Processing..." : `Subscribe to ${plan.name}`}
-          {plan.recommended && <Badge className="ml-2">Popular</Badge>}
-        </Button>
+        <div key={plan.id} className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{plan.name}</span>
+            {plan.recommended && <Badge variant="default">Most Popular</Badge>}
+          </div>
+          <Button
+            variant={plan.recommended ? "default" : "outline"}
+            onClick={() => handleSubscribe(plan.id)}
+            disabled={isLoading !== null}
+            className="min-w-[120px]"
+          >
+            {isLoading === plan.id ? "Processing..." : "Subscribe"}
+          </Button>
+        </div>
       ))}
     </div>
   );

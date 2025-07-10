@@ -1216,7 +1216,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recurring: { interval: 'month' },
         product_data: {
           name: plan.name,
-          description: `${plan.name} - Unlimited users per license`,
         },
       });
 

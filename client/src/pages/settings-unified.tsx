@@ -842,11 +842,11 @@ export default function SettingsUnified() {
                       <p className="text-sm text-gray-600">Active Users</p>
                     </div>
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-primary">{organization?.maxUsers || 'Unlimited'}</p>
-                      <p className="text-sm text-gray-600">User Limit</p>
+                      <p className="text-2xl font-bold text-primary">{organization?.planType || 'Trial'}</p>
+                      <p className="text-sm text-gray-600">Current Plan</p>
                     </div>
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-green-600">Active</p>
+                      <p className="text-2xl font-bold text-green-600">{organization?.subscriptionStatus || 'Trial'}</p>
                       <p className="text-sm text-gray-600">Status</p>
                     </div>
                   </div>

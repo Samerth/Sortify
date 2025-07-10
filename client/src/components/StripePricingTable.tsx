@@ -58,32 +58,11 @@ export default function StripePricingTable() {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Load Stripe pricing table script with proper error handling
-    const existingScript = document.querySelector('script[src="https://js.stripe.com/v3/pricing-table.js"]');
-    
-    if (!existingScript) {
+    // Load Stripe pricing table script
+    if (!document.querySelector('script[src="https://js.stripe.com/v3/pricing-table.js"]')) {
       const script = document.createElement('script');
       script.async = true;
       script.src = 'https://js.stripe.com/v3/pricing-table.js';
-      script.onload = () => {
-        console.log('Stripe pricing table script loaded successfully');
-        
-        // Check if pricing table elements are clickable
-        setTimeout(() => {
-          const pricingTable = document.querySelector('stripe-pricing-table');
-          if (pricingTable) {
-            console.log('Stripe pricing table element found:', pricingTable);
-            
-            // Add click event listener for debugging
-            pricingTable.addEventListener('click', (event) => {
-              console.log('Stripe pricing table clicked:', event);
-            });
-          }
-        }, 1000);
-      };
-      script.onerror = (error) => {
-        console.error('Failed to load Stripe pricing table script:', error);
-      };
       document.head.appendChild(script);
     }
   }, []);
@@ -110,19 +89,19 @@ export default function StripePricingTable() {
       {/* Plan comparison section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {Object.entries(planFeatures).map(([key, plan]) => (
-          <Card key={key} className="border-2 hover:border-blue-200 transition-colors">
+          <Card key={key} className="border-2 hover:border-blue-200 transition-colors h-full">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 {plan.icon}
                 <CardTitle className="text-lg">{plan.name}</CardTitle>
               </div>
-              <div className="text-2xl font-bold text-blue-600">{plan.price}</div>
+              <div className="text-xl font-bold text-blue-600 break-words">{plan.price}</div>
               <p className="text-sm text-gray-600">{plan.description}</p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-grow">
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2">
-                  <Package className="w-4 h-4 text-gray-500" />
+                  <Package className="w-4 h-4 text-gray-500 flex-shrink-0" />
                   <span className="text-sm">
                     {typeof plan.maxPackages === 'number' ? `${plan.maxPackages}` : plan.maxPackages} packages/month
                   </span>
@@ -132,7 +111,7 @@ export default function StripePricingTable() {
                 {plan.features.map((feature, index) => (
                   <li key={index} className="flex items-start gap-2 text-sm">
                     <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>{feature}</span>
+                    <span className="break-words">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -149,13 +128,11 @@ export default function StripePricingTable() {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="pricing-table-container">
+          <div className="w-full">
             <stripe-pricing-table 
               pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-              publishable-key="pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf"
-              customer-email={customerEmail}
-              client-reference-id={currentOrganization?.id}
-            />
+              publishable-key="pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf">
+            </stripe-pricing-table>
           </div>
         </CardContent>
       </Card>

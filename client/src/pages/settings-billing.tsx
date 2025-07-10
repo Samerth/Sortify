@@ -52,7 +52,7 @@ export default function BillingSettings() {
             Choose the plan that fits your organization's needs
           </p>
         </div>
-        {organization?.stripeSubscriptionId && (
+        {organization?.stripeSubscriptionId && !organization?.stripeSubscriptionId?.startsWith('sub_test_') && (
           <div className="flex items-center gap-2">
             <Crown className="w-4 h-4 text-yellow-500" />
             <span className="text-sm font-medium">
@@ -62,7 +62,7 @@ export default function BillingSettings() {
         )}
       </div>
 
-      {!organization?.stripeSubscriptionId ? (
+      {!organization?.stripeSubscriptionId || organization?.stripeSubscriptionId?.startsWith('sub_test_') ? (
         <Card>
           <CardHeader>
             <CardTitle>Choose Your Plan</CardTitle>

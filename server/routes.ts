@@ -1412,6 +1412,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Payment failed for organization:', organization.id);
   }
 
+  // Create Stripe Customer Portal Session
+  app.post("/api/billing/create-portal-session", isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const { customerId } = req.body;
+      
+      if (!customerId) {
+        return res.status(400).json({ error: 'Customer ID is required' });
+      }
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: req.headers.origin || 'https://sortifyapp.com',
+      });
+
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error('Error creating portal session:', error);
+      res.status(500).json({ error: 'Failed to create portal session' });
+    }
+  });
+
   // Organization upgrade endpoint for PayPal payments
   app.post("/api/organizations/:organizationId/upgrade", isAuthenticated, async (req, res) => {
     try {

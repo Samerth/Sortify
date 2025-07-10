@@ -961,11 +961,15 @@ export default function SettingsUnified() {
                       <p className="text-sm text-gray-600">Active Users</p>
                     </div>
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-primary">{organization?.planType || 'Trial'}</p>
+                      <p className="text-2xl font-bold text-primary">
+                        {organization?.stripeSubscriptionId ? (organization?.planType || 'Unknown') : 'No Active Plan'}
+                      </p>
                       <p className="text-sm text-gray-600">Current Plan</p>
                     </div>
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-green-600">{organization?.subscriptionStatus || 'Trial'}</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {organization?.stripeSubscriptionId ? (organization?.subscriptionStatus || 'Active') : 'No Subscription'}
+                      </p>
                       <p className="text-sm text-gray-600">Status</p>
                     </div>
                   </div>
@@ -1008,7 +1012,7 @@ export default function SettingsUnified() {
                     <div className="text-center p-4 bg-green-50 rounded-lg">
                       <p className="text-sm text-green-600 font-medium">Active Licenses</p>
                       <p className="text-lg font-bold text-green-900">
-                        {organization?.maxUsers || 0}
+                        {organization?.maxUsers === -1 ? 'Unlimited' : (organization?.maxUsers || 0)}
                       </p>
                     </div>
                     <div className="text-center p-4 bg-purple-50 rounded-lg">

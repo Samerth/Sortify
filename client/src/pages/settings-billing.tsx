@@ -43,29 +43,83 @@ export default function BillingSettings() {
             Choose the plan that fits your organization's needs
           </p>
         </div>
-        {currentOrganization?.planType && (
+        {currentOrganization?.stripeSubscriptionId && (
           <div className="flex items-center gap-2">
             <Crown className="w-4 h-4 text-yellow-500" />
             <span className="text-sm font-medium">
-              Current: {currentOrganization.planType}
+              Current: {currentOrganization.planType} Plan
             </span>
           </div>
         )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Choose Your Plan</CardTitle>
-          <p className="text-sm text-gray-600">
-            All plans include automated recurring billing through Stripe. You can manage your subscription, update payment methods, and view billing history through the customer portal.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="pricing-table-container">
-            <StripePricingTableComponent />
-          </div>
-        </CardContent>
-      </Card>
+      {!currentOrganization?.stripeSubscriptionId ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Choose Your Plan</CardTitle>
+            <p className="text-sm text-gray-600">
+              All plans include automated recurring billing through Stripe. You can manage your subscription, update payment methods, and view billing history through the customer portal.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="pricing-table-container">
+              <StripePricingTableComponent />
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Subscription</CardTitle>
+            <p className="text-sm text-gray-600">
+              Your subscription is active. Use the manage button below to update payment methods or view billing history.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <p className="text-2xl font-bold text-primary">
+                  {currentOrganization.planType || 'Unknown'}
+                </p>
+                <p className="text-sm text-gray-600">Current Plan</p>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <p className="text-2xl font-bold text-green-600">
+                  {currentOrganization.maxUsers === -1 ? 'Unlimited' : currentOrganization.maxUsers}
+                </p>
+                <p className="text-sm text-gray-600">Licensed Users</p>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <p className="text-2xl font-bold text-blue-600">
+                  {currentOrganization.subscriptionStatus || 'Active'}
+                </p>
+                <p className="text-sm text-gray-600">Status</p>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-4">
+                Manage your subscription, update payment methods, and view billing history through Stripe's secure customer portal.
+              </p>
+              <button 
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                onClick={() => {
+                  fetch('/api/billing/create-portal-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customerId: currentOrganization.stripeCustomerId })
+                  })
+                  .then(res => res.json())
+                  .then(data => window.open(data.url, '_blank'))
+                  .catch(error => console.error('Error:', error));
+                }}
+              >
+                Manage Subscription
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -62,6 +62,11 @@ function CustomPricingButtons() {
   const { currentOrganization } = useOrganization();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [licenseQuantities, setLicenseQuantities] = useState<Record<string, number>>({
+    starter: 1,
+    professional: 1,
+    enterprise: 1
+  });
 
   const handleSubscribe = async (planId: string) => {
     if (!currentOrganization?.id) {
@@ -73,11 +78,13 @@ function CustomPricingButtons() {
       return;
     }
 
+    const quantity = licenseQuantities[planId] || 1;
     setIsLoading(planId);
     
     try {
       const response = await apiRequest("POST", "/api/billing/create-checkout-session", {
         planId,
+        quantity,
         customerEmail: user?.email || '',
       });
       
@@ -94,30 +101,80 @@ function CustomPricingButtons() {
     }
   };
 
+  const updateQuantity = (planId: string, quantity: number) => {
+    setLicenseQuantities(prev => ({
+      ...prev,
+      [planId]: Math.max(1, quantity)
+    }));
+  };
+
   const plans = [
-    { id: 'starter', name: 'Starter - $25/month', recommended: false },
-    { id: 'professional', name: 'Professional - $35/month', recommended: true },
-    { id: 'enterprise', name: 'Enterprise - $45/month', recommended: false }
+    { id: 'starter', name: 'Starter', price: 25, recommended: false },
+    { id: 'professional', name: 'Professional', price: 35, recommended: true },
+    { id: 'enterprise', name: 'Enterprise', price: 45, recommended: false }
   ];
 
   return (
     <div className="space-y-4">
-      {plans.map((plan) => (
-        <div key={plan.id} className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{plan.name}</span>
-            {plan.recommended && <Badge variant="default">Most Popular</Badge>}
+      {plans.map((plan) => {
+        const quantity = licenseQuantities[plan.id];
+        const totalPrice = plan.price * quantity;
+        
+        return (
+          <div key={plan.id} className="p-6 border rounded-lg bg-white">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold">{plan.name}</span>
+                {plan.recommended && <Badge variant="default">Most Popular</Badge>}
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-600">${plan.price}/license/month</div>
+                <div className="text-lg font-bold text-blue-600">
+                  ${totalPrice}/month total
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium">Licenses:</label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateQuantity(plan.id, quantity - 1)}
+                    disabled={quantity <= 1}
+                    className="w-8 h-8 p-0"
+                  >
+                    -
+                  </Button>
+                  <span className="w-12 text-center font-medium">{quantity}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateQuantity(plan.id, quantity + 1)}
+                    className="w-8 h-8 p-0"
+                  >
+                    +
+                  </Button>
+                </div>
+                <span className="text-sm text-gray-600">
+                  (Unlimited users per license)
+                </span>
+              </div>
+              
+              <Button
+                variant={plan.recommended ? "default" : "outline"}
+                onClick={() => handleSubscribe(plan.id)}
+                disabled={isLoading !== null}
+                className="min-w-[120px]"
+              >
+                {isLoading === plan.id ? "Processing..." : "Subscribe"}
+              </Button>
+            </div>
           </div>
-          <Button
-            variant={plan.recommended ? "default" : "outline"}
-            onClick={() => handleSubscribe(plan.id)}
-            disabled={isLoading !== null}
-            className="min-w-[120px]"
-          >
-            {isLoading === plan.id ? "Processing..." : "Subscribe"}
-          </Button>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

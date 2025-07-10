@@ -1188,10 +1188,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/billing/create-checkout-session", isAuthenticated, withOrganization, async (req, res) => {
     try {
       const organizationId = req.headers["x-organization-id"] as string;
-      const { planId, customerEmail } = req.body;
+      const { planId, customerEmail, quantity = 1 } = req.body;
 
       if (!planId) {
         return res.status(400).json({ error: 'Plan ID is required' });
+      }
+
+      if (quantity < 1 || quantity > 100) {
+        return res.status(400).json({ error: 'Quantity must be between 1 and 100' });
       }
 
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -1227,7 +1231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         line_items: [
           {
             price: price.id,
-            quantity: 1,
+            quantity: quantity,
           },
         ],
         success_url: `${origin}/settings?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
@@ -1237,11 +1241,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           organizationId,
           planId,
+          quantity: quantity.toString(),
         },
         subscription_data: {
           metadata: {
             organizationId,
             planId,
+            quantity: quantity.toString(),
           },
         },
       });
@@ -1250,6 +1256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: session.id,
         organizationId,
         planId,
+        quantity,
         url: session.url
       });
 

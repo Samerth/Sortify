@@ -1113,136 +1113,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/billing/upgrade", isAuthenticated, withOrganization, async (req, res) => {
-    try {
-      const organizationId = req.headers["x-organization-id"] as string;
-      const { planType, userCount, billingCycle = "monthly" } = req.body;
+  // Old manual billing upgrade endpoint - DISABLED in favor of Stripe Pricing Table
+  // app.post("/api/billing/upgrade", isAuthenticated, withOrganization, async (req, res) => {
+  //   // This endpoint has been replaced with Stripe Pricing Table automated subscriptions
+  //   res.status(410).json({ error: 'This billing method has been deprecated. Please use the Stripe Pricing Table for subscriptions.' });
+  // });
 
-      if (!planType || !userCount) {
-        return res.status(400).json({ error: 'Plan type and user count are required' });
-      }
-
-      // Get plan pricing
-      const pricing = TrialManager.getPlanPricing();
-      const selectedPlan = pricing[planType as keyof typeof pricing];
-
-      if (!selectedPlan) {
-        return res.status(400).json({ error: 'Invalid plan type' });
-      }
-
-      // Calculate total amount in cents for Stripe
-      const totalAmount = selectedPlan.pricePerUser * userCount * 100; // Convert to cents
-      
-      // Initialize Stripe
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-      // Create Stripe Payment Intent
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(totalAmount),
-        currency: "usd",
-        automatic_payment_methods: {
-          enabled: true,
-        },
-        metadata: {
-          planType,
-          userCount: userCount.toString(),
-          organizationId,
-          billingCycle,
-        },
-        description: `Sortify ${planType} Plan - ${userCount} users`,
-      });
-
-      console.log('Stripe Payment Intent Created:', {
-        paymentIntentId: paymentIntent.id,
-        amount: paymentIntent.amount,
-        currency: paymentIntent.currency,
-        status: paymentIntent.status,
-      });
-
-      res.json({
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id,
-        plan: selectedPlan,
-        totalAmount: totalAmount / 100, // Convert back to dollars for display
-        billingCycle,
-        planType,
-        userCount,
-        organizationId
-      });
-
-    } catch (error) {
-      console.error('Stripe Payment Intent creation error:', error);
-      res.status(500).json({ error: 'Failed to process upgrade request' });
-    }
-  });
-
-  // Handle successful Stripe payment
-  app.post("/api/billing/confirm-payment", isAuthenticated, withOrganization, async (req, res) => {
-    try {
-      const organizationId = req.headers["x-organization-id"] as string;
-      const { paymentIntentId } = req.body;
-
-      if (!paymentIntentId) {
-        return res.status(400).json({ error: 'Payment Intent ID is required' });
-      }
-
-      // Initialize Stripe to verify payment
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-      // Retrieve payment intent to confirm success
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-
-      if (paymentIntent.status === 'succeeded') {
-        const { planType, userCount, billingCycle } = paymentIntent.metadata;
-
-        // Get plan pricing to set correct limits
-        const pricing = TrialManager.getPlanPricing();
-        const selectedPlan = pricing[planType as keyof typeof pricing];
-
-        if (!selectedPlan) {
-          return res.status(400).json({ error: 'Invalid plan type' });
-        }
-
-        // Update organization with new plan details using correct plan limits
-        await storage.updateOrganizationBilling(organizationId, {
-          planType,
-          maxUsers: selectedPlan.maxUsers,
-          subscriptionStatus: 'active',
-          billingCycle,
-          stripePaymentIntentId: paymentIntentId,
-          subscriptionStartDate: new Date(),
-          subscriptionEndDate: new Date(Date.now() + (billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000)
-        });
-
-        // Also update package limits separately
-        await storage.updateOrganization(organizationId, {
-          maxPackagesPerMonth: selectedPlan.maxPackages
-        });
-
-        console.log('Organization billing updated:', {
-          organizationId,
-          planType,
-          userCount,
-          maxUsers: selectedPlan.maxUsers,
-          maxPackagesPerMonth: selectedPlan.maxPackages,
-          paymentIntentId
-        });
-
-        res.json({
-          success: true,
-          message: 'Payment successful and organization upgraded',
-          planType,
-          userCount
-        });
-      } else {
-        res.status(400).json({ error: 'Payment not successful' });
-      }
-
-    } catch (error) {
-      console.error('Payment confirmation error:', error);
-      res.status(500).json({ error: 'Failed to confirm payment' });
-    }
-  });
+  // Old manual payment confirmation endpoint - DISABLED in favor of Stripe Pricing Table
+  // app.post("/api/billing/confirm-payment", isAuthenticated, withOrganization, async (req, res) => {
+  //   // This endpoint has been replaced with Stripe webhook handling for automated subscriptions
+  //   res.status(410).json({ error: 'This billing method has been deprecated. Payments are now handled automatically via Stripe webhooks.' });
+  // });
 
   app.patch("/api/billing/update", isAuthenticated, withOrganization, async (req, res) => {
     try {

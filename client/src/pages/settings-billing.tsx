@@ -56,7 +56,7 @@ export default function BillingSettings() {
           <div className="flex items-center gap-2">
             <Crown className="w-4 h-4 text-yellow-500" />
             <span className="text-sm font-medium">
-              Current: {organization.planType} Plan
+              Current: {organization.planType?.charAt(0).toUpperCase() + organization.planType?.slice(1)} Plan
             </span>
           </div>
         )}

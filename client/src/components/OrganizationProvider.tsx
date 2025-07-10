@@ -28,9 +28,15 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
   const [currentOrganization, setCurrentOrganization] = useState<(Organization & { role: string }) | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: organizations = [], isLoading } = useQuery({
+  const { data: organizationsData = [], isLoading } = useQuery({
     queryKey: ["/api/organizations"],
+    staleTime: 0, // Force fresh data to resolve cache issues
   });
+
+  // Deduplicate organizations by ID to prevent duplicate keys
+  const organizations = organizationsData.filter((org, index, self) => 
+    index === self.findIndex(o => o.id === org.id)
+  );
 
   useEffect(() => {
     if (organizations.length > 0 && !currentOrganization) {

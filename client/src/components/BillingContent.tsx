@@ -57,16 +57,28 @@ const planFeatures = {
 
 export default function BillingContent() {
   const { currentOrganization } = useOrganization();
+  const { user } = useAuth();
 
   useEffect(() => {
+    // Debug environment variables
+    console.log('Stripe Public Key:', import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+    console.log('User email:', user?.email);
+    console.log('Organization ID:', currentOrganization?.id);
+    
     // Load Stripe pricing table script
     if (!document.querySelector('script[src="https://js.stripe.com/v3/pricing-table.js"]')) {
       const script = document.createElement('script');
       script.async = true;
       script.src = 'https://js.stripe.com/v3/pricing-table.js';
+      script.onload = () => {
+        console.log('Stripe pricing table script loaded successfully');
+      };
+      script.onerror = (error) => {
+        console.error('Failed to load Stripe pricing table script:', error);
+      };
       document.head.appendChild(script);
     }
-  }, []);
+  }, [user?.email, currentOrganization?.id]);
 
   return (
     <div className="space-y-6">
@@ -129,7 +141,9 @@ export default function BillingContent() {
           <div className="w-full">
             <stripe-pricing-table 
               pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-              publishable-key="pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf">
+              publishable-key={import.meta.env.VITE_STRIPE_PUBLIC_KEY}
+              customer-email={user?.email || ""}
+              client-reference-id={currentOrganization?.id || ""}>
             </stripe-pricing-table>
           </div>
         </CardContent>

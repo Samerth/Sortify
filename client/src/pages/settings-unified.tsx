@@ -248,6 +248,15 @@ function SubscriptionManagementButton() {
       return;
     }
 
+    // Check if this is a demo environment first
+    if (currentOrganization.stripeCustomerId?.startsWith('cus_Real') || currentOrganization.stripeCustomerId?.startsWith('cus_test_')) {
+      toast({
+        title: "Demo Environment",
+        description: "This is a demo environment. In production, customers would be redirected to Stripe's secure customer portal to manage payment methods, view billing history, and update subscription details.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await apiRequest("POST", "/api/billing/create-portal-session", {

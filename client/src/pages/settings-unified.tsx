@@ -86,35 +86,92 @@ const storageLocationSchema = z.object({
 type MailroomFormData = z.infer<typeof mailroomSchema>;
 type StorageLocationFormData = z.infer<typeof storageLocationSchema>;
 
-// Stripe Pricing Table Component
+// License-Based Pricing Plans
+const PRICING_PLANS = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: 25,
+    description: 'Perfect for small teams',
+    features: [
+      'Unlimited users per license',
+      '1,000 packages/month',
+      'Basic reporting',
+      'Email notifications',
+      'Standard support'
+    ],
+    recommended: false
+  },
+  {
+    id: 'professional', 
+    name: 'Professional',
+    price: 35,
+    description: 'Best for growing businesses',
+    features: [
+      'Unlimited users per license',
+      'Unlimited packages',
+      'Advanced reporting & analytics',
+      'Email & SMS notifications', 
+      'Custom integrations',
+      'Priority support'
+    ],
+    recommended: true
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 45,
+    description: 'For large organizations',
+    features: [
+      'Unlimited users per license',
+      'Unlimited packages',
+      'Advanced reporting & analytics',
+      'Full API access',
+      'Custom branding',
+      'Dedicated account manager',
+      '24/7 premium support'
+    ],
+    recommended: false
+  }
+];
+
+// Custom Pricing Display Component
 function StripePricingTableComponent() {
   const { user } = useAuth();
   const { currentOrganization } = useOrganization();
-  
-  useEffect(() => {
-    console.log('StripePricingTableComponent: Loading with data:', {
-      publicKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY,
-      userEmail: user?.email,
-      orgId: currentOrganization?.id
-    });
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState<string | null>(null);
 
-    // Load Stripe pricing table script if not already loaded
-    if (!document.querySelector('script[src="https://js.stripe.com/v3/pricing-table.js"]')) {
-      console.log('StripePricingTableComponent: Loading Stripe script...');
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://js.stripe.com/v3/pricing-table.js';
-      script.onload = () => {
-        console.log('StripePricingTableComponent: Stripe script loaded successfully');
-      };
-      script.onerror = (error) => {
-        console.error('StripePricingTableComponent: Failed to load Stripe script:', error);
-      };
-      document.head.appendChild(script);
-    } else {
-      console.log('StripePricingTableComponent: Stripe script already loaded');
+  const handleSubscribe = async (planId: string) => {
+    if (!currentOrganization?.id) {
+      toast({
+        title: "Error",
+        description: "Please select an organization first.",
+        variant: "destructive",
+      });
+      return;
     }
-  }, [user?.email, currentOrganization?.id]);
+
+    setIsLoading(planId);
+    try {
+      const response = await apiRequest("POST", "/api/billing/create-checkout-session", {
+        planId,
+        organizationId: currentOrganization.id,
+        customerEmail: user?.email || '',
+      });
+      
+      const { url } = await response.json();
+      window.open(url, '_blank');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create checkout session.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(null);
+    }
+  };
 
   if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
     return (
@@ -124,17 +181,46 @@ function StripePricingTableComponent() {
     );
   }
 
-  const customerEmail = user?.email || '';
-  const clientReferenceId = currentOrganization?.id || '';
-
   return (
-    <div id="stripe-pricing-table" className="w-full">
-      <stripe-pricing-table 
-        pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-        publishable-key={import.meta.env.VITE_STRIPE_PUBLIC_KEY}
-        customer-email={customerEmail}
-        client-reference-id={clientReferenceId}
-      />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {PRICING_PLANS.map((plan) => (
+        <Card key={plan.id} className={`relative ${plan.recommended ? 'border-primary border-2' : ''}`}>
+          {plan.recommended && (
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
+            </div>
+          )}
+          
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-xl">{plan.name}</CardTitle>
+            <div className="mt-2">
+              <span className="text-3xl font-bold">${plan.price}</span>
+              <span className="text-gray-600">/license/month</span>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">{plan.description}</p>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            <ul className="space-y-2">
+              {plan.features.map((feature, index) => (
+                <li key={index} className="flex items-start text-sm">
+                  <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            
+            <Button 
+              className="w-full"
+              variant={plan.recommended ? "default" : "outline"}
+              onClick={() => handleSubscribe(plan.id)}
+              disabled={isLoading !== null}
+            >
+              {isLoading === plan.id ? "Processing..." : "Subscribe"}
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

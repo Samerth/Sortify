@@ -1184,6 +1184,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create Stripe checkout session for license-based subscriptions
+  app.post("/api/billing/create-checkout-session", isAuthenticated, withOrganization, async (req, res) => {
+    try {
+      const organizationId = req.headers["x-organization-id"] as string;
+      const { planId, customerEmail } = req.body;
+
+      if (!planId) {
+        return res.status(400).json({ error: 'Plan ID is required' });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+      
+      // For testing purposes, we'll create prices dynamically
+      // In production, you should create these products/prices in your Stripe dashboard
+      const planPricing: Record<string, { amount: number; name: string }> = {
+        'starter': { amount: 2500, name: 'Starter License' },       // $25.00
+        'professional': { amount: 3500, name: 'Professional License' }, // $35.00
+        'enterprise': { amount: 4500, name: 'Enterprise License' }   // $45.00
+      };
+
+      const plan = planPricing[planId];
+      if (!plan) {
+        return res.status(400).json({ error: 'Invalid plan ID' });
+      }
+
+      // Create a price dynamically for this checkout session
+      const price = await stripe.prices.create({
+        unit_amount: plan.amount,
+        currency: 'usd',
+        recurring: { interval: 'month' },
+        product_data: {
+          name: plan.name,
+          description: `${plan.name} - Unlimited users per license`,
+        },
+      });
+
+      const origin = req.headers.origin || 'https://sortifyapp.com';
+      
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: price.id,
+            quantity: 1,
+          },
+        ],
+        success_url: `${origin}/settings?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/settings?subscription=cancelled`,
+        customer_email: customerEmail,
+        client_reference_id: organizationId,
+        metadata: {
+          organizationId,
+          planId,
+        },
+        subscription_data: {
+          metadata: {
+            organizationId,
+            planId,
+          },
+        },
+      });
+
+      console.log('Stripe checkout session created:', {
+        sessionId: session.id,
+        organizationId,
+        planId,
+        url: session.url
+      });
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error('Checkout session creation error:', error);
+      res.status(500).json({ error: 'Failed to create checkout session' });
+    }
+  });
+
   // Stripe webhook handler for subscription events
   app.post("/api/webhooks/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'] as string;

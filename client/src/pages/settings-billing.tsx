@@ -113,9 +113,9 @@ export default function BillingSettings() {
               <button 
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
                 onClick={() => {
-                  // Check if this is a test environment first
-                  if (organization.stripeCustomerId?.startsWith('cus_test_')) {
-                    alert('This is a test environment. In production, customers would access the Stripe customer portal to manage payment methods and billing history.');
+                  // Check if this is a demo environment first
+                  if (organization.stripeCustomerId?.startsWith('cus_Real') || organization.stripeCustomerId?.startsWith('cus_test_')) {
+                    alert('This is a demo environment. In production, customers would be redirected to Stripe\'s secure customer portal to manage payment methods, view billing history, and update subscription details.');
                     return;
                   }
                   

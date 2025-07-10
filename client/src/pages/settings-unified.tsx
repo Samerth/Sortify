@@ -56,18 +56,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-// Declare Stripe pricing table custom element for TypeScript
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'stripe-pricing-table': {
-        'pricing-table-id': string;
-        'publishable-key': string;
-        'customer-email'?: string;
-      };
-    }
-  }
-}
+// TypeScript interface for our custom pricing component - no more Stripe Pricing Table
 
 // Schemas for mailroom and storage location forms
 const mailroomSchema = z.object({
@@ -135,12 +124,18 @@ const PRICING_PLANS = [
   }
 ];
 
-// Custom Pricing Display Component
+// Custom License-Based Pricing Display Component
 function StripePricingTableComponent() {
   const { user } = useAuth();
   const { currentOrganization } = useOrganization();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<string | null>(null);
+
+  console.log('Custom pricing component loaded with:', {
+    publicKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY,
+    userEmail: user?.email,
+    orgId: currentOrganization?.id
+  });
 
   const handleSubscribe = async (planId: string) => {
     if (!currentOrganization?.id) {
@@ -152,7 +147,9 @@ function StripePricingTableComponent() {
       return;
     }
 
+    console.log('Starting subscription process for plan:', planId);
     setIsLoading(planId);
+    
     try {
       const response = await apiRequest("POST", "/api/billing/create-checkout-session", {
         planId,
@@ -161,8 +158,10 @@ function StripePricingTableComponent() {
       });
       
       const { url } = await response.json();
+      console.log('Stripe checkout URL received:', url);
       window.open(url, '_blank');
     } catch (error: any) {
+      console.error('Subscription error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create checkout session.",
@@ -182,45 +181,52 @@ function StripePricingTableComponent() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {PRICING_PLANS.map((plan) => (
-        <Card key={plan.id} className={`relative ${plan.recommended ? 'border-primary border-2' : ''}`}>
-          {plan.recommended && (
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
-            </div>
-          )}
-          
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-xl">{plan.name}</CardTitle>
-            <div className="mt-2">
-              <span className="text-3xl font-bold">${plan.price}</span>
-              <span className="text-gray-600">/license/month</span>
-            </div>
-            <p className="text-sm text-gray-600 mt-2">{plan.description}</p>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            <ul className="space-y-2">
-              {plan.features.map((feature, index) => (
-                <li key={index} className="flex items-start text-sm">
-                  <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                  {feature}
-                </li>
-              ))}
-            </ul>
+    <div className="space-y-4">
+      <div className="text-center">
+        <h3 className="text-lg font-semibold text-gray-900">Choose Your License Plan</h3>
+        <p className="text-sm text-gray-600">License-based pricing with unlimited users per license</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {PRICING_PLANS.map((plan) => (
+          <Card key={plan.id} className={`relative ${plan.recommended ? 'border-primary border-2' : ''}`}>
+            {plan.recommended && (
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
+              </div>
+            )}
             
-            <Button 
-              className="w-full"
-              variant={plan.recommended ? "default" : "outline"}
-              onClick={() => handleSubscribe(plan.id)}
-              disabled={isLoading !== null}
-            >
-              {isLoading === plan.id ? "Processing..." : "Subscribe"}
-            </Button>
-          </CardContent>
-        </Card>
-      ))}
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-xl">{plan.name}</CardTitle>
+              <div className="mt-2">
+                <span className="text-3xl font-bold">${plan.price}</span>
+                <span className="text-gray-600">/license/month</span>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">{plan.description}</p>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <ul className="space-y-2">
+                {plan.features.map((feature, index) => (
+                  <li key={index} className="flex items-start text-sm">
+                    <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              
+              <Button 
+                className="w-full"
+                variant={plan.recommended ? "default" : "outline"}
+                onClick={() => handleSubscribe(plan.id)}
+                disabled={isLoading !== null}
+              >
+                {isLoading === plan.id ? "Processing..." : "Subscribe"}
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

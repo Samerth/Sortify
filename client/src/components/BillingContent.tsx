@@ -9,12 +9,11 @@ import { CheckCircle, Users, Package, Zap, Crown, Star } from "lucide-react";
 const planFeatures = {
   starter: {
     name: "Starter",
-    price: "$25/month",
+    price: "$25/license/month",
     description: "Perfect for small teams",
-    maxUsers: 3,
     maxPackages: 1000,
     features: [
-      "Up to 3 users",
+      "Pay per license (unlimited users)",
       "1,000 packages/month",
       "Email notifications",
       "Basic analytics",
@@ -24,12 +23,11 @@ const planFeatures = {
   },
   professional: {
     name: "Professional",
-    price: "$35/month",
+    price: "$35/license/month",
     description: "Great for growing organizations",
-    maxUsers: 10,
     maxPackages: "Unlimited",
     features: [
-      "Up to 10 users",
+      "Pay per license (unlimited users)",
       "Unlimited packages",
       "Email & SMS notifications",
       "Advanced analytics",
@@ -40,12 +38,11 @@ const planFeatures = {
   },
   enterprise: {
     name: "Enterprise",
-    price: "$45/month",
+    price: "$45/license/month",
     description: "For large organizations",
-    maxUsers: "Unlimited",
     maxPackages: "Unlimited",
     features: [
-      "Unlimited users",
+      "Pay per license (unlimited users)",
       "Unlimited packages",
       "White-label branding",
       "Custom integrations",
@@ -59,6 +56,7 @@ const planFeatures = {
 // Stripe Pricing Table Component
 function StripePricingTableComponent() {
   const { user } = useAuth();
+  const { currentOrganization } = useOrganization();
   
   useEffect(() => {
     // Load Stripe pricing table script with proper error handling
@@ -76,6 +74,17 @@ function StripePricingTableComponent() {
       };
       document.head.appendChild(script);
     }
+
+    // Add event listener for debugging
+    const handleStripeEvent = (event: any) => {
+      console.log('Stripe pricing table event:', event);
+    };
+
+    window.addEventListener('stripe-pricing-table-ready', handleStripeEvent);
+    
+    return () => {
+      window.removeEventListener('stripe-pricing-table-ready', handleStripeEvent);
+    };
   }, []);
 
   const customerEmail = user?.email || '';
@@ -86,6 +95,7 @@ function StripePricingTableComponent() {
         pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
         publishable-key="pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf"
         customer-email={customerEmail}
+        client-reference-id={currentOrganization?.id}
       />
     </div>
   );
@@ -124,12 +134,6 @@ export default function BillingContent() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm">
-                    {typeof plan.maxUsers === 'number' ? `Up to ${plan.maxUsers}` : plan.maxUsers} users
-                  </span>
-                </div>
                 <div className="flex items-center gap-2">
                   <Package className="w-4 h-4 text-gray-500" />
                   <span className="text-sm">

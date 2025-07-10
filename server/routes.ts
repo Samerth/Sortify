@@ -1125,6 +1125,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //   res.status(410).json({ error: 'This billing method has been deprecated. Payments are now handled automatically via Stripe webhooks.' });
   // });
 
+  // Stripe checkout success redirect endpoint  
+  app.get('/api/checkout/success', async (req, res) => {
+    try {
+      const { session_id } = req.query;
+      console.log('Stripe checkout success redirect:', { session_id });
+      
+      // Redirect to main app with success message
+      res.redirect('/?subscription=success');
+    } catch (error) {
+      console.error('Checkout success redirect error:', error);
+      res.redirect('/?subscription=error');
+    }
+  });
+
   app.patch("/api/billing/update", isAuthenticated, withOrganization, async (req, res) => {
     try {
       const organizationId = req.headers["x-organization-id"] as string;

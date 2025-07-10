@@ -9,30 +9,28 @@ import { CheckCircle, Users, Package, Zap, Crown, Star } from "lucide-react";
 const planFeatures = {
   starter: {
     name: "Starter",
-    price: "$25/month",
+    price: "$25/license/month",
     description: "Perfect for small teams",
-    maxUsers: 3,
     maxPackages: 1000,
     features: [
-      "Up to 3 users",
+      "Pay per license (unlimited users)",
       "1,000 packages/month",
-      "Email notifications",
+      "Email notifications", 
       "Basic analytics",
       "Photo storage"
     ],
     icon: <Users className="w-5 h-5" />
   },
   professional: {
-    name: "Professional",
-    price: "$35/month",
+    name: "Professional", 
+    price: "$35/license/month",
     description: "Great for growing organizations",
-    maxUsers: 10,
     maxPackages: "Unlimited",
     features: [
-      "Up to 10 users",
+      "Pay per license (unlimited users)",
       "Unlimited packages",
       "Email & SMS notifications",
-      "Advanced analytics",
+      "Advanced analytics", 
       "API integrations",
       "Priority support"
     ],
@@ -40,12 +38,11 @@ const planFeatures = {
   },
   enterprise: {
     name: "Enterprise",
-    price: "$45/month",
+    price: "$45/license/month", 
     description: "For large organizations",
-    maxUsers: "Unlimited",
     maxPackages: "Unlimited",
     features: [
-      "Unlimited users",
+      "Pay per license (unlimited users)",
       "Unlimited packages",
       "White-label branding",
       "Custom integrations",
@@ -70,6 +67,19 @@ export default function StripePricingTable() {
       script.src = 'https://js.stripe.com/v3/pricing-table.js';
       script.onload = () => {
         console.log('Stripe pricing table script loaded successfully');
+        
+        // Check if pricing table elements are clickable
+        setTimeout(() => {
+          const pricingTable = document.querySelector('stripe-pricing-table');
+          if (pricingTable) {
+            console.log('Stripe pricing table element found:', pricingTable);
+            
+            // Add click event listener for debugging
+            pricingTable.addEventListener('click', (event) => {
+              console.log('Stripe pricing table clicked:', event);
+            });
+          }
+        }, 1000);
       };
       script.onerror = (error) => {
         console.error('Failed to load Stripe pricing table script:', error);
@@ -112,12 +122,6 @@ export default function StripePricingTable() {
             <CardContent>
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm">
-                    {typeof plan.maxUsers === 'number' ? `Up to ${plan.maxUsers}` : plan.maxUsers} users
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
                   <Package className="w-4 h-4 text-gray-500" />
                   <span className="text-sm">
                     {typeof plan.maxPackages === 'number' ? `${plan.maxPackages}` : plan.maxPackages} packages/month
@@ -150,6 +154,7 @@ export default function StripePricingTable() {
               pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
               publishable-key="pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf"
               customer-email={customerEmail}
+              client-reference-id={currentOrganization?.id}
             />
           </div>
         </CardContent>

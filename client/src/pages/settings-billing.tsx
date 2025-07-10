@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Crown } from "lucide-react";
 
@@ -33,6 +34,15 @@ function StripePricingTableComponent() {
 
 export default function BillingSettings() {
   const { currentOrganization } = useOrganization();
+  
+  // Force refresh organization data to get latest subscription status
+  const { data: refreshedOrg } = useQuery({
+    queryKey: [`/api/organizations/${currentOrganization?.id}`],
+    enabled: !!currentOrganization?.id,
+  });
+
+  // Use refreshed organization data if available, otherwise fallback to context
+  const organization = refreshedOrg || currentOrganization;
 
   return (
     <div className="space-y-6">
@@ -43,17 +53,17 @@ export default function BillingSettings() {
             Choose the plan that fits your organization's needs
           </p>
         </div>
-        {currentOrganization?.stripeSubscriptionId && (
+        {organization?.stripeSubscriptionId && (
           <div className="flex items-center gap-2">
             <Crown className="w-4 h-4 text-yellow-500" />
             <span className="text-sm font-medium">
-              Current: {currentOrganization.planType} Plan
+              Current: {organization.planType} Plan
             </span>
           </div>
         )}
       </div>
 
-      {!currentOrganization?.stripeSubscriptionId ? (
+      {!organization?.stripeSubscriptionId ? (
         <Card>
           <CardHeader>
             <CardTitle>Choose Your Plan</CardTitle>
@@ -79,19 +89,19 @@ export default function BillingSettings() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <p className="text-2xl font-bold text-primary">
-                  {currentOrganization.planType || 'Unknown'}
+                  {organization.planType || 'Unknown'}
                 </p>
                 <p className="text-sm text-gray-600">Current Plan</p>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <p className="text-2xl font-bold text-green-600">
-                  {currentOrganization.maxUsers === -1 ? 'Unlimited' : currentOrganization.maxUsers}
+                  {organization.maxUsers === -1 ? 'Unlimited' : organization.maxUsers}
                 </p>
                 <p className="text-sm text-gray-600">Licensed Users</p>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-600">
-                  {currentOrganization.subscriptionStatus || 'Active'}
+                  {organization.subscriptionStatus || 'Active'}
                 </p>
                 <p className="text-sm text-gray-600">Status</p>
               </div>
@@ -108,7 +118,7 @@ export default function BillingSettings() {
                     method: 'POST',
                     headers: { 
                       'Content-Type': 'application/json',
-                      'x-organization-id': currentOrganization.id 
+                      'x-organization-id': organization.id 
                     }
                   })
                   .then(res => res.json())

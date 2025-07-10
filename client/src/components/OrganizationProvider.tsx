@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Organization } from "@shared/schema";
 
 interface OrganizationContextType {
   currentOrganization: (Organization & { role: string }) | null;
   organizations: (Organization & { role: string })[];
   switchOrganization: (orgId: string) => void;
+  refreshOrganization: () => void;
   isLoading: boolean;
 }
 
@@ -25,6 +26,7 @@ interface OrganizationProviderProps {
 
 export function OrganizationProvider({ children }: OrganizationProviderProps) {
   const [currentOrganization, setCurrentOrganization] = useState<(Organization & { role: string }) | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: organizations = [], isLoading } = useQuery({
     queryKey: ["/api/organizations"],
@@ -53,12 +55,20 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
     }
   };
 
+  const refreshOrganization = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/organizations"] });
+    if (currentOrganization) {
+      queryClient.invalidateQueries({ queryKey: [`/api/organizations/${currentOrganization.id}`] });
+    }
+  };
+
   return (
     <OrganizationContext.Provider 
       value={{
         currentOrganization,
         organizations,
         switchOrganization,
+        refreshOrganization,
         isLoading,
       }}
     >

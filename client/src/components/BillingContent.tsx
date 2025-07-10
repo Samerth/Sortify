@@ -60,24 +60,11 @@ export default function BillingContent() {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Debug environment variables
-    console.log('Stripe Public Key:', import.meta.env.VITE_STRIPE_PUBLIC_KEY);
-    console.log('User email:', user?.email);
-    console.log('Organization ID:', currentOrganization?.id);
-    
-    // Load Stripe pricing table script
-    if (!document.querySelector('script[src="https://js.stripe.com/v3/pricing-table.js"]')) {
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://js.stripe.com/v3/pricing-table.js';
-      script.onload = () => {
-        console.log('Stripe pricing table script loaded successfully');
-      };
-      script.onerror = (error) => {
-        console.error('Failed to load Stripe pricing table script:', error);
-      };
-      document.head.appendChild(script);
-    }
+    console.log('Stripe billing component loaded with:', {
+      publicKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY,
+      userEmail: user?.email,
+      orgId: currentOrganization?.id
+    });
   }, [user?.email, currentOrganization?.id]);
 
   return (
@@ -139,12 +126,20 @@ export default function BillingContent() {
         </CardHeader>
         <CardContent>
           <div className="w-full">
-            <stripe-pricing-table 
-              pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-              publishable-key={import.meta.env.VITE_STRIPE_PUBLIC_KEY}
-              customer-email={user?.email || ""}
-              client-reference-id={currentOrganization?.id || ""}>
-            </stripe-pricing-table>
+            {/* Try alternative approach using dangerouslySetInnerHTML */}
+            <div
+              dangerouslySetInnerHTML={{
+                __html: `
+                  <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+                  <stripe-pricing-table 
+                    pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
+                    publishable-key="${import.meta.env.VITE_STRIPE_PUBLIC_KEY}"
+                    customer-email="${user?.email || ''}"
+                    client-reference-id="${currentOrganization?.id || ''}">
+                  </stripe-pricing-table>
+                `
+              }}
+            />
           </div>
         </CardContent>
       </Card>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Pricing Table Test</title>
+</head>
+<body>
+    <h1>Stripe Pricing Table Test</h1>
+    <p>This is a simple test to see if the Stripe pricing table works outside of React.</p>
+    
+    <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+    <stripe-pricing-table 
+        pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
+        publishable-key="pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf"
+        customer-email="test@example.com"
+        client-reference-id="test-org-123">
+    </stripe-pricing-table>
+    
+    <script>
+        console.log('Test page loaded');
+        
+        // Wait for the pricing table to load
+        setTimeout(() => {
+            const pricingTable = document.querySelector('stripe-pricing-table');
+            if (pricingTable) {
+                console.log('Pricing table found:', pricingTable);
+                
+                // Try to access shadow DOM
+                if (pricingTable.shadowRoot) {
+                    console.log('Shadow DOM found');
+                    const buttons = pricingTable.shadowRoot.querySelectorAll('button');
+                    console.log('Buttons found:', buttons.length);
+                } else {
+                    console.log('No shadow DOM found');
+                }
+            } else {
+                console.error('Pricing table not found!');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

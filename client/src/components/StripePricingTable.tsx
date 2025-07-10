@@ -140,12 +140,20 @@ export default function StripePricingTable() {
         </CardHeader>
         <CardContent>
           <div className="w-full">
-            <stripe-pricing-table 
-              pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-              publishable-key={import.meta.env.VITE_STRIPE_PUBLIC_KEY}
-              customer-email={user?.email || ""}
-              client-reference-id={currentOrganization?.id || ""}>
-            </stripe-pricing-table>
+            {/* Try alternative approach using dangerouslySetInnerHTML */}
+            <div
+              dangerouslySetInnerHTML={{
+                __html: `
+                  <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+                  <stripe-pricing-table 
+                    pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
+                    publishable-key="${import.meta.env.VITE_STRIPE_PUBLIC_KEY}"
+                    customer-email="${user?.email || ''}"
+                    client-reference-id="${currentOrganization?.id || ''}">
+                  </stripe-pricing-table>
+                `
+              }}
+            />
           </div>
         </CardContent>
       </Card>

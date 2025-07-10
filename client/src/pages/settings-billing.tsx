@@ -113,6 +113,12 @@ export default function BillingSettings() {
               <button 
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
                 onClick={() => {
+                  // Check if this is a test environment first
+                  if (organization.stripeCustomerId?.startsWith('cus_test_')) {
+                    alert('This is a test environment. In production, customers would access the Stripe customer portal to manage payment methods and billing history.');
+                    return;
+                  }
+                  
                   fetch('/api/billing/create-portal-session', {
                     method: 'POST',
                     headers: { 
@@ -128,7 +134,6 @@ export default function BillingSettings() {
                     if (data.url) {
                       window.open(data.url, '_blank');
                     } else {
-                      // Show the appropriate message for test environment
                       const message = data.message || data.error || 'Unable to open customer portal.';
                       alert(message);
                     }

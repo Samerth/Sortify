@@ -1189,6 +1189,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'No Stripe customer ID found for this organization' });
       }
 
+      // Check if this is a test customer ID
+      if (organization.stripeCustomerId.startsWith('cus_test_')) {
+        return res.status(400).json({ 
+          error: 'Customer portal not available for test subscriptions',
+          message: 'This is a test environment. In production, customers would access the Stripe customer portal to manage payment methods and billing history.'
+        });
+      }
+
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
       
       const session = await stripe.billingPortal.sessions.create({

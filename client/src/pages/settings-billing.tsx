@@ -119,14 +119,6 @@ export default function BillingSettings() {
               <button 
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
                 onClick={() => {
-                  console.log('Portal button clicked, customer ID:', organization.stripeCustomerId);
-                  
-                  // Check if this is a test customer ID
-                  if (organization.stripeCustomerId?.startsWith('cus_test_')) {
-                    alert('Customer portal is not available for test subscriptions. In production, this would open the Stripe customer portal for managing payment methods and billing history.');
-                    return;
-                  }
-                  
                   fetch('/api/billing/create-portal-session', {
                     method: 'POST',
                     headers: { 
@@ -137,17 +129,14 @@ export default function BillingSettings() {
                       customerId: organization.stripeCustomerId
                     })
                   })
-                  .then(res => {
-                    console.log('Portal response status:', res.status);
-                    return res.json();
-                  })
+                  .then(res => res.json())
                   .then(data => {
-                    console.log('Portal response data:', data);
                     if (data.url) {
                       window.open(data.url, '_blank');
+                    } else if (data.message) {
+                      alert(data.message);
                     } else {
-                      console.error('No portal URL received:', data);
-                      alert('Unable to open customer portal. Please try again later.');
+                      alert(data.error || 'Unable to open customer portal.');
                     }
                   })
                   .catch(error => {

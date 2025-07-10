@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./simpleAuth";
@@ -1263,6 +1264,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to update billing information' });
     }
   });
+
+  // Create Stripe customer portal session
+  app.post("/api/billing/create-portal-session", isAuthenticated, withOrganization, async (req, res) => {
+    try {
+      const organizationId = req.headers["x-organization-id"] as string;
+      const organization = await storage.getOrganization(organizationId);
+      
+      if (!organization?.stripeCustomerId) {
+        return res.status(400).json({ error: 'No Stripe customer ID found for this organization' });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+      
+      const session = await stripe.billingPortal.sessions.create({
+        customer: organization.stripeCustomerId,
+        return_url: `${req.headers.origin || 'https://sortifyapp.com'}/settings`,
+      });
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error('Portal session creation error:', error);
+      res.status(500).json({ error: 'Failed to create customer portal session' });
+    }
+  });
+
+  // Stripe webhook handler for subscription events
+  app.post("/api/webhooks/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'] as string;
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!endpointSecret) {
+      console.error('Stripe webhook secret not configured');
+      return res.status(400).send('Webhook secret not configured');
+    }
+
+    let event;
+
+    try {
+      // Initialize Stripe
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err: any) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    console.log('Stripe webhook event received:', event.type);
+
+    try {
+      switch (event.type) {
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          await handleSubscriptionUpdate(event.data.object);
+          break;
+        case 'customer.subscription.deleted':
+          await handleSubscriptionCancellation(event.data.object);
+          break;
+        case 'invoice.payment_succeeded':
+          await handlePaymentSucceeded(event.data.object);
+          break;
+        case 'invoice.payment_failed':
+          await handlePaymentFailed(event.data.object);
+          break;
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error('Webhook handler error:', error);
+      res.status(500).json({ error: 'Webhook handler failed' });
+    }
+  });
+
+  // Helper functions for webhook handling
+  async function handleSubscriptionUpdate(subscription: any) {
+    console.log('Processing subscription update:', subscription.id);
+    
+    // Find organization by Stripe customer ID
+    const organization = await storage.findOrganizationByStripeCustomerId(subscription.customer);
+    if (!organization) {
+      console.error('Organization not found for customer:', subscription.customer);
+      return;
+    }
+
+    // Update organization with subscription details
+    await storage.updateOrganizationBilling(organization.id, {
+      stripeSubscriptionId: subscription.id,
+      subscriptionStatus: subscription.status,
+      subscriptionStartDate: new Date(subscription.current_period_start * 1000),
+      subscriptionEndDate: new Date(subscription.current_period_end * 1000),
+      planType: subscription.items.data[0]?.price?.lookup_key || 'starter',
+    });
+
+    console.log('Subscription updated for organization:', organization.id);
+  }
+
+  async function handleSubscriptionCancellation(subscription: any) {
+    console.log('Processing subscription cancellation:', subscription.id);
+    
+    const organization = await storage.findOrganizationByStripeCustomerId(subscription.customer);
+    if (!organization) {
+      console.error('Organization not found for customer:', subscription.customer);
+      return;
+    }
+
+    await storage.updateOrganizationBilling(organization.id, {
+      subscriptionStatus: 'cancelled',
+      subscriptionEndDate: new Date(subscription.ended_at * 1000),
+    });
+
+    console.log('Subscription cancelled for organization:', organization.id);
+  }
+
+  async function handlePaymentSucceeded(invoice: any) {
+    console.log('Processing successful payment:', invoice.id);
+    
+    const organization = await storage.findOrganizationByStripeCustomerId(invoice.customer);
+    if (!organization) {
+      console.error('Organization not found for customer:', invoice.customer);
+      return;
+    }
+
+    await storage.updateOrganizationBilling(organization.id, {
+      lastPaymentDate: new Date(invoice.status_transitions.paid_at * 1000),
+      lastPaymentAmount: invoice.amount_paid / 100, // Convert from cents
+    });
+
+    console.log('Payment recorded for organization:', organization.id);
+  }
+
+  async function handlePaymentFailed(invoice: any) {
+    console.log('Processing failed payment:', invoice.id);
+    
+    const organization = await storage.findOrganizationByStripeCustomerId(invoice.customer);
+    if (!organization) {
+      console.error('Organization not found for customer:', invoice.customer);
+      return;
+    }
+
+    // You might want to send notifications or update subscription status
+    console.log('Payment failed for organization:', organization.id);
+  }
 
   // Organization upgrade endpoint for PayPal payments
   app.post("/api/organizations/:organizationId/upgrade", isAuthenticated, async (req, res) => {

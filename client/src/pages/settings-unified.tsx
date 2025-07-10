@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { useToast } from "@/hooks/use-toast";
@@ -55,6 +56,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+// Declare Stripe pricing table custom element for TypeScript
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'stripe-pricing-table': {
+        'pricing-table-id': string;
+        'publishable-key': string;
+        'customer-email'?: string;
+      };
+    }
+  }
+}
+
 // Schemas for mailroom and storage location forms
 const mailroomSchema = z.object({
   name: z.string().min(1, "Mailroom name is required"),
@@ -71,6 +85,79 @@ const storageLocationSchema = z.object({
 
 type MailroomFormData = z.infer<typeof mailroomSchema>;
 type StorageLocationFormData = z.infer<typeof storageLocationSchema>;
+
+// Stripe Pricing Table Component
+function StripePricingTableComponent() {
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    // Load Stripe pricing table script if not already loaded
+    if (!document.querySelector('script[src="https://js.stripe.com/v3/pricing-table.js"]')) {
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://js.stripe.com/v3/pricing-table.js';
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  const customerEmail = user?.email || '';
+
+  return (
+    <div id="stripe-pricing-table">
+      <stripe-pricing-table 
+        pricing-table-id="prctbl_1RicO8Emr2qhyP2Nxu8deiPo"
+        publishable-key="pk_test_51RhgUEEmr2qhyP2NLXIewVmvPOFkMVBCkmMbYIOOyulr1jjqR4slUmcXheV6TY9HoO0jOLWStDuJIuZFmA7Rt3Of003BjwbtIL"
+        customer-email={customerEmail}
+      />
+    </div>
+  );
+}
+
+// Subscription Management Button Component
+function SubscriptionManagementButton() {
+  const { currentOrganization } = useOrganization();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleManageSubscription = async () => {
+    if (!currentOrganization?.stripeCustomerId) {
+      toast({
+        title: "No Active Subscription",
+        description: "Subscribe to a plan first to manage your subscription.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await apiRequest("POST", "/api/billing/create-portal-session", {
+        customerId: currentOrganization.stripeCustomerId,
+      });
+      const { url } = await response.json();
+      window.open(url, '_blank');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to open subscription management portal.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Button 
+      variant="outline" 
+      className="w-full sm:w-auto"
+      onClick={handleManageSubscription}
+      disabled={isLoading}
+    >
+      {isLoading ? "Loading..." : "Manage Subscription"}
+    </Button>
+  );
+}
 
 interface OrganizationSettings {
   id: string;
@@ -737,28 +824,45 @@ export default function SettingsUnified() {
 
           {/* Members & License Management */}
           <TabsContent value="members" className="space-y-6">
-            {/* License Information */}
+            {/* Billing & Subscription Management */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Crown className="w-4 h-4" />
-                  License Information
+                  Billing & Subscription
                 </CardTitle>
-                <p className="text-sm text-gray-600">Current plan and user limits</p>
+                <p className="text-sm text-gray-600">Manage your subscription and billing</p>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-primary">{organizationMembers.length}</p>
-                    <p className="text-sm text-gray-600">Active Users</p>
+                <div className="space-y-6">
+                  {/* Current Plan Status */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <p className="text-2xl font-bold text-primary">{organizationMembers.length}</p>
+                      <p className="text-sm text-gray-600">Active Users</p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <p className="text-2xl font-bold text-primary">{organization?.maxUsers || 'Unlimited'}</p>
+                      <p className="text-sm text-gray-600">User Limit</p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <p className="text-2xl font-bold text-green-600">Active</p>
+                      <p className="text-sm text-gray-600">Status</p>
+                    </div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-primary">{organization?.maxUsers || 'Unlimited'}</p>
-                    <p className="text-sm text-gray-600">User Limit</p>
+
+                  {/* Stripe Pricing Table */}
+                  <div className="stripe-pricing-container">
+                    <StripePricingTableComponent />
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">Active</p>
-                    <p className="text-sm text-gray-600">License Status</p>
+
+                  {/* Subscription Management */}
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium text-gray-900 mb-2">Subscription Management</h4>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Manage your subscription, update payment methods, and view billing history through Stripe's secure customer portal.
+                    </p>
+                    <SubscriptionManagementButton />
                   </div>
                 </div>
               </CardContent>

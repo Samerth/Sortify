@@ -85,14 +85,19 @@ export interface IStorage {
   getUserOrganizations(userId: string): Promise<(Organization & { role: string })[]>;
   updateOrganization(id: string, data: Partial<InsertOrganization>): Promise<Organization>;
   updateOrganizationBilling(id: string, billingData: {
-    planType: string;
-    maxUsers: number;
-    subscriptionStatus: string;
-    billingCycle: string;
-    stripePaymentIntentId: string;
-    subscriptionStartDate: Date;
-    subscriptionEndDate: Date;
+    planType?: string;
+    maxUsers?: number;
+    subscriptionStatus?: string;
+    billingCycle?: string;
+    stripePaymentIntentId?: string;
+    stripeSubscriptionId?: string;
+    stripeCustomerId?: string;
+    subscriptionStartDate?: Date;
+    subscriptionEndDate?: Date;
+    lastPaymentDate?: Date;
+    lastPaymentAmount?: number;
   }): Promise<Organization>;
+  findOrganizationByStripeCustomerId(customerId: string): Promise<Organization | undefined>;
   getOrganizationByEmailDomain(domain: string): Promise<Organization | undefined>;
   
   // Organization member operations
@@ -375,27 +380,44 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrganizationBilling(id: string, billingData: {
-    planType: string;
-    maxUsers: number;
-    subscriptionStatus: string;
-    billingCycle: string;
-    stripePaymentIntentId: string;
-    subscriptionStartDate: Date;
-    subscriptionEndDate: Date;
+    planType?: string;
+    maxUsers?: number;
+    subscriptionStatus?: string;
+    billingCycle?: string;
+    stripePaymentIntentId?: string;
+    stripeSubscriptionId?: string;
+    stripeCustomerId?: string;
+    subscriptionStartDate?: Date;
+    subscriptionEndDate?: Date;
+    lastPaymentDate?: Date;
+    lastPaymentAmount?: number;
   }): Promise<Organization> {
+    const updateData: any = { updatedAt: new Date() };
+    
+    // Only set fields that are provided
+    if (billingData.planType !== undefined) updateData.planType = billingData.planType;
+    if (billingData.maxUsers !== undefined) updateData.maxUsers = billingData.maxUsers;
+    if (billingData.subscriptionStatus !== undefined) updateData.subscriptionStatus = billingData.subscriptionStatus;
+    if (billingData.billingCycle !== undefined) updateData.billingCycle = billingData.billingCycle;
+    if (billingData.stripeCustomerId !== undefined) updateData.stripeCustomerId = billingData.stripeCustomerId;
+    if (billingData.stripeSubscriptionId !== undefined) updateData.stripeSubscriptionId = billingData.stripeSubscriptionId;
+    if (billingData.subscriptionEndDate !== undefined) updateData.nextBillingDate = billingData.subscriptionEndDate;
+    if (billingData.lastPaymentDate !== undefined) updateData.lastPaymentDate = billingData.lastPaymentDate;
+    if (billingData.lastPaymentAmount !== undefined) updateData.lastPaymentAmount = billingData.lastPaymentAmount;
+    
     const [organization] = await db
       .update(organizations)
-      .set({ 
-        planType: billingData.planType,
-        maxUsers: billingData.maxUsers,
-        subscriptionStatus: billingData.subscriptionStatus,
-        billingCycle: billingData.billingCycle,
-        nextBillingDate: billingData.subscriptionEndDate,
-        lastPaymentDate: billingData.subscriptionStartDate,
-        updatedAt: new Date() 
-      })
+      .set(updateData)
       .where(eq(organizations.id, id))
       .returning();
+    return organization;
+  }
+
+  async findOrganizationByStripeCustomerId(customerId: string): Promise<Organization | undefined> {
+    const [organization] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.stripeCustomerId, customerId));
     return organization;
   }
 

@@ -140,20 +140,16 @@ export default function StripePricingTable() {
         </CardHeader>
         <CardContent>
           <div className="w-full">
-            {/* Try alternative approach using dangerouslySetInnerHTML */}
-            <div
-              dangerouslySetInnerHTML={{
-                __html: `
-                  <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-                  <stripe-pricing-table 
-                    pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-                    publishable-key="${import.meta.env.VITE_STRIPE_PUBLIC_KEY}"
-                    customer-email="${user?.email || ''}"
-                    client-reference-id="${currentOrganization?.id || ''}">
-                  </stripe-pricing-table>
-                `
-              }}
-            />
+            {/* Direct iframe approach for Stripe pricing table */}
+            <div className="min-h-[600px] w-full">
+              <iframe
+                src={`https://checkout.stripe.com/pricing-table/pricing-table.html?sessionId=&publishable_key=${import.meta.env.VITE_STRIPE_PUBLIC_KEY}&pricing_table_id=prctbl_1RjMwbR7UUImIKwkhPMOGqOE&client_reference_id=${currentOrganization?.id || ''}&customer_email=${encodeURIComponent(user?.email || '')}`}
+                width="100%"
+                height="600"
+                style={{ border: 'none' }}
+                loading="lazy"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

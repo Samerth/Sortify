@@ -65,6 +65,28 @@ export default function BillingContent() {
       userEmail: user?.email,
       orgId: currentOrganization?.id
     });
+
+    // Ensure Stripe script is loaded
+    const loadStripeScript = () => {
+      const existingScript = document.querySelector('script[src="https://js.stripe.com/v3/pricing-table.js"]');
+      if (!existingScript) {
+        console.log('Loading Stripe pricing table script...');
+        const script = document.createElement('script');
+        script.src = 'https://js.stripe.com/v3/pricing-table.js';
+        script.async = true;
+        script.onload = () => {
+          console.log('Stripe pricing table script loaded successfully');
+        };
+        script.onerror = (error) => {
+          console.error('Failed to load Stripe pricing table script:', error);
+        };
+        document.head.appendChild(script);
+      } else {
+        console.log('Stripe pricing table script already loaded');
+      }
+    };
+
+    loadStripeScript();
   }, [user?.email, currentOrganization?.id]);
 
   return (
@@ -126,20 +148,15 @@ export default function BillingContent() {
         </CardHeader>
         <CardContent>
           <div className="w-full">
-            {/* Try alternative approach using dangerouslySetInnerHTML */}
-            <div
-              dangerouslySetInnerHTML={{
-                __html: `
-                  <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-                  <stripe-pricing-table 
-                    pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-                    publishable-key="${import.meta.env.VITE_STRIPE_PUBLIC_KEY}"
-                    customer-email="${user?.email || ''}"
-                    client-reference-id="${currentOrganization?.id || ''}">
-                  </stripe-pricing-table>
-                `
-              }}
-            />
+            {/* Standard Stripe pricing table approach */}
+            <div className="stripe-pricing-table-container">
+              <stripe-pricing-table
+                pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
+                publishable-key={import.meta.env.VITE_STRIPE_PUBLIC_KEY}
+                customer-email={user?.email || ""}
+                client-reference-id={currentOrganization?.id || ""}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

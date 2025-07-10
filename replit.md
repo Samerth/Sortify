@@ -146,6 +146,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### January 10, 2025 - Stripe Pricing Table Integration
+- **Complete Stripe Pricing Table Integration**: Replaced manual Payment Intents with Stripe's embedded pricing table for automatic recurring subscriptions
+- **Updated Stripe Configuration**: Implemented new pricing table ID (prctbl_1RjMwbR7UUImIKwkhPMOGqOE) and publishable key for seamless billing
+- **Enhanced Webhook System**: Added comprehensive webhook handling for subscription events (created, updated, cancelled, payment succeeded/failed)
+- **Customer Portal Integration**: Added "Manage Subscription" functionality allowing users to update payment methods and billing details through Stripe's customer portal
+- **Automated Billing Flow**: Eliminated manual renewal processes with automatic recurring billing and real-time subscription status updates
+- **Improved Storage Methods**: Enhanced organization billing methods to handle flexible webhook data updates and Stripe customer ID lookups
+
 ### July 5, 2025 - Email & User Experience Fixes
 - **Team Member Invitation Emails Fixed**: Updated all email functions to use correct verified SendGrid sender address (`signup@sortifyapp.com`)
 - **Edit Recipient Dialog Fixed**: Resolved form validation issue by ensuring organizationId is properly included when editing recipients

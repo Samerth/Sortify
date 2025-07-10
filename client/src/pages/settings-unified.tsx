@@ -105,8 +105,8 @@ function StripePricingTableComponent() {
   return (
     <div id="stripe-pricing-table">
       <stripe-pricing-table 
-        pricing-table-id="prctbl_1RicO8Emr2qhyP2Nxu8deiPo"
-        publishable-key="pk_test_51RhgUEEmr2qhyP2NLXIewVmvPOFkMVBCkmMbYIOOyulr1jjqR4slUmcXheV6TY9HoO0jOLWStDuJIuZFmA7Rt3Of003BjwbtIL"
+        pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
+        publishable-key="pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf"
         customer-email={customerEmail}
       />
     </div>

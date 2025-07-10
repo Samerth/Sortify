@@ -89,25 +89,51 @@ type StorageLocationFormData = z.infer<typeof storageLocationSchema>;
 // Stripe Pricing Table Component
 function StripePricingTableComponent() {
   const { user } = useAuth();
+  const { currentOrganization } = useOrganization();
   
   useEffect(() => {
+    console.log('StripePricingTableComponent: Loading with data:', {
+      publicKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY,
+      userEmail: user?.email,
+      orgId: currentOrganization?.id
+    });
+
     // Load Stripe pricing table script if not already loaded
     if (!document.querySelector('script[src="https://js.stripe.com/v3/pricing-table.js"]')) {
+      console.log('StripePricingTableComponent: Loading Stripe script...');
       const script = document.createElement('script');
       script.async = true;
       script.src = 'https://js.stripe.com/v3/pricing-table.js';
+      script.onload = () => {
+        console.log('StripePricingTableComponent: Stripe script loaded successfully');
+      };
+      script.onerror = (error) => {
+        console.error('StripePricingTableComponent: Failed to load Stripe script:', error);
+      };
       document.head.appendChild(script);
+    } else {
+      console.log('StripePricingTableComponent: Stripe script already loaded');
     }
-  }, []);
+  }, [user?.email, currentOrganization?.id]);
+
+  if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
+    return (
+      <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
+        <p className="text-red-600">Stripe configuration missing. Please contact support.</p>
+      </div>
+    );
+  }
 
   const customerEmail = user?.email || '';
+  const clientReferenceId = currentOrganization?.id || '';
 
   return (
-    <div id="stripe-pricing-table">
+    <div id="stripe-pricing-table" className="w-full">
       <stripe-pricing-table 
         pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-        publishable-key="pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf"
+        publishable-key={import.meta.env.VITE_STRIPE_PUBLIC_KEY}
         customer-email={customerEmail}
+        client-reference-id={clientReferenceId}
       />
     </div>
   );
@@ -881,7 +907,7 @@ export default function SettingsUnified() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">
-                      {organizationMembers.length} of {organization?.maxUsers || '∞'} user licenses used
+                      License-based pricing: Unlimited users per license
                     </p>
                     <Button className="flex items-center gap-2">
                       <UserPlus className="w-4 h-4" />

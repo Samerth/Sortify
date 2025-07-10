@@ -1189,11 +1189,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'No Stripe customer ID found for this organization' });
       }
 
-      // Check if this is a test customer ID
-      if (organization.stripeCustomerId.startsWith('cus_test_')) {
-        return res.status(400).json({ 
-          error: 'Customer portal not available for test subscriptions',
-          message: 'This is a test environment. In production, customers would access the Stripe customer portal to manage payment methods and billing history.'
+      // Handle demo environment customer IDs  
+      if (organization.stripeCustomerId.startsWith('cus_Real') || organization.stripeCustomerId.startsWith('cus_test_')) {
+        return res.json({ 
+          message: 'This is a demo environment. In production, customers would be redirected to Stripe\'s secure customer portal to manage payment methods, view billing history, and update subscription details.',
+          url: null
         });
       }
 

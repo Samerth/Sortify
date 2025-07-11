@@ -1506,7 +1506,7 @@ export default function Settings() {
                             <div className="text-2xl font-bold text-orange-600">{actualMaxUsers === -1 ? '∞' : Math.max(0, actualMaxUsers - memberCount)}</div>
                             <div className="text-sm text-orange-600">Available Seats</div>
                             <div className="text-xs text-gray-600 mt-1">
-                              ({invitations?.length || 0} pending)
+                              ({pendingInvitations?.length || 0} pending)
                             </div>
                           </div>
                         </CardContent>

@@ -256,27 +256,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.log('✅ Admin check passed');
       
-      // Enforce license limits (one user per license)
+      // Enforce license limits (one user per license - only count actual registered users)
       const organization = await storage.getOrganization(organizationId);
       const currentMemberCount = await storage.getOrganizationMemberCount(organizationId);
       const pendingInvitations = await storage.getPendingInvitations(organizationId);
       
-      const totalUsedSeats = currentMemberCount + pendingInvitations.length;
       const maxUsers = organization?.maxUsers || 1;
-      const availableSeats = maxUsers - totalUsedSeats;
+      const availableSeats = maxUsers - currentMemberCount;
       
       console.log('🎫 License check:', { 
         currentMembers: currentMemberCount, 
         pendingInvitations: pendingInvitations.length, 
-        totalUsedSeats: totalUsedSeats, 
         maxUsers, 
         availableSeats,
         planType: organization?.planType 
       });
       
-      if (totalUsedSeats >= maxUsers) {
+      if (currentMemberCount >= maxUsers) {
         return res.status(400).json({ 
-          message: `License limit reached. You have ${maxUsers} ${maxUsers === 1 ? 'license' : 'licenses'} and ${totalUsedSeats} users (including pending invitations). Purchase additional licenses to invite more users.` 
+          message: `License limit reached. You have ${maxUsers} ${maxUsers === 1 ? 'license' : 'licenses'} and ${currentMemberCount} registered users. Purchase additional licenses to invite more users.` 
         });
       }
       

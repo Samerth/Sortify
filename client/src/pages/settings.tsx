@@ -1505,6 +1505,9 @@ export default function Settings() {
                           <div className="text-center">
                             <div className="text-2xl font-bold text-orange-600">{actualMaxUsers === -1 ? '∞' : Math.max(0, actualMaxUsers - memberCount)}</div>
                             <div className="text-sm text-orange-600">Available Seats</div>
+                            <div className="text-xs text-gray-600 mt-1">
+                              ({invitations?.length || 0} pending)
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -1855,6 +1858,9 @@ export default function Settings() {
             <div className="bg-green-50 p-3 rounded-lg">
               <p className="text-sm text-green-700">
                 <strong>License Check:</strong> You have {actualMaxUsers === -1 ? '∞' : Math.max(0, actualMaxUsers - memberCount)} available seats remaining ({memberCount}/{actualMaxUsers === -1 ? '∞' : actualMaxUsers} used).
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                Note: Pending invitations don't count against license seats until users register.
               </p>
             </div>
             <div className="flex gap-2 pt-4">

@@ -261,20 +261,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentMemberCount = await storage.getOrganizationMemberCount(organizationId);
       const pendingInvitations = await storage.getPendingInvitations(organizationId);
       
-      const totalPendingUsers = currentMemberCount + pendingInvitations.length;
+      const totalUsedSeats = currentMemberCount + pendingInvitations.length;
       const maxUsers = organization?.maxUsers || 1;
+      const availableSeats = maxUsers - totalUsedSeats;
       
       console.log('🎫 License check:', { 
         currentMembers: currentMemberCount, 
         pendingInvitations: pendingInvitations.length, 
-        totalPending: totalPendingUsers, 
+        totalUsedSeats: totalUsedSeats, 
         maxUsers, 
+        availableSeats,
         planType: organization?.planType 
       });
       
-      if (totalPendingUsers >= maxUsers) {
+      if (totalUsedSeats >= maxUsers) {
         return res.status(400).json({ 
-          message: `License limit reached. You have ${maxUsers} ${maxUsers === 1 ? 'license' : 'licenses'} and ${totalPendingUsers} users (including pending invitations). Purchase additional licenses to invite more users.` 
+          message: `License limit reached. You have ${maxUsers} ${maxUsers === 1 ? 'license' : 'licenses'} and ${totalUsedSeats} users (including pending invitations). Purchase additional licenses to invite more users.` 
         });
       }
       

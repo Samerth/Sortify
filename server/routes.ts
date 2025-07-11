@@ -1538,6 +1538,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manual license update endpoint for demo environment
+  app.post("/api/organizations/:id/update-licenses", isAuthenticated, withOrganization, async (req: any, res) => {
+    try {
+      const organizationId = req.params.id;
+      const { licenseCount } = req.body;
+      
+      if (!licenseCount || licenseCount < 1 || licenseCount > 100) {
+        return res.status(400).json({ error: 'License count must be between 1 and 100' });
+      }
+
+      // Verify user has admin access to this organization
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      await storage.updateOrganizationBilling(organizationId, {
+        maxUsers: licenseCount,
+      });
+
+      console.log(`Manual license update: Organization ${organizationId} updated to ${licenseCount} licenses`);
+      
+      res.json({ 
+        success: true, 
+        licenseCount,
+        message: `Successfully updated to ${licenseCount} licenses` 
+      });
+
+    } catch (error) {
+      console.error('License update error:', error);
+      res.status(500).json({ error: 'Failed to update license count' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

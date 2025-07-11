@@ -88,19 +88,22 @@ export default function BillingSettings() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <p className="text-2xl font-bold text-primary">
-                  {organization.planType || 'Unknown'}
+                  {organization.planType?.charAt(0).toUpperCase() + organization.planType?.slice(1) || 'Unknown'}
                 </p>
                 <p className="text-sm text-gray-600">Current Plan</p>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <p className="text-2xl font-bold text-green-600">
-                  {organization.maxUsers === -1 ? 'Unlimited' : organization.maxUsers}
+                  {organization.maxUsers === -1 ? 'Unlimited' : organization.maxUsers || 1}
                 </p>
                 <p className="text-sm text-gray-600">Licensed Users</p>
+                {organization.stripeCustomerId?.startsWith('cus_Real') && (
+                  <p className="text-xs text-blue-600 mt-1">Demo Environment</p>
+                )}
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-600">
-                  {organization.subscriptionStatus || 'Active'}
+                  {organization.subscriptionStatus?.charAt(0).toUpperCase() + organization.subscriptionStatus?.slice(1) || 'Active'}
                 </p>
                 <p className="text-sm text-gray-600">Status</p>
               </div>

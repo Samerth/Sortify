@@ -62,7 +62,7 @@ export default function BillingSettings() {
         )}
       </div>
 
-      {!organization?.stripeSubscriptionId || organization?.stripeSubscriptionId?.startsWith('sub_test_') ? (
+      {!organization?.stripeSubscriptionId ? (
         <Card>
           <CardHeader>
             <CardTitle>Choose Your Plan</CardTitle>
@@ -97,9 +97,6 @@ export default function BillingSettings() {
                   {organization.maxUsers === -1 ? 'Unlimited' : organization.maxUsers || 1}
                 </p>
                 <p className="text-sm text-gray-600">Licensed Users</p>
-                {organization.stripeCustomerId?.startsWith('cus_Real') && (
-                  <p className="text-xs text-blue-600 mt-1">Demo Environment</p>
-                )}
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-600">
@@ -116,11 +113,6 @@ export default function BillingSettings() {
               <button 
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
                 onClick={() => {
-                  // Check if this is a demo environment first
-                  if (organization.stripeCustomerId?.startsWith('cus_Real') || organization.stripeCustomerId?.startsWith('cus_test_')) {
-                    alert('This is a demo environment. In production, customers would be redirected to Stripe\'s secure customer portal to manage payment methods, view billing history, and update subscription details.');
-                    return;
-                  }
                   
                   fetch('/api/billing/create-portal-session', {
                     method: 'POST',

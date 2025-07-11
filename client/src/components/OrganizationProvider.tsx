@@ -65,6 +65,8 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
     queryClient.invalidateQueries({ queryKey: ["/api/organizations"] });
     if (currentOrganization) {
       queryClient.invalidateQueries({ queryKey: [`/api/organizations/${currentOrganization.id}`] });
+      // Force re-fetch current organization data to update subscription info
+      queryClient.refetchQueries({ queryKey: ["/api/organizations"] });
     }
   };
 

@@ -1538,6 +1538,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reset organization to trial state
+  app.post("/api/trial-reset/:organizationId", isAuthenticated, async (req, res) => {
+    try {
+      const { organizationId } = req.params;
+      await TrialManager.resetToTrial(organizationId);
+      res.json({ success: true, message: "Organization reset to trial state" });
+    } catch (error) {
+      console.error('Trial reset error:', error);
+      res.status(500).json({ error: 'Failed to reset to trial' });
+    }
+  });
+
   // Manual license update endpoint for demo environment
   app.post("/api/organizations/:id/update-licenses", isAuthenticated, withOrganization, async (req: any, res) => {
     try {

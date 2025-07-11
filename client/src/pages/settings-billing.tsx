@@ -25,7 +25,7 @@ function StripePricingTableComponent() {
     <div id="stripe-pricing-table-billing">
       <stripe-pricing-table 
         pricing-table-id="prctbl_1RjMwbR7UUImIKwkhPMOGqOE"
-        publishable-key="pk_test_51RgUSrR7UUImIKwk2CJoRc8QfG8PoBJE2hVJSYmCum4WuZDObwoN0PLW569N16QzpEdY3kkw2lPlUD4WwvOSIAsy00yFnx3rmf"
+        publishable-key={import.meta.env.VITE_STRIPE_PUBLIC_KEY}
         customer-email={customerEmail}
       />
     </div>
@@ -52,7 +52,7 @@ export default function BillingSettings() {
             Choose the plan that fits your organization's needs
           </p>
         </div>
-        {organization?.stripeSubscriptionId && !organization?.stripeSubscriptionId?.startsWith('sub_test_') && (
+        {organization?.stripeSubscriptionId && organization?.subscriptionStatus === 'active' && (
           <div className="flex items-center gap-2">
             <Crown className="w-4 h-4 text-yellow-500" />
             <span className="text-sm font-medium">
@@ -60,9 +60,16 @@ export default function BillingSettings() {
             </span>
           </div>
         )}
+        {(!organization?.stripeSubscriptionId || organization?.subscriptionStatus === 'trial') && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-blue-600">
+              Trial: {organization?.planType === 'trial' ? '1 User License' : 'No Active Plan'}
+            </span>
+          </div>
+        )}
       </div>
 
-      {!organization?.stripeSubscriptionId ? (
+      {!organization?.stripeSubscriptionId || organization?.subscriptionStatus === 'trial' ? (
         <Card>
           <CardHeader>
             <CardTitle>Choose Your Plan</CardTitle>

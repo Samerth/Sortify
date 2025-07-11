@@ -32,10 +32,34 @@ export class TrialManager {
         subscriptionStatus: "trial",
         trialStartDate: new Date(),
         trialEndDate: trialEndDate,
-        maxUsers: 5,
-        maxPackagesPerMonth: 500,
+        maxUsers: 1,
+        maxPackagesPerMonth: 100,
         currentMonthPackages: 0,
         usageResetDate: new Date(),
+      })
+      .where(eq(organizations.id, organizationId));
+  }
+
+  /**
+   * Reset organization to trial state (clear subscription data)
+   */
+  static async resetToTrial(organizationId: string): Promise<void> {
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialEndDate.getDate() + 7); // 7-day trial
+
+    await db
+      .update(organizations)
+      .set({
+        planType: "trial",
+        subscriptionStatus: "trial",
+        trialStartDate: new Date(),
+        trialEndDate: trialEndDate,
+        maxUsers: 1,
+        maxPackagesPerMonth: 100,
+        currentMonthPackages: 0,
+        usageResetDate: new Date(),
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
       })
       .where(eq(organizations.id, organizationId));
   }

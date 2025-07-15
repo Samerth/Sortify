@@ -1,0 +1,121 @@
+{
+  "id": "evt_1RlHe3R7UUImIKwkQOxX4eYe",
+  "object": "event",
+  "api_version": "2025-06-30.basil",
+  "created": 1752619699,
+  "data": {
+    "object": {
+      "id": "cs_test_a1Zk7Id18b3FeLh8OQGRS78RxvMukoamHPw9fvTBKuBRVRjJjG0sJVJRBC",
+      "object": "checkout.session",
+      "adaptive_pricing": null,
+      "after_expiration": null,
+      "allow_promotion_codes": null,
+      "amount_subtotal": 2500,
+      "amount_total": 2500,
+      "automatic_tax": {
+        "enabled": false,
+        "liability": null,
+        "provider": null,
+        "status": null
+      },
+      "billing_address_collection": null,
+      "cancel_url": "https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/settings?subscription=cancelled",
+      "client_reference_id": "866a4371-2578-4211-b798-5c47137ff98c",
+      "client_secret": null,
+      "collected_information": {
+        "shipping_details": null
+      },
+      "consent": null,
+      "consent_collection": null,
+      "created": 1752619683,
+      "currency": "usd",
+      "currency_conversion": null,
+      "custom_fields": [],
+      "custom_text": {
+        "after_submit": null,
+        "shipping_address": null,
+        "submit": null,
+        "terms_of_service_acceptance": null
+      },
+      "customer": "cus_SgexSaPv2HXjRT",
+      "customer_creation": "always",
+      "customer_details": {
+        "address": {
+          "city": null,
+          "country": "CA",
+          "line1": null,
+          "line2": null,
+          "postal_code": "V5W 2G1",
+          "state": null
+        },
+        "email": "samerth.pathak+test27@codsphere.com",
+        "name": "ccsdcsdcds",
+        "phone": null,
+        "tax_exempt": "none",
+        "tax_ids": []
+      },
+      "customer_email": "samerth.pathak+test27@codsphere.com",
+      "discounts": [],
+      "expires_at": 1752706082,
+      "invoice": "in_1RlHe2R7UUImIKwkC3QeV94u",
+      "invoice_creation": null,
+      "livemode": false,
+      "locale": null,
+      "metadata": {
+        "organizationId": "866a4371-2578-4211-b798-5c47137ff98c",
+        "quantity": "1",
+        "planId": "starter"
+      },
+      "mode": "subscription",
+      "origin_context": null,
+      "payment_intent": null,
+      "payment_link": null,
+      "payment_method_collection": "always",
+      "payment_method_configuration_details": null,
+      "payment_method_options": {
+        "card": {
+          "request_three_d_secure": "automatic"
+        }
+      },
+      "payment_method_types": [
+        "card"
+      ],
+      "payment_status": "paid",
+      "permissions": null,
+      "phone_number_collection": {
+        "enabled": false
+      },
+      "recovered_from": null,
+      "saved_payment_method_options": {
+        "allow_redisplay_filters": [
+          "always"
+        ],
+        "payment_method_remove": "disabled",
+        "payment_method_save": null
+      },
+      "setup_intent": null,
+      "shipping_address_collection": null,
+      "shipping_cost": null,
+      "shipping_options": [],
+      "status": "complete",
+      "submit_type": null,
+      "subscription": "sub_1RlHe2R7UUImIKwkcx5bEHaf",
+      "success_url": "https://8cbb700c-7c10-43f4-a518-495534fba4be-00-e45ergw74cpd.picard.replit.dev/settings?subscription=success&session_id={CHECKOUT_SESSION_ID}",
+      "total_details": {
+        "amount_discount": 0,
+        "amount_shipping": 0,
+        "amount_tax": 0
+      },
+      "ui_mode": "hosted",
+      "url": null,
+      "wallet_options": null
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 3,
+  "request": {
+    "id": null,
+    "idempotency_key": null
+  },
+  "type": "checkout.session.completed"
+}

@@ -1294,6 +1294,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test webhook handler without signature verification for testing
+  app.post("/api/webhooks/stripe-test", async (req, res) => {
+    console.log('Test webhook event received:', req.body.type);
+    
+    try {
+      switch (req.body.type) {
+        case 'checkout.session.completed':
+          await handleCheckoutSessionCompleted(req.body.data.object);
+          break;
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          await handleSubscriptionUpdate(req.body.data.object);
+          break;
+        case 'customer.subscription.deleted':
+          await handleSubscriptionCancellation(req.body.data.object);
+          break;
+        default:
+          console.log(`Unhandled event type: ${req.body.type}`);
+      }
+      
+      res.json({ received: true, message: 'Test webhook processed successfully' });
+    } catch (error) {
+      console.error('Test webhook handler error:', error);
+      res.status(500).json({ error: 'Test webhook handler failed' });
+    }
+  });
+
   // Stripe webhook handler for subscription events
   app.post("/api/webhooks/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'] as string;

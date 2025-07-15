@@ -1,0 +1,189 @@
+{
+  "id": "evt_1RlBCER7UUImIKwkOTCkGlST",
+  "object": "event",
+  "api_version": "2025-06-30.basil",
+  "created": 1752594909,
+  "data": {
+    "object": {
+      "id": "in_1RlBCDR7UUImIKwkYvISbcWW",
+      "object": "invoice",
+      "account_country": "CA",
+      "account_name": "Codsphere Technologies sandbox",
+      "account_tax_ids": null,
+      "amount_due": 3500,
+      "amount_overpaid": 0,
+      "amount_paid": 3500,
+      "amount_remaining": 0,
+      "amount_shipping": 0,
+      "application": null,
+      "attempt_count": 0,
+      "attempted": true,
+      "auto_advance": false,
+      "automatic_tax": {
+        "disabled_reason": null,
+        "enabled": false,
+        "liability": null,
+        "provider": null,
+        "status": null
+      },
+      "automatically_finalizes_at": null,
+      "billing_reason": "subscription_create",
+      "collection_method": "charge_automatically",
+      "created": 1752594907,
+      "currency": "usd",
+      "custom_fields": null,
+      "customer": "cus_SgYI6DmN1fNgxQ",
+      "customer_address": {
+        "city": null,
+        "country": "CA",
+        "line1": null,
+        "line2": null,
+        "postal_code": "V5W 2G1",
+        "state": null
+      },
+      "customer_email": "samerth.pathak+test27@codsphere.com",
+      "customer_name": "Samerth Pathak",
+      "customer_phone": null,
+      "customer_shipping": null,
+      "customer_tax_exempt": "none",
+      "customer_tax_ids": [],
+      "default_payment_method": null,
+      "default_source": null,
+      "default_tax_rates": [],
+      "description": null,
+      "discounts": [],
+      "due_date": null,
+      "effective_at": 1752594907,
+      "ending_balance": 0,
+      "footer": null,
+      "from_invoice": null,
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_1RgUSrR7UUImIKwk/test_YWNjdF8xUmdVU3JSN1VVSW1JS3drLF9TZ1lJU2pOVG9TOWhrS0M0SDlmVzZmNzU4NzBKMGNwLDE0MzEzNTcxMA0200IiD72YH2?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_1RgUSrR7UUImIKwk/test_YWNjdF8xUmdVU3JSN1VVSW1JS3drLF9TZ1lJU2pOVG9TOWhrS0M0SDlmVzZmNzU4NzBKMGNwLDE0MzEzNTcxMA0200IiD72YH2/pdf?s=ap",
+      "issuer": {
+        "type": "self"
+      },
+      "last_finalization_error": null,
+      "latest_revision": null,
+      "lines": {
+        "object": "list",
+        "data": [
+          {
+            "id": "il_1RlBCBR7UUImIKwkTj5GGOm7",
+            "object": "line_item",
+            "amount": 3500,
+            "currency": "usd",
+            "description": "1 × Professional License (at $35.00 / month)",
+            "discount_amounts": [],
+            "discountable": true,
+            "discounts": [],
+            "invoice": "in_1RlBCDR7UUImIKwkYvISbcWW",
+            "livemode": false,
+            "metadata": {
+              "organizationId": "866a4371-2578-4211-b798-5c47137ff98c",
+              "quantity": "1",
+              "planId": "professional"
+            },
+            "parent": {
+              "invoice_item_details": null,
+              "subscription_item_details": {
+                "invoice_item": null,
+                "proration": false,
+                "proration_details": {
+                  "credited_items": null
+                },
+                "subscription": "sub_1RlBCDR7UUImIKwk9Q6l1ePe",
+                "subscription_item": "si_SgYIMG7IqKI2aq"
+              },
+              "type": "subscription_item_details"
+            },
+            "period": {
+              "end": 1755273307,
+              "start": 1752594907
+            },
+            "pretax_credit_amounts": [],
+            "pricing": {
+              "price_details": {
+                "price": "price_1RlBBiR7UUImIKwkLIheB9UE",
+                "product": "prod_SgYIc7TC8OLywU"
+              },
+              "type": "price_details",
+              "unit_amount_decimal": "3500"
+            },
+            "quantity": 1,
+            "taxes": []
+          }
+        ],
+        "has_more": false,
+        "total_count": 1,
+        "url": "/v1/invoices/in_1RlBCDR7UUImIKwkYvISbcWW/lines"
+      },
+      "livemode": false,
+      "metadata": {},
+      "next_payment_attempt": null,
+      "number": "PISSTNWP-0001",
+      "on_behalf_of": null,
+      "parent": {
+        "quote_details": null,
+        "subscription_details": {
+          "metadata": {
+            "organizationId": "866a4371-2578-4211-b798-5c47137ff98c",
+            "quantity": "1",
+            "planId": "professional"
+          },
+          "subscription": "sub_1RlBCDR7UUImIKwk9Q6l1ePe"
+        },
+        "type": "subscription_details"
+      },
+      "payment_settings": {
+        "default_mandate": null,
+        "payment_method_options": {
+          "acss_debit": null,
+          "bancontact": null,
+          "card": {
+            "request_three_d_secure": "automatic"
+          },
+          "customer_balance": null,
+          "konbini": null,
+          "sepa_debit": null,
+          "us_bank_account": null
+        },
+        "payment_method_types": [
+          "card"
+        ]
+      },
+      "period_end": 1752594907,
+      "period_start": 1752594907,
+      "post_payment_credit_notes_amount": 0,
+      "pre_payment_credit_notes_amount": 0,
+      "receipt_number": null,
+      "rendering": null,
+      "shipping_cost": null,
+      "shipping_details": null,
+      "starting_balance": 0,
+      "statement_descriptor": null,
+      "status": "paid",
+      "status_transitions": {
+        "finalized_at": 1752594907,
+        "marked_uncollectible_at": null,
+        "paid_at": 1752594908,
+        "voided_at": null
+      },
+      "subtotal": 3500,
+      "subtotal_excluding_tax": 3500,
+      "test_clock": null,
+      "total": 3500,
+      "total_discount_amounts": [],
+      "total_excluding_tax": 3500,
+      "total_pretax_credit_amounts": [],
+      "total_taxes": [],
+      "webhooks_delivered_at": 1752594907
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": null,
+    "idempotency_key": "16ed077c-45b7-4b08-881b-0a23e1bd7efe"
+  },
+  "type": "invoice.payment_succeeded"
+}

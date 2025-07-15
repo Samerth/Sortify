@@ -1310,6 +1310,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case 'customer.subscription.deleted':
           await handleSubscriptionCancellation(req.body.data.object);
           break;
+        case 'invoice.payment_succeeded':
+          await handlePaymentSucceeded(req.body.data.object);
+          break;
+        case 'invoice.payment_failed':
+          await handlePaymentFailed(req.body.data.object);
+          break;
         default:
           console.log(`Unhandled event type: ${req.body.type}`);
       }
@@ -1322,7 +1328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stripe webhook handler for subscription events
-  app.post("/api/webhooks/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
+  app.post("/api/webhooks/stripe", async (req, res) => {
     const sig = req.headers['stripe-signature'] as string;
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 

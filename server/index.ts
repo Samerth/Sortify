@@ -3,6 +3,11 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Apply raw middleware specifically for Stripe webhooks BEFORE JSON parsing
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
+
+// Then apply JSON parsing for all other routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

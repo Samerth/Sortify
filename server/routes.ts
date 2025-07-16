@@ -1452,7 +1452,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   async function handleSubscriptionUpdate(subscription: any) {
-    console.log('Processing subscription update:', subscription.id);
+    console.log('🔄 Processing subscription update:', subscription.id);
+    console.log('🔄 Full subscription data:', JSON.stringify(subscription, null, 2));
     
     // Find organization by Stripe customer ID
     let organization = await storage.findOrganizationByStripeCustomerId(subscription.customer);
@@ -1514,11 +1515,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
 
-    // Extract license quantity from subscription items
+    // Extract license details from subscription items
     const subscriptionItem = subscription.items.data[0];
     const licenseQuantity = subscriptionItem?.quantity || 1;
     
-    console.log(`Setting user limit to ${licenseQuantity} based on license quantity (one user per license)`);
+    // Determine plan type from Stripe data
+    let planType = 'starter'; // default
+    
+    // Check multiple sources for plan type
+    if (subscription.metadata?.planId) {
+      planType = subscription.metadata.planId;
+      console.log('📋 Plan type from subscription metadata:', planType);
+    } else if (subscriptionItem?.price?.lookup_key) {
+      planType = subscriptionItem.price.lookup_key;
+      console.log('📋 Plan type from price lookup_key:', planType);
+    } else if (subscriptionItem?.price?.nickname) {
+      const nickname = subscriptionItem.price.nickname.toLowerCase();
+      if (nickname.includes('enterprise')) planType = 'enterprise';
+      else if (nickname.includes('professional') || nickname.includes('pro')) planType = 'professional';
+      else if (nickname.includes('starter')) planType = 'starter';
+      console.log('📋 Plan type from price nickname:', planType);
+    } else {
+      // Determine plan based on price amount and quantity
+      const unitAmount = subscriptionItem?.price?.unit_amount || 0;
+      const totalAmount = unitAmount * licenseQuantity;
+      
+      if (unitAmount >= 4500 || totalAmount >= 11250) { // $45+ per unit or $112.50+ total
+        planType = 'enterprise';
+      } else if (unitAmount >= 3500 || totalAmount >= 7000) { // $35+ per unit or $70+ total
+        planType = 'professional';
+      } else {
+        planType = 'starter';
+      }
+      console.log('📋 Plan type determined from pricing:', planType, '(unit:', unitAmount, 'total:', totalAmount, ')');
+    }
+    
+    console.log(`📊 Final plan details: ${planType} plan with ${licenseQuantity} licenses (one user per license)`);
 
     // Update organization with subscription details and enforce license limits
     await storage.updateOrganizationBilling(organization.id, {
@@ -1526,11 +1558,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       subscriptionStatus: subscription.status,
       subscriptionStartDate: new Date(subscription.current_period_start * 1000),
       subscriptionEndDate: new Date(subscription.current_period_end * 1000),
-      planType: subscription.items.data[0]?.price?.lookup_key || 'starter',
+      planType: planType,
       maxUsers: licenseQuantity, // Enforce one user per license
     });
 
-    console.log('Subscription updated for organization:', organization.id, 'with user limit:', licenseQuantity);
+    console.log('✅ Subscription updated for organization:', organization.id);
+    console.log('✅ Plan:', planType, '| Licenses:', licenseQuantity, '| Status:', subscription.status);
   }
 
   async function handleSubscriptionCancellation(subscription: any) {
@@ -1589,6 +1622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Customer ID is required' });
       }
 
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
       const session = await stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: req.headers.origin || 'https://sortifyapp.com',

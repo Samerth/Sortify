@@ -43,13 +43,28 @@ export default function BillingSettings() {
     refreshOrganization();
   };
   
-  console.log('Billing Debug - currentOrganization:', currentOrganization);
-  console.log('Billing Debug - stripeSubscriptionId:', organization?.stripeSubscriptionId);
-  console.log('Billing Debug - planType:', organization?.planType);
-  console.log('Billing Debug - subscriptionStatus:', organization?.subscriptionStatus);
+  console.log('🔍 Billing Debug - currentOrganization:', currentOrganization);
+  console.log('🔍 Billing Debug - stripeSubscriptionId:', organization?.stripeSubscriptionId);
+  console.log('🔍 Billing Debug - planType:', organization?.planType);
+  console.log('🔍 Billing Debug - subscriptionStatus:', organization?.subscriptionStatus);
+  console.log('🔍 Billing Debug - hasActiveSubscription:', organization?.stripeSubscriptionId && organization?.subscriptionStatus === 'active');
 
   return (
     <div className="space-y-6">
+      {/* Force visible test button */}
+      <div className="w-full p-4 bg-yellow-100 border border-yellow-300 rounded">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Test Button - Force Refresh Subscription Data</span>
+          <button 
+            onClick={handleRefresh}
+            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white text-lg font-bold rounded-lg border-4 border-red-400"
+            title="Force refresh subscription data"
+          >
+            🔄 TEST REFRESH BUTTON
+          </button>
+        </div>
+      </div>
+      
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Billing & Subscriptions</h2>
@@ -75,10 +90,10 @@ export default function BillingSettings() {
           )}
           <button 
             onClick={handleRefresh}
-            className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded font-medium"
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg font-medium border-2 border-green-400 shadow-lg"
             title="Refresh subscription data"
           >
-            Refresh Data
+            🔄 Refresh Data
           </button>
         </div>
       </div>
@@ -131,9 +146,17 @@ export default function BillingSettings() {
               <p className="text-sm text-gray-600 mb-4">
                 Manage your subscription, update payment methods, and view billing history through Stripe's secure customer portal.
               </p>
-              <button 
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-                onClick={() => {
+              <div className="flex items-center justify-center gap-4">
+                <button 
+                  onClick={handleRefresh}
+                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg font-medium"
+                  title="Refresh subscription data"
+                >
+                  🔄 Refresh Data
+                </button>
+                <button 
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                  onClick={() => {
                   
                   fetch('/api/billing/create-portal-session', {
                     method: 'POST',
@@ -162,6 +185,7 @@ export default function BillingSettings() {
               >
                 Manage Subscription
               </button>
+              </div>
             </div>
           </CardContent>
         </Card>

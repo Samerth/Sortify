@@ -366,14 +366,16 @@ export default function Settings() {
   const { data: organizationMembers = [] } = useQuery({
     queryKey: [`/api/organizations/${currentOrganization?.id}/members`],
     enabled: !!currentOrganization?.id,
-    refetchInterval: 30000, // Refetch every 30 seconds to catch subscription updates
+    refetchInterval: 10000, // Refetch every 10 seconds to catch subscription updates
+    refetchOnWindowFocus: true,
   });
 
   // Fetch complete organization data with all fields including maxUsers
   const { data: fullOrganizationData } = useQuery<Organization>({
     queryKey: [`/api/organizations/${currentOrganization?.id}`],
     enabled: !!currentOrganization?.id,
-    refetchInterval: 30000, // Refetch every 30 seconds to catch subscription updates
+    refetchInterval: 10000, // Refetch every 10 seconds to catch subscription updates
+    refetchOnWindowFocus: true,
   });
 
   const memberCount = Array.isArray(organizationMembers) ? organizationMembers.length : 0;

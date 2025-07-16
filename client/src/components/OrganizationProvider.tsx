@@ -31,7 +31,9 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
   const { data: organizationsData = [], isLoading } = useQuery({
     queryKey: ["/api/organizations"],
     staleTime: 0, // Force fresh data to resolve cache issues
-    refetchInterval: 30000, // Refetch every 30 seconds to catch webhook updates
+    refetchInterval: 10000, // Refetch every 10 seconds to catch webhook updates quickly
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnMount: true, // Always refetch on mount
   });
 
   // Deduplicate organizations by ID to prevent duplicate keys

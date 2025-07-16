@@ -136,6 +136,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const organizations = await storage.getUserOrganizations(userId);
+      
+      // Add cache-busting headers to ensure fresh data after webhook updates
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       res.json(organizations);
     } catch (error) {
       console.error("Error fetching organizations:", error);
@@ -171,6 +179,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!organization) {
         return res.status(404).json({ message: "Organization not found" });
       }
+      
+      // Add cache-busting headers to ensure fresh subscription data
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       res.json(organization);
     } catch (error) {
       console.error("Error fetching organization:", error);

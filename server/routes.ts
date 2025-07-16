@@ -1413,11 +1413,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper functions for webhook handling
   async function handleCheckoutSessionCompleted(session: any) {
-    console.log('Processing checkout session completed:', session.id);
+    console.log('🎯 Processing checkout session completed:', session.id);
+    console.log('🎯 Session data:', {
+      customer: session.customer,
+      customer_email: session.customer_email,
+      client_reference_id: session.client_reference_id,
+      metadata: session.metadata
+    });
     
     const organizationId = session.client_reference_id || session.metadata?.organizationId;
     if (!organizationId) {
-      console.error('No organization ID found in checkout session:', session.id);
+      console.error('❌ No organization ID found in checkout session:', session.id);
       return;
     }
 
@@ -1427,9 +1433,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stripeCustomerId: session.customer,
       });
       
-      console.log('Updated organization', organizationId, 'with customer ID:', session.customer);
+      console.log('✅ Updated organization', organizationId, 'with customer ID:', session.customer);
+      
+      // If there's a subscription in the session, also process it immediately
+      if (session.subscription) {
+        console.log('🔄 Found subscription in session, processing subscription update:', session.subscription);
+        try {
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+          const subscription = await stripe.subscriptions.retrieve(session.subscription);
+          await handleSubscriptionUpdate(subscription);
+        } catch (subscriptionError) {
+          console.error('❌ Error processing subscription from checkout session:', subscriptionError);
+        }
+      }
     } catch (error) {
-      console.error('Error updating organization with customer ID:', error);
+      console.error('❌ Error updating organization with customer ID:', error);
     }
   }
 

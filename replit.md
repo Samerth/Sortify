@@ -146,6 +146,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 16, 2025 - Fixed Automatic Stripe Customer ID Linking & Webhook Processing
+- **Automatic Customer ID Linking Fixed**: Enhanced checkout session webhook handler to automatically link Stripe customer IDs to organizations during subscription creation
+- **Enhanced Webhook Debugging**: Added comprehensive logging to track webhook events, customer ID linking, and subscription processing in production
+- **Customer ID Mismatch Resolution**: Fixed issue where manual database updates were required by implementing automatic customer ID detection and linking
+- **Complete Webhook Flow**: Checkout sessions now automatically trigger subscription processing, ensuring immediate license updates
+- **Production Webhook Validation**: Confirmed webhook endpoint is reachable and processing events correctly with enhanced error handling
+- **Email-Based Organization Detection**: Added fallback logic to find organizations by customer email when direct customer ID lookup fails
+- **Real-time Subscription Updates**: Subscription changes in Stripe now automatically update organization plan types and license limits within seconds
+- **One-User-Per-License Enforcement**: Verified license counting logic properly enforces subscription quantity = maximum users
+- **Complete End-to-End Flow**: New customers creating subscriptions automatically get proper organization linking without manual intervention
+
 ### July 15, 2025 - Complete Stripe Subscription Flow Testing & Validation
 - **End-to-End Subscription Flow Tested**: Comprehensive testing of complete subscription process from trial to paid plan
 - **Stripe Checkout Session Creation**: Successfully generates real Stripe payment URLs for live transactions

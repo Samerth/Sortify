@@ -57,28 +57,30 @@ export default function BillingSettings() {
             Choose the plan that fits your organization's needs
           </p>
         </div>
-        {organization?.stripeSubscriptionId && organization?.subscriptionStatus === 'active' && (
-          <div className="flex items-center gap-2">
-            <Crown className="w-4 h-4 text-yellow-500" />
-            <span className="text-sm font-medium">
-              Current: {organization.planType?.charAt(0).toUpperCase() + organization.planType?.slice(1)} Plan
-            </span>
-          </div>
-        )}
-        <button 
-          onClick={handleRefresh}
-          className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
-          title="Refresh subscription data"
-        >
-          Refresh
-        </button>
-        {(!organization?.stripeSubscriptionId || organization?.subscriptionStatus === 'trial') && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-blue-600">
-              Trial: {organization?.planType === 'trial' ? '1 User License' : 'No Active Plan'}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-4">
+          {organization?.stripeSubscriptionId && organization?.subscriptionStatus === 'active' && (
+            <div className="flex items-center gap-2">
+              <Crown className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm font-medium">
+                Current: {organization.planType?.charAt(0).toUpperCase() + organization.planType?.slice(1)} Plan
+              </span>
+            </div>
+          )}
+          {(!organization?.stripeSubscriptionId || organization?.subscriptionStatus === 'trial') && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-blue-600">
+                Trial: {organization?.planType === 'trial' ? '1 User License' : 'No Active Plan'}
+              </span>
+            </div>
+          )}
+          <button 
+            onClick={handleRefresh}
+            className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded font-medium"
+            title="Refresh subscription data"
+          >
+            Refresh Data
+          </button>
+        </div>
       </div>
 
       {!organization?.stripeSubscriptionId || organization?.subscriptionStatus === 'trial' ? (

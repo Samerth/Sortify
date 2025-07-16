@@ -42,16 +42,25 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
   );
 
   useEffect(() => {
-    if (organizations.length > 0 && !currentOrganization) {
-      // Auto-select first organization or load from localStorage
-      const savedOrgId = localStorage.getItem("selectedOrganizationId");
-      const orgToSelect = savedOrgId 
-        ? organizations.find(org => org.id === savedOrgId) 
-        : organizations[0];
-      
-      if (orgToSelect) {
-        setCurrentOrganization(orgToSelect);
-        localStorage.setItem("selectedOrganizationId", orgToSelect.id);
+    if (organizations.length > 0) {
+      // If no current organization, auto-select first or from localStorage
+      if (!currentOrganization) {
+        const savedOrgId = localStorage.getItem("selectedOrganizationId");
+        const orgToSelect = savedOrgId 
+          ? organizations.find(org => org.id === savedOrgId) 
+          : organizations[0];
+        
+        if (orgToSelect) {
+          setCurrentOrganization(orgToSelect);
+          localStorage.setItem("selectedOrganizationId", orgToSelect.id);
+        }
+      } else {
+        // Update current organization with fresh data from webhook updates
+        const updatedOrg = organizations.find(org => org.id === currentOrganization.id);
+        if (updatedOrg && JSON.stringify(updatedOrg) !== JSON.stringify(currentOrganization)) {
+          console.log('🔄 Updating current organization with fresh data:', updatedOrg.planType, updatedOrg.maxUsers);
+          setCurrentOrganization(updatedOrg);
+        }
       }
     }
   }, [organizations, currentOrganization]);

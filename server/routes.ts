@@ -1345,11 +1345,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Stripe webhook handler for subscription events
   app.post("/api/webhooks/stripe", async (req, res) => {
+    console.log('🔔 Production webhook received at', new Date().toISOString());
+    console.log('🔔 Headers:', req.headers);
+    console.log('🔔 Raw body length:', req.body?.length || 'undefined');
+    
     const sig = req.headers['stripe-signature'] as string;
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     if (!endpointSecret) {
-      console.error('Stripe webhook secret not configured');
+      console.error('❌ Stripe webhook secret not configured');
       return res.status(400).send('Webhook secret not configured');
     }
 
@@ -1359,12 +1363,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize Stripe
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
       event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+      console.log('✅ Webhook signature verified successfully');
     } catch (err: any) {
-      console.error('Webhook signature verification failed:', err.message);
+      console.error('❌ Webhook signature verification failed:', err.message);
+      console.error('❌ Signature header:', sig);
+      console.error('❌ Expected secret exists:', !!endpointSecret);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    console.log('Stripe webhook event received:', event.type);
+    console.log('🎯 Stripe webhook event received:', event.type, 'at', new Date().toISOString());
 
     try {
       switch (event.type) {
@@ -1393,6 +1400,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Webhook handler error:', error);
       res.status(500).json({ error: 'Webhook handler failed' });
     }
+  });
+
+  // Simple webhook health check endpoint
+  app.get("/api/webhooks/stripe", (req, res) => {
+    res.json({ 
+      status: "Webhook endpoint is reachable", 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development'
+    });
   });
 
   // Helper functions for webhook handling

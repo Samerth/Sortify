@@ -92,8 +92,7 @@ export interface IStorage {
     stripePaymentIntentId?: string;
     stripeSubscriptionId?: string;
     stripeCustomerId?: string;
-    subscriptionStartDate?: Date;
-    subscriptionEndDate?: Date;
+    nextBillingDate?: Date | null;
     lastPaymentDate?: Date;
     lastPaymentAmount?: number;
   }): Promise<Organization>;
@@ -381,8 +380,7 @@ export class DatabaseStorage implements IStorage {
     stripePaymentIntentId?: string;
     stripeSubscriptionId?: string;
     stripeCustomerId?: string;
-    subscriptionStartDate?: Date;
-    subscriptionEndDate?: Date;
+    nextBillingDate?: Date | null;
     lastPaymentDate?: Date;
     lastPaymentAmount?: number;
   }): Promise<Organization> {
@@ -395,7 +393,7 @@ export class DatabaseStorage implements IStorage {
     if (billingData.billingCycle !== undefined) updateData.billingCycle = billingData.billingCycle;
     if (billingData.stripeCustomerId !== undefined) updateData.stripeCustomerId = billingData.stripeCustomerId;
     if (billingData.stripeSubscriptionId !== undefined) updateData.stripeSubscriptionId = billingData.stripeSubscriptionId;
-    if (billingData.subscriptionEndDate !== undefined) updateData.nextBillingDate = billingData.subscriptionEndDate;
+    if (billingData.nextBillingDate !== undefined) updateData.nextBillingDate = billingData.nextBillingDate;
     if (billingData.lastPaymentDate !== undefined) updateData.lastPaymentDate = billingData.lastPaymentDate;
     if (billingData.lastPaymentAmount !== undefined) updateData.lastPaymentAmount = billingData.lastPaymentAmount;
     

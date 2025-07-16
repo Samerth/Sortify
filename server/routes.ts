@@ -1556,8 +1556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     await storage.updateOrganizationBilling(organization.id, {
       stripeSubscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
-      subscriptionStartDate: new Date(subscription.current_period_start * 1000),
-      subscriptionEndDate: new Date(subscription.current_period_end * 1000),
+      nextBillingDate: new Date(subscription.current_period_end * 1000),
       planType: planType,
       maxUsers: licenseQuantity, // Enforce one user per license
     });
@@ -1577,7 +1576,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     await storage.updateOrganizationBilling(organization.id, {
       subscriptionStatus: 'cancelled',
-      subscriptionEndDate: new Date(subscription.ended_at * 1000),
+      nextBillingDate: subscription.ended_at ? new Date(subscription.ended_at * 1000) : null,
     });
 
     console.log('Subscription cancelled for organization:', organization.id);

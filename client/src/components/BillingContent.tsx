@@ -180,9 +180,17 @@ function CustomPricingButtons() {
 }
 
 export default function BillingContent() {
-  const { currentOrganization } = useOrganization();
+  const { currentOrganization, refreshOrganization } = useOrganization();
   const { toast } = useToast();
   const [isManaging, setIsManaging] = useState(false);
+
+  const handleRefresh = () => {
+    refreshOrganization();
+    toast({
+      title: "Refreshed",
+      description: "Subscription data refreshed successfully.",
+    });
+  };
 
   const handleManageSubscription = async () => {
     if (!currentOrganization?.stripeCustomerId) {
@@ -223,6 +231,23 @@ export default function BillingContent() {
 
   return (
     <div className="space-y-6">
+      {/* Test refresh button - prominently displayed */}
+      <div className="w-full p-4 bg-yellow-100 border-2 border-yellow-400 rounded-lg">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-sm font-bold text-yellow-800">Webhook Test Button</span>
+            <p className="text-xs text-yellow-700">Click to refresh subscription data after webhook updates</p>
+          </div>
+          <button 
+            onClick={handleRefresh}
+            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white text-lg font-bold rounded-lg border-2 border-red-400 shadow-lg"
+            title="Force refresh subscription data"
+          >
+            🔄 REFRESH DATA
+          </button>
+        </div>
+      </div>
+      
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Billing & Subscriptions</h2>
@@ -230,11 +255,20 @@ export default function BillingContent() {
             License-based pricing - one license per user
           </p>
         </div>
-        {currentOrganization?.planType && (
-          <Badge variant="secondary" className="text-sm">
-            Current: {currentOrganization.planType}
-          </Badge>
-        )}
+        <div className="flex items-center gap-4">
+          {currentOrganization?.planType && (
+            <Badge variant="secondary" className="text-sm">
+              Current: {currentOrganization.planType}
+            </Badge>
+          )}
+          <button 
+            onClick={handleRefresh}
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg font-medium"
+            title="Refresh subscription data"
+          >
+            🔄 Refresh
+          </button>
+        </div>
       </div>
 
       {/* Plan comparison section */}

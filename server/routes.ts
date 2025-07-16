@@ -1423,7 +1423,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Find organization by Stripe customer ID
     let organization = await storage.findOrganizationByStripeCustomerId(subscription.customer);
     if (!organization) {
-      console.error('Organization not found for customer:', subscription.customer);
+      console.log('Organization not found for customer:', subscription.customer);
+      
       // Try to find by subscription metadata
       const organizationId = subscription.metadata?.organizationId;
       if (organizationId) {
@@ -1438,6 +1439,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         } catch (error) {
           console.error('Error finding organization by metadata:', error);
+        }
+      }
+      
+      // If still not found, try to get customer details from Stripe and find by email
+      if (!organization) {
+        try {
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+          const customer = await stripe.customers.retrieve(subscription.customer);
+          
+          if (customer && !customer.deleted && customer.email) {
+            console.log('Looking for organization by customer email:', customer.email);
+            
+            // Find user by email
+            const user = await storage.getUserByEmail(customer.email);
+            if (user) {
+              // Find user's organizations
+              const userOrganizations = await storage.getUserOrganizations(user.id);
+              if (userOrganizations.length > 0) {
+                // Use the first organization (or the most recent one)
+                organization = userOrganizations[0];
+                console.log('Found organization by email:', organization.id, 'for customer:', customer.email);
+                
+                // Link this organization to the Stripe customer
+                await storage.updateOrganizationBilling(organization.id, {
+                  stripeCustomerId: subscription.customer,
+                });
+                console.log('Automatically linked organization', organization.id, 'to Stripe customer', subscription.customer);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching customer from Stripe or finding by email:', error);
         }
       }
       

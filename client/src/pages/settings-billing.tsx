@@ -33,10 +33,15 @@ function StripePricingTableComponent() {
 }
 
 export default function BillingSettings() {
-  const { currentOrganization } = useOrganization();
+  const { currentOrganization, refreshOrganization } = useOrganization();
   
   // Use the organization from context - it should include all subscription data
   const organization = currentOrganization;
+  
+  // Add a refresh button for debugging webhook updates
+  const handleRefresh = () => {
+    refreshOrganization();
+  };
   
   console.log('Billing Debug - currentOrganization:', currentOrganization);
   console.log('Billing Debug - stripeSubscriptionId:', organization?.stripeSubscriptionId);
@@ -60,6 +65,13 @@ export default function BillingSettings() {
             </span>
           </div>
         )}
+        <button 
+          onClick={handleRefresh}
+          className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+          title="Refresh subscription data"
+        >
+          Refresh
+        </button>
         {(!organization?.stripeSubscriptionId || organization?.subscriptionStatus === 'trial') && (
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-blue-600">
